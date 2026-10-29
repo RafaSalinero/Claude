@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Sicilia en vivo</title>
+<meta name="theme-color" content="#17191d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sicilia">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="config.js"></script>
+<script src="places.js"></script>
+<style>
+:root{
+  --bg:#edeae3; --surface:#fbfaf7; --surface-2:#f1eee7; --fg:#17191d; --muted:#5e6169; --line:#d7d3ca;
+  --accent:#d4421c; --sea:#17798a; --night:#5a45c9; --ok:#2e8b57; --me:#1a73e8;
+  --pin-ver:#17798a; --pin-comer:#d4421c; --pin-noche:#5a45c9; --pin-ruta:#c98a0c; --pin-extra:#8a7f6a;
+  --shadow:0 6px 24px rgba(23,25,29,.18);
+  --display:"Bricolage Grotesque","Arial Narrow",system-ui,sans-serif; --body:"Instrument Sans","Helvetica Neue",Arial,system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root{ --bg:#121315; --surface:#1b1d21; --surface-2:#24272c; --fg:#ece8df; --muted:#a19c91; --line:#34373d; --accent:#ff6b42; --sea:#3fb6c6; --night:#9a89ff; --ok:#5fc08a; --pin-ver:#3fb6c6; --pin-comer:#ff6b42; --pin-noche:#9a89ff; --pin-ruta:#f0b534; --shadow:0 6px 24px rgba(0,0,0,.5); color-scheme:dark } }
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.4;overflow:hidden}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--sea);outline-offset:2px}
+#map{position:absolute;inset:0}
+.maplibregl-ctrl-attrib{font-size:10px}
+
+/* top bar */
+.top{position:absolute;left:0;right:0;top:0;z-index:5;padding:calc(10px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px));display:flex;gap:8px;align-items:center;pointer-events:none}
+.top > *{pointer-events:auto}
+.brand{background:var(--surface);box-shadow:var(--shadow);border-radius:999px;padding:4px 12px 4px 4px;display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:800;font-size:15px}
+.brand img{width:32px;height:32px;border-radius:50%;display:block}
+.brand .live{width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.brand .live.on{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 30%,transparent)}
+.spacer{flex:1}
+.people{display:flex;gap:6px;background:var(--surface);box-shadow:var(--shadow);border-radius:999px;padding:4px}
+.people button{width:32px;height:32px;border-radius:50%;color:#fff;font-family:var(--display);font-weight:800;font-size:14px;display:grid;place-items:center;border:2px solid var(--surface)}
+.people button.stale{opacity:.45}
+.people button.me{outline:2px solid var(--fg)}
+.filters{position:absolute;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));top:calc(58px + env(safe-area-inset-top,0px));z-index:5;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;pointer-events:none}
+.filters::-webkit-scrollbar{display:none}
+.filters button{pointer-events:auto;flex:0 0 auto;padding:6px 12px;border-radius:999px;background:var(--surface);box-shadow:var(--shadow);font-weight:600;font-size:13px}
+.filters button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+
+/* right controls */
+.ctl{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:5;display:flex;flex-direction:column;gap:8px}
+.ctl button{width:46px;height:46px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:15px}
+.ctl button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.ctl button svg{width:22px;height:22px}
+.ctl button.share.on{background:var(--ok);color:#fff}
+.status{position:absolute;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:5;background:var(--surface);box-shadow:var(--shadow);border-radius:12px;padding:8px 12px;font-size:12px;color:var(--muted);max-width:calc(100vw - 90px)}
+.status b{color:var(--fg)}
+
+/* markers */
+.pin{width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--pc);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);display:grid;place-items:center;cursor:pointer}
+.pin svg{width:15px;height:15px;transform:rotate(45deg);color:#fff}
+.pin.done{opacity:.55}
+.me-dot{width:18px;height:18px;border-radius:50%;background:var(--me);border:3px solid #fff;box-shadow:0 0 0 2px var(--me),0 2px 8px rgba(0,0,0,.4);position:relative}
+.me-dot::after{content:"";position:absolute;inset:-14px;border-radius:50%;background:var(--me);opacity:.18;animation:pulse 2s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.4);opacity:.35}100%{transform:scale(1.4);opacity:0}}
+.peer{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+.peer .av{width:34px;height:34px;border-radius:50%;background:var(--uc);color:#fff;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:15px}
+.peer .nm{font-family:var(--display);font-weight:700;font-size:12px;background:var(--surface);color:var(--fg);padding:1px 7px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.3);white-space:nowrap}
+.peer.stale{opacity:.5}
+.maplibregl-popup-content{font-family:var(--body);background:var(--surface);color:var(--fg);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);max-width:260px}
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip{border-top-color:var(--surface)}
+.maplibregl-popup-anchor-top .maplibregl-popup-tip{border-bottom-color:var(--surface)}
+.maplibregl-popup-close-button{color:var(--muted);font-size:18px;padding:4px 8px}
+.pop h3{font-family:var(--display);font-weight:800;font-size:17px;margin:0 0 2px;padding-right:16px}
+.pop .cat{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--pc)}
+.pop p{margin:6px 0;font-size:13px}
+.pop .small{font-size:12px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border-radius:9px;font-weight:600;font-size:13px;background:var(--surface-2);color:var(--fg);border:1px solid var(--line);text-decoration:none}
+.btn.primary{background:var(--accent);color:#fff;border-color:transparent}
+.btn.sm{padding:5px 9px;font-size:12px}
+.pop .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+
+/* gate & dialogs */
+.gate{position:absolute;inset:0;z-index:20;background:var(--bg);display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-left,0px))}
+.gate .box{width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px}
+.gate .logo{width:120px;height:120px;border-radius:28px;box-shadow:var(--shadow);display:block}
+.gate h1{font-family:var(--display);font-weight:800;font-size:34px;line-height:1;margin:0;letter-spacing:-.01em}
+.gate .sub{color:var(--muted);margin:0}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:12px;font-weight:600;color:var(--muted)}
+.field input{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:16px}
+.gate .btn{padding:12px;font-size:15px;border-radius:12px}
+.notice{background:var(--surface-2);border-left:3px solid var(--accent);padding:10px 12px;border-radius:8px;font-size:13px}
+.notice code{font-size:12px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;z-index:30;opacity:0;transition:.2s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+.dialog{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:25;background:var(--surface);border-radius:14px;box-shadow:var(--shadow);padding:16px;width:min(92vw,360px);display:flex;flex-direction:column;gap:10px}
+.dialog h2{font-family:var(--display);font-size:20px;margin:0}
+.dialog .actions{display:flex;justify-content:flex-end;gap:8px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion: reduce){ .me-dot::after{animation:none} }
+</style>
+</head>
+<body>
+<div id="map" role="application" aria-label="Mapa de Catania en vivo"></div>
+
+<div class="top">
+  <div class="brand"><img src="logo-96.png" alt="" width="32" height="32"><span>Sicilia</span><span class="live" id="liveDot"></span></div>
+  <span class="spacer"></span>
+  <div class="people" id="people" aria-label="Quién está conectado"></div>
+</div>
+<div class="filters" id="filters"></div>
+
+<div class="ctl">
+  <button id="btnShare" class="share" aria-pressed="false" aria-label="Compartir mi ubicación"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+  <button id="btnAll" aria-label="Ver a todos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></button>
+  <button id="btn3d" aria-pressed="false" aria-label="Vista 3D">3D</button>
+  <button id="btnMe" aria-label="Centrar en mí"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></button>
+  <button id="btnAdd" aria-label="Añadir pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+</div>
+<div class="status" id="status">Preparando el mapa…</div>
+
+<div class="gate" id="gate">
+  <form class="box" id="gateForm">
+    <img class="logo" src="icon-512.png" alt="Tres pumas con gafas de sol" width="120" height="120">
+    <h1>Sicilia<br>en vivo</h1>
+    <p class="sub">Mapa del grupo con la posición de cada uno, de Catania a Taormina y Siracusa. Solo os veis entre quienes tenéis el PIN.</p>
+    <div id="cfgWarn" class="notice" hidden>Falta configurar Firebase. Edita <code>config.js</code> siguiendo el README antes de desplegar.</div>
+    <div class="field"><label for="gName">Tu nombre</label><input id="gName" required maxlength="18" placeholder="Rafa" autocomplete="nickname"></div>
+    <div class="field"><label for="gPin">PIN del grupo</label><input id="gPin" required minlength="4" maxlength="12" placeholder="El mismo para los tres" autocomplete="off"></div>
+    <button class="btn primary" type="submit">Entrar al mapa</button>
+    <p class="sub" style="font-size:12px">Tu posición solo se envía mientras tengas activado el botón verde, y se borra al cerrar la página.</p>
+  </form>
+</div>
+
+<div class="dialog" id="pinDialog" hidden>
+  <h2>Nuevo pin</h2>
+  <div class="field"><label for="pinName">Nombre</label><input id="pinName" maxlength="40" placeholder="Bar con terraza"></div>
+  <div class="field"><label for="pinNote">Nota</label><input id="pinNote" maxlength="120" placeholder="Opcional"></div>
+  <div class="actions"><button class="btn" type="button" id="pinCancel">Cancelar</button><button class="btn primary" type="button" id="pinSave">Guardar</button></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+'use strict';
+const CENTER = [15.0862, 37.5045];
+const CATS = { ver:'Ver', comer:'Comer', noche:'Noche', ruta:'Excursiones', extra:'Pines del grupo' };
+const CATANIA = { lat:37.5045, lng:15.0862 };
+const kmFrom = (a, b) => { const R=6371, dLat=(b.lat-a.lat)*Math.PI/180, dLng=(b.lng-a.lng)*Math.PI/180; const x=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2; return 2*R*Math.asin(Math.sqrt(x)); };
+const ICON = {
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  food:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7a3 3 0 0 0 6 0V2M6 2v20M20 2c-3 0-4 3-4 7v3h4v10"/></svg>',
+  moon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 17l-6.5 4 2-7.5L2 9h7z"/></svg>',
+  car:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14v-5l-2-5H7l-2 5z"/><circle cx="7.5" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/><path d="M5 12h14"/></svg>'
+};
+const PIN_ICON = { ver: ICON.eye, comer: ICON.food, noche: ICON.moon, ruta: ICON.car, extra: ICON.star };
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2800); }
+const store = { get(k){ try { return localStorage.getItem(k); } catch { return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch {} } };
+const colorFor = id => `hsl(${[...id].reduce((a,c) => (a*31 + c.charCodeAt(0)) % 360, 7)} 65% 45%)`;
+async function sha(s){ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].slice(0,12).map(x => x.toString(16).padStart(2,'0')).join(''); }
+
+// ---------- state ----------
+const S = { me:{ id:null, name:'' }, group:null, db:null, map:null, sharing:false, watchId:null, lastSent:0, lastPos:null,
+  peers:{}, peerMarkers:{}, meMarker:null, placeMarkers:[], extraPins:{}, filter:'all', is3d:false, addMode:false, pendingLngLat:null, popups:{} };
+const cfgOk = () => window.FIREBASE_CONFIG && typeof FIREBASE_CONFIG.apiKey === 'string' && !/^PEGA|^TU_|^YOUR_/i.test(FIREBASE_CONFIG.apiKey) && FIREBASE_CONFIG.databaseURL;
+
+// ---------- map ----------
+const map = new maplibregl.Map({ container:'map', style:'https://tiles.openfreemap.org/styles/liberty', center:CENTER, zoom:15.2, pitch:0, bearing:0, attributionControl:{ compact:true }, maxPitch:70 });
+S.map = map;
+map.touchZoomRotate.enableRotation();
+map.on('load', () => { $('#status').textContent = 'Mapa cargado. Activa el botón verde para compartir tu posición.'; renderPlaces(); });
+map.on('error', e => { if (e?.error?.message) console.warn('map', e.error.message); });
+map.on('click', e => { if (!S.addMode) return; S.addMode = false; $('#btnAdd').removeAttribute('aria-pressed'); S.pendingLngLat = e.lngLat; $('#pinName').value = ''; $('#pinNote').value = ''; $('#pinDialog').hidden = false; $('#pinName').focus(); });
+
+function placePopup(p, extra){
+  const far = kmFrom(S.lastPos || CATANIA, p) > 3;
+  const dir = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=${far ? 'driving' : 'walking'}`;
+  const see = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+  const html = `<div class="pop" style="--pc:var(--pin-${p.cat in CATS ? p.cat : 'extra'})"><div class="cat">${esc(CATS[p.cat] || p.cat)}</div><h3>${esc(p.name)}</h3>${p.addr ? `<div class="small">${esc(p.addr)}</div>` : ''}${p.note ? `<p>${esc(p.note)}</p>` : ''}${extra && p.by ? `<div class="small">Añadido por ${esc(p.by)}</div>` : ''}<div class="small">${Math.round(kmFrom(CATANIA, p))} km desde Catania</div><div class="row"><a class="btn primary sm" target="_blank" rel="noopener" href="${dir}">${far ? 'Ir en coche' : 'Cómo llegar a pie'}</a><a class="btn sm" target="_blank" rel="noopener" href="${see}">Ver en Maps</a>${extra ? `<button class="btn sm" data-del="${esc(p.id)}">Borrar</button>` : ''}</div></div>`;
+  const pop = new maplibregl.Popup({ offset: 22, maxWidth:'280px' }).setHTML(html);
+  pop.on('open', () => { const b = pop.getElement().querySelector('[data-del]'); if (b) b.addEventListener('click', () => { if (S.group) S.db.ref(`groups/${S.group}/pins/${p.id}`).remove(); pop.remove(); }); });
+  return pop;
+}
+function makePin(p, extra){
+  const el = document.createElement('button');
+  el.className = 'pin' + (p.done ? ' done' : ''); el.style.setProperty('--pc', `var(--pin-${p.cat in CATS ? p.cat : 'extra'})`); el.innerHTML = PIN_ICON[p.cat] || ICON.star; el.setAttribute('aria-label', p.name);
+  return new maplibregl.Marker({ element: el, anchor:'bottom', offset:[0, 4] }).setLngLat([p.lng, p.lat]).setPopup(placePopup(p, extra));
+}
+function renderPlaces(){
+  for (const m of S.placeMarkers) m.remove(); S.placeMarkers = [];
+  const all = [...(window.PLACES || []).map(p => ({ ...p, extra:false })), ...Object.values(S.extraPins).map(p => ({ ...p, cat:'extra', extra:true }))];
+  for (const p of all){ if (S.filter !== 'all' && p.cat !== S.filter) continue; if (typeof p.lat !== 'number') continue; const m = makePin(p, p.extra).addTo(map); S.placeMarkers.push(m); }
+}
+const filt = $('#filters');
+for (const [k, lab] of [['all','Todo'], ...Object.entries(CATS)]) { const b = document.createElement('button'); b.textContent = lab; b.setAttribute('aria-pressed', k === 'all' ? 'true' : 'false'); b.addEventListener('click', () => { S.filter = k; for (const x of filt.children) x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); renderPlaces(); fitPlaces(); }); filt.append(b); }
+function fitPlaces(){
+  const pts = S.placeMarkers.map(m => m.getLngLat()).map(l => [l.lng, l.lat]);
+  if (!pts.length) return toast('No hay sitios en esta categoría.');
+  if (pts.length === 1) return map.flyTo({ center: pts[0], zoom: 15 });
+  const b = pts.reduce((bb, p) => bb.extend(p), new maplibregl.LngLatBounds(pts[0], pts[0]));
+  map.fitBounds(b, { padding: { top: 120, bottom: 70, left: 50, right: 80 }, maxZoom: 16, duration: 800 });
+}
+
+$('#btn3d').addEventListener('click', () => { S.is3d = !S.is3d; $('#btn3d').setAttribute('aria-pressed', S.is3d ? 'true' : 'false'); map.easeTo({ pitch: S.is3d ? 58 : 0, bearing: S.is3d ? -17 : 0, zoom: S.is3d ? Math.max(map.getZoom(), 16) : map.getZoom(), duration: 700 }); });
+$('#btnMe').addEventListener('click', () => { if (S.lastPos) map.flyTo({ center:[S.lastPos.lng, S.lastPos.lat], zoom: Math.max(map.getZoom(), 16) }); else { toast('Aún no tengo tu posición. Activa el botón verde.'); startLocating(); } });
+$('#btnAll').addEventListener('click', () => { const pts = Object.values(S.peers).filter(p => p.lat && !isStale(p, 15*60e3)).map(p => [p.lng, p.lat]); if (S.lastPos) pts.push([S.lastPos.lng, S.lastPos.lat]); if (!pts.length) return toast('Nadie está compartiendo posición ahora mismo.'); if (pts.length === 1) return map.flyTo({ center: pts[0], zoom: 16 }); const b = pts.reduce((bb, p) => bb.extend(p), new maplibregl.LngLatBounds(pts[0], pts[0])); map.fitBounds(b, { padding: 90, maxZoom: 17, duration: 700 }); });
+$('#btnAdd').addEventListener('click', () => { if (!S.group) return toast('Entra con el PIN para añadir pines.'); S.addMode = !S.addMode; if (S.addMode){ $('#btnAdd').setAttribute('aria-pressed','true'); toast('Toca el mapa donde va el pin'); } else $('#btnAdd').removeAttribute('aria-pressed'); });
+$('#pinCancel').addEventListener('click', () => { $('#pinDialog').hidden = true; });
+$('#pinSave').addEventListener('click', () => { const name = $('#pinName').value.trim(); if (!name || !S.pendingLngLat) return; const ref = S.db.ref(`groups/${S.group}/pins`).push(); ref.set({ id: ref.key, name, note: $('#pinNote').value.trim(), lat: S.pendingLngLat.lat, lng: S.pendingLngLat.lng, by: S.me.name, t: firebase.database.ServerValue.TIMESTAMP }); $('#pinDialog').hidden = true; toast('Pin guardado para el grupo'); });
+
+// ---------- geolocation ----------
+function startLocating(){
+  if (!('geolocation' in navigator)) return toast('Este navegador no da acceso a la ubicación.');
+  if (S.watchId != null) return;
+  S.watchId = navigator.geolocation.watchPosition(onPos, err => { console.warn(err); $('#status').innerHTML = '<b>Sin ubicación.</b> ' + (err.code === 1 ? 'Has denegado el permiso: actívalo en los ajustes del navegador para este sitio.' : 'No se pudo obtener la posición. ¿GPS activado?'); if (S.sharing) setSharing(false); }, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
+}
+function onPos(pos){
+  const { latitude:lat, longitude:lng, accuracy:acc, heading } = pos.coords; const first = !S.lastPos; S.lastPos = { lat, lng, acc, heading, t: Date.now() };
+  if (!S.meMarker){ const el = document.createElement('div'); el.className = 'me-dot'; el.setAttribute('aria-label','Tu posición'); S.meMarker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map); } else S.meMarker.setLngLat([lng, lat]);
+  if (first) map.flyTo({ center:[lng, lat], zoom: Math.max(map.getZoom(), 16) });
+  $('#status').innerHTML = `<b>${S.sharing ? 'Compartiendo' : 'Solo tú ves tu posición'}</b> · precisión ${Math.round(acc)} m`;
+  if (S.sharing && S.group){ const now = Date.now(); if (now - S.lastSent > 4000){ S.lastSent = now; S.db.ref(`groups/${S.group}/people/${S.me.id}`).set({ name: S.me.name, lat, lng, acc: Math.round(acc), t: firebase.database.ServerValue.TIMESTAMP }); } }
+}
+function setSharing(on){
+  S.sharing = on; $('#btnShare').classList.toggle('on', on); $('#btnShare').setAttribute('aria-pressed', on ? 'true' : 'false'); $('#liveDot').classList.toggle('on', on);
+  if (on){ startLocating(); if (S.lastPos) { S.lastSent = 0; onPos({ coords: { latitude:S.lastPos.lat, longitude:S.lastPos.lng, accuracy:S.lastPos.acc, heading:S.lastPos.heading } }); } toast('Compartiendo tu posición con el grupo'); }
+  else { if (S.group) S.db.ref(`groups/${S.group}/people/${S.me.id}`).remove(); $('#status').innerHTML = S.lastPos ? '<b>Solo tú ves tu posición</b>' : 'Posición no compartida.'; }
+  store.set('cl-sharing', on ? '1' : '0');
+}
+$('#btnShare').addEventListener('click', () => { if (!S.group) return toast('Entra con el PIN primero.'); setSharing(!S.sharing); });
+
+// ---------- peers ----------
+const isStale = (p, ms) => !p.t || (Date.now() - p.t) > ms;
+function renderPeers(){
+  const list = Object.values(S.peers).filter(p => p.id !== S.me.id);
+  const pe = $('#people'); pe.replaceChildren();
+  const meB = document.createElement('button'); meB.className = 'me'; meB.style.background = colorFor(S.me.id || 'me'); meB.textContent = (S.me.name || '?')[0].toUpperCase(); meB.title = S.me.name + ' (tú)'; meB.addEventListener('click', () => $('#btnMe').click()); pe.append(meB);
+  for (const p of list){
+    if (isStale(p, 15*60e3)){ if (S.peerMarkers[p.id]){ S.peerMarkers[p.id].remove(); delete S.peerMarkers[p.id]; } continue; }
+    const stale = isStale(p, 2*60e3);
+    const b = document.createElement('button'); b.style.background = colorFor(p.id); b.textContent = (p.name || '?')[0].toUpperCase(); b.title = p.name; b.className = stale ? 'stale' : ''; b.addEventListener('click', () => map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), 16) })); pe.append(b);
+    let m = S.peerMarkers[p.id];
+    if (!m){ const el = document.createElement('div'); el.className = 'peer'; el.style.setProperty('--uc', colorFor(p.id)); el.innerHTML = `<div class="av"></div><div class="nm"></div>`; m = new maplibregl.Marker({ element: el, anchor:'center' }).setLngLat([p.lng, p.lat]).addTo(map); S.peerMarkers[p.id] = m; el.addEventListener('click', () => toast(`${p.name}: hace ${ago(p.t)} · precisión ${p.acc || '?'} m`)); }
+    m.setLngLat([p.lng, p.lat]); const el = m.getElement(); el.classList.toggle('stale', stale); el.querySelector('.av').textContent = (p.name || '?')[0].toUpperCase(); el.querySelector('.nm').textContent = p.name + (stale ? ' · ' + ago(p.t) : '');
+  }
+  for (const id of Object.keys(S.peerMarkers)) if (!S.peers[id]){ S.peerMarkers[id].remove(); delete S.peerMarkers[id]; }
+}
+function ago(t){ const s = Math.round((Date.now() - (t || 0)) / 1000); if (s < 60) return s + ' s'; if (s < 3600) return Math.round(s/60) + ' min'; return Math.round(s/3600) + ' h'; }
+setInterval(renderPeers, 20000);
+
+// ---------- gate / firebase ----------
+async function enter(name, pin){
+  S.me.name = name; S.me.id = store.get('cl-uid') || ('u' + Math.random().toString(36).slice(2, 10)); store.set('cl-uid', S.me.id); store.set('cl-name', name); store.set('cl-pin', pin);
+  S.group = await sha('catania:' + pin);
+  if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+  S.db = firebase.database();
+  S.db.ref(`groups/${S.group}/people/${S.me.id}`).onDisconnect().remove();
+  S.db.ref(`groups/${S.group}/people`).on('value', snap => { S.peers = snap.val() || {}; for (const [id, p] of Object.entries(S.peers)) p.id = id; renderPeers(); }, err => { console.error(err); toast('Sin conexión con el grupo: revisa las reglas de Firebase.'); });
+  S.db.ref(`groups/${S.group}/pins`).on('value', snap => { S.extraPins = snap.val() || {}; renderPlaces(); });
+  S.db.ref('.info/connected').on('value', snap => { $('#liveDot').classList.toggle('on', !!snap.val() && S.sharing); });
+  $('#gate').hidden = true; renderPeers();
+  if (store.get('cl-sharing') === '1') setSharing(true); else startLocating();
+}
+const gate = $('#gateForm');
+if (!cfgOk()) { $('#cfgWarn').hidden = false; }
+$('#gName').value = store.get('cl-name') || ''; $('#gPin').value = store.get('cl-pin') || '';
+gate.addEventListener('submit', e => { e.preventDefault(); if (!cfgOk()) return toast('Configura Firebase en config.js primero.'); enter($('#gName').value.trim(), $('#gPin').value.trim()).catch(err => { console.error(err); toast('No se pudo conectar: ' + (err.message || err)); }); });
+})();
+</script>
+</body>
+</html>
