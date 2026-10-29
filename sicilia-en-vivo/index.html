@@ -166,7 +166,7 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 
 <div class="top">
   <div class="toprow">
-    <div class="brand"><img src="logo-96.png" alt="" width="32" height="32"><span>Sicilia</span><span class="live" id="liveDot"></span></div>
+    <button class="brand" id="brand" type="button" aria-label="Cambiar de persona"><img src="logo-96.png" alt="" width="32" height="32"><span>Sicilia</span><span class="live" id="liveDot"></span></button>
     <span class="spacer"></span>
     <div class="people" id="people" aria-label="Quién está conectado"></div>
   </div>
@@ -198,10 +198,7 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
       <p class="foot" style="text-transform:uppercase;padding-bottom:7px">¿Quién eres?</p>
       <div class="list" id="who" role="radiogroup" aria-label="Quién eres"></div>
     </div>
-    <div class="list" id="pinField">
-      <div class="lrow"><div class="body"><input class="in" id="gPin" required minlength="4" maxlength="12" placeholder="PIN del grupo" autocomplete="off" inputmode="text"></div></div>
-    </div>
-    <p class="foot" id="gateFoot">Usad los tres el mismo PIN. Tu posición solo se comparte mientras tengas el interruptor activado y se borra al cerrar la página.</p>
+    <p class="foot" id="gateFoot">El mapa recordará quién eres. Tu posición solo se comparte mientras tengas el interruptor activado y se borra al apagarlo o cerrar la página.</p>
     <button class="btn-primary" type="submit">Entrar</button>
   </form>
 </div>
@@ -490,9 +487,10 @@ function enterCommon(name){
   S.me.name = name; S.me.id = slug(name); store.set('cl-name', name);
   $('#gate').hidden = true; renderPeers(); renderCard();
 }
-async function enter(name, pin, kind){
-  enterCommon(name); store.set('cl-pin', pin);
-  S.group = await sha('catania:' + pin);
+const GROUP_SEED = 'catania:salinero-braulio-pomares-2026';
+async function enter(name, kind){
+  enterCommon(name);
+  S.group = await sha(GROUP_SEED);
   const onPeople = v => { S.peers = v; for (const [id, p] of Object.entries(S.peers)) p.id = id; renderPeers(); };
   const onPins = v => { const next = JSON.stringify(v); if (next === S.pinsSig) return; S.pinsSig = next; S.extraPins = v; renderPlaces(); };
   S.sync = kind === 'netlify' ? netlifySync(S.group, onPeople, onPins) : await firebaseSync(S.group, onPeople, onPins);
@@ -507,13 +505,24 @@ const who = $('#who');
 const drawWho = () => who.replaceChildren(...TRAVELLERS.map(([n, c]) => h('button', { class:'lrow', type:'button', role:'radio', 'aria-checked': n === picked ? 'true' : 'false', onclick: () => { picked = n; drawWho(); } },
   h('span', { class:'pav', style:'background:' + c }, n[0]), h('span', { class:'body' }, h('span', { class:'t grow' }, n), h('span', { class:'ck', html:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' })))));
 drawWho();
-$('#gPin').value = store.get('cl-pin') || '';
-backendReady.then(kind => { if (!kind){ $('#pinField').hidden = true; $('#gPin').required = false; $('#gateFoot').textContent = 'Esta copia de la web no tiene el modo grupo: verás el mapa y tu posición, pero no os veréis entre vosotros. Abrid la de Netlify.'; } });
-gate.addEventListener('submit', async e => {
-  e.preventDefault(); const n = picked; if (!n || !TRAVELLERS.some(([x]) => x === n)) return toast('Elige quién eres'); const kind = await backendReady;
+const valid = n => TRAVELLERS.some(([x]) => x === n);
+async function start(n){
+  const kind = await backendReady;
   if (!kind) return enterLocal(n);
-  const pin = $('#gPin').value.trim(); if (pin.length < 4) return toast('El PIN necesita al menos 4 caracteres');
-  enter(n, pin, kind).catch(err => { console.error(err); toast('No se pudo conectar: ' + (err.message || err)); });
+  enter(n, kind).catch(err => { console.error(err); toast('No se pudo conectar: ' + (err.message || err)); });
+}
+backendReady.then(kind => { if (!kind) $('#gateFoot').textContent = 'Esta copia de la web no tiene el modo grupo: verás el mapa y tu posición, pero no os veréis entre vosotros.'; });
+gate.addEventListener('submit', e => { e.preventDefault(); if (!valid(picked)) return toast('Elige quién eres'); start(picked); });
+if (valid(picked)) { $('#gate').hidden = true; start(picked); }
+$('#brand').addEventListener('click', () => {
+  let choice = S.me.name;
+  const list = h('div', { class:'list' });
+  const draw = () => list.replaceChildren(...TRAVELLERS.map(([n, c]) => h('button', { class:'lrow', type:'button', role:'radio', 'aria-checked': n === choice ? 'true' : 'false', onclick: () => { choice = n; draw(); } },
+    h('span', { class:'pav', style:'background:' + c }, n[0]), h('span', { class:'body' }, h('span', { class:'t grow' }, n), h('span', { class:'ck', html:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' })))));
+  draw();
+  openSheet(h('div', { class:'snav' }, h('button', { class:'l', type:'button', onclick: closeSheet }, 'Cancelar'), h('div', { class:'c' }, '¿Quién eres?'),
+    h('button', { class:'r', type:'button', onclick: () => { if (choice === S.me.name) return closeSheet(); if (S.sharing) setSharing(false); store.set('cl-name', choice); setTimeout(() => location.reload(), 150); } }, 'Listo')), list,
+    h('p', { class:'foot' }, 'Cambia solo si este móvil es de otra persona del grupo.'));
 });
 })();
 </script>

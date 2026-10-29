@@ -25,11 +25,11 @@ El proyecto `sicilia-en-vivo` de Netlify se creó y desplegó desde este reposit
 
 Consumo: cada móvil hace una petición cada 6 segundos mientras comparte y cada 12 si solo mira, y se para cuando la web está en segundo plano. Para tres personas durante el viaje son unas decenas de miles de peticiones, muy por debajo del plan gratuito de Netlify.
 
-Privacidad: las posiciones se guardan bajo una clave derivada del PIN del grupo, así que sin el PIN no se pueden leer desde la web. Se borran al apagar el interruptor o cerrar la página, y en cualquier caso a las 6 horas. Elegid un PIN que no sea 1234.
+Privacidad: no hay PIN, así que cualquiera que tenga el enlace puede ver vuestras posiciones mientras compartís. Pasad el enlace solo entre los tres. Las posiciones se borran al apagar el interruptor o cerrar la página, y en cualquier caso a las 6 horas.
 
 ## Paso 2: en el móvil
 
-1. Cada uno abre el enlace de Netlify, toca su nombre (Salinero, Braulio o Pomares) y escribe el mismo PIN del grupo. Cada uno tiene su color fijo en el mapa.
+1. Cada uno abre el enlace de Netlify y toca su nombre: Salinero, Braulio o Pomares. Cada uno tiene su color fijo en el mapa. El móvil lo recuerda y las siguientes veces entra directo; para cambiar de persona, toca el logo de arriba a la izquierda.
 2. Activa el interruptor "Compartir mi ubicación" y acepta el permiso de ubicación. Mientras está activado, los otros te ven; al apagarlo o cerrar la página, desapareces.
 3. Safari en iPhone: compartir > "Añadir a pantalla de inicio" para tenerla como app con el icono de los pumas. Chrome en Android: menú > "Añadir a pantalla de inicio".
 
@@ -46,7 +46,7 @@ Importante en iPhone: la posición solo se envía mientras la página está abie
 
 ## Si algo falla
 
-- No aparece el campo del PIN: estás en una copia de la web sin servidor. Abre el enlace de Netlify.
+- La ficha dice "Modo individual": estás en una copia de la web sin servidor. Abre el enlace de Netlify.
 - "Sin conexión con el grupo, reintentando…": no hay cobertura o Netlify no responde. La web reintenta sola.
 - No aparece tu punto azul: el navegador no tiene permiso de ubicación para ese sitio. En iPhone, Ajustes > Safari > Ubicación.
 - El mapa no carga: comprueba que hay conexión; las teselas vienen de tiles.openfreemap.org sin clave.
