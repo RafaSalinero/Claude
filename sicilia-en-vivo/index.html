@@ -73,6 +73,7 @@ a{color:inherit;text-decoration:none}
 /* bottom card */
 .card{position:absolute;left:0;right:0;bottom:0;z-index:6;background:var(--cell);border-radius:16px 16px 0 0;box-shadow:var(--shadow-lg);padding:6px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
 .grab{width:36px;height:5px;border-radius:3px;background:var(--label3);margin:0 auto 2px}
+body.has-badge .card{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))}
 .search{display:flex;align-items:center;gap:10px;width:100%;min-height:50px;padding:0 14px;border-radius:12px;background:var(--fill);font-size:18px;font-weight:600;letter-spacing:-.43px;text-align:left}
 .search svg{width:20px;height:20px;flex:0 0 auto}
 .rows{display:flex;flex-direction:column}
@@ -310,6 +311,9 @@ $('#btnAll').addEventListener('click', () => {
 });
 
 // ---------- bottom card ----------
+// Netlify's free plan injects a badge bottom-right; leave room under the card so it covers nothing.
+const badgeCheck = () => document.body.classList.toggle('has-badge', !!document.getElementById('nl-badge-frame'));
+new MutationObserver(badgeCheck).observe(document.body, { childList:true }); badgeCheck();
 const cardH = () => $('#card').offsetHeight;
 function syncCardH(){ document.documentElement.style.setProperty('--card-h', cardH() + 'px'); }
 new ResizeObserver(syncCardH).observe($('#card'));
