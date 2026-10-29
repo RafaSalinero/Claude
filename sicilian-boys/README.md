@@ -42,11 +42,15 @@ Importante en iPhone: la posición solo se envía mientras la página está abie
 ## Cómo se usa
 
 - **Casa**: el alojamiento, Dimora Lucia Majorana (Piazza Angelo Majorana 4), está marcado con un pin negro grande. El botón "Casa" de la ficha inferior lo centra y da la ruta de vuelta, andando o en coche según la distancia.
-- **Marcador**: el botón "Marcador" abre el ranking de la noche de Salinero, Braulio y Pomares (Conversación 1, Beso 2, Liado 3, Otro 1 punto) y el historial. "Apuntar match" guarda nombre, Instagram, hasta dónde llegó, noche, foto y nota. Solo quien lo apuntó puede borrarlo. Ojo: sin PIN, cualquiera con el enlace podría verlo.
+- **Match**: el botón rosa "Match" abre el ranking de la noche de Salinero, Braulio y Pomares (Conversación 1, Beso 2, Liado 3, Otro 1 punto) y el historial. "Apuntar match" guarda nombre, Instagram, hasta dónde llegó, noche, foto y nota. Solo quien lo apuntó puede borrarlo. Ojo: sin PIN, cualquiera con el enlace podría verlo.
+- **Quién está en casa**: quien esté a menos de 50 m del alojamiento lleva una casita en su icono, el pin de casa muestra cuántos hay y el botón Casa lo dice.
+- **Distancia a cada amigo**: junto a su icono en el mapa, por ejemplo "Braulio · 300 m".
+- **Seguirte al andar**: la flecha azul mantiene el mapa centrado en ti y lo gira según hacia dónde miras (en iPhone pide permiso de movimiento la primera vez). Si mueves el mapa con el dedo, deja de seguirte.
+- **Mapa oscuro de noche**: a partir del atardecer en Catania (unas 16:40 en diciembre) la app pasa sola a oscuro aunque el móvil esté en claro, y vuelve a claro al amanecer.
 - **Ficha inferior**: "¿A dónde vamos?" abre el buscador de sitios, ordenados por cercanía. El interruptor "Compartir mi ubicación" hace que los demás te vean. "Añadir pin del grupo" y luego toca el mapa para guardar un sitio para los tres.
 - **Al tocar un sitio**, la ficha se convierte en su tarjeta: botón negro "Ir en coche" si está a más de 3 km o "Ir andando" si está cerca, ambos con la ruta en Google Maps, y "Ver en Maps".
 - **Al tocar a un amigo**, en el mapa o en sus iniciales arriba a la derecha, ves hace cuánto se actualizó y un botón para ir hasta él.
-- **Botones redondos**: 3D inclina el mapa y levanta los edificios; el de personas encuadra a todos; la flecha te centra.
+- **Botones redondos**: 3D inclina el mapa y levanta los edificios; el de personas encuadra a todos; la flecha te sigue.
 - **Filtros arriba**: Ver, Comer, Noche, Excursiones y Pines del grupo. Al tocar uno, el mapa encuadra esos sitios.
 - El mapa usa el tema claro u oscuro del móvil.
 

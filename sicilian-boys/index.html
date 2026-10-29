@@ -33,6 +33,13 @@
   --label:#fff; --label2:rgba(235,235,245,.6); --label3:rgba(235,235,245,.3); --sep:rgba(84,84,88,.65);
   --tint:#fff; --tint-fg:#000; --green:#30d158; --red:#ff453a; --blue:#0a84ff;
   --shadow:0 2px 10px rgba(0,0,0,.6); --shadow-lg:0 -4px 30px rgba(0,0,0,.6); --hud-bg:rgba(255,255,255,.94); --hud-fg:#000; --seg-on:#636366; --as-bg:rgba(44,44,46,.96); color-scheme:dark } }
+/* De noche (tras el atardecer en Catania) se fuerza el tema oscuro aunque el móvil esté en claro. */
+:root.dark{
+  --bg:#000; --cell:#1c1c1e; --fill:rgba(118,118,128,.24); --fill2:rgba(120,120,128,.36);
+  --label:#fff; --label2:rgba(235,235,245,.6); --label3:rgba(235,235,245,.3); --sep:rgba(84,84,88,.65);
+  --tint:#fff; --tint-fg:#000; --green:#30d158; --red:#ff453a; --blue:#0a84ff;
+  --shadow:0 2px 10px rgba(0,0,0,.6); --shadow-lg:0 -4px 30px rgba(0,0,0,.6); --hud-bg:rgba(255,255,255,.94); --hud-fg:#000; --seg-on:#636366; --as-bg:rgba(44,44,46,.96); color-scheme:dark }
+
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--label);font-family:var(--font);font-size:17px;letter-spacing:-.41px;line-height:1.29;overflow:hidden;-webkit-font-smoothing:antialiased}
@@ -176,6 +183,7 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 .ico{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;background:#000;color:#fff}
 .ico.extra{background:#fff;color:#000;box-shadow:inset 0 0 0 1.5px #000}
 @media (prefers-color-scheme: dark){ .ico{background:#fff;color:#000} .ico.extra{background:#000;color:#fff;box-shadow:inset 0 0 0 1.5px #fff} }
+:root.dark .ico{background:#fff;color:#000} :root.dark .ico.extra{background:#000;color:#fff;box-shadow:inset 0 0 0 1.5px #fff}
 .ico svg{width:15px;height:15px}
 .in{flex:1;min-width:0;border:0;background:transparent;outline:none;font-size:17px;padding:11px 0;color:var(--label)}
 .in::placeholder{color:var(--label3)}
@@ -184,7 +192,17 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 .searchfield input{flex:1;border:0;background:transparent;outline:none;font-size:17px;padding:7px 0;color:var(--label);min-width:0}
 .foot{font-size:13px;color:var(--label2);letter-spacing:-.08px;padding:0 16px;line-height:18px;margin:0}
 .pav{width:32px;height:32px;border-radius:50%;color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px;flex:0 0 auto}
-.face{position:relative;overflow:hidden}
+.face{position:relative;overflow:visible}
+.hb{position:absolute;right:-5px;bottom:-5px;width:18px;height:18px;border-radius:50%;background:#000;border:2px solid #fff;display:grid;place-items:center;color:#fff;z-index:1}
+.hb svg{width:10px;height:10px}
+.me{position:relative;width:20px;height:20px}
+.me .cone{position:absolute;left:50%;bottom:50%;width:64px;height:64px;transform:translateX(-50%);pointer-events:none;display:none}
+.me.has-heading .cone{display:block}
+.fab.follow{background:#007aff;color:#fff}
+.mk.home .cnt{position:absolute;top:-8px;right:-10px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#34c759;color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;border:2px solid #fff}
+.mk.home .head{position:relative}
+.tile.match{background:#ff2d55;color:#fff}
+.tile .n{font-size:11px;font-weight:600;opacity:.85;margin-top:-2px}
 #who .pav{width:46px;height:46px;font-size:18px}
 #who .lrow{min-height:62px}
 .face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
@@ -299,7 +317,22 @@ const colorFor = id => FIXED[id] || `hsl(${[...id].reduce((a, c) => (a * 31 + c.
 const kmFrom = (a, b) => { const R = 6371, dLat = (b.lat - a.lat) * Math.PI / 180, dLng = (b.lng - a.lng) * Math.PI / 180; const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(x)); };
 const fmtKm = d => d < 1 ? Math.round(d * 100) * 10 + ' m' : (d < 10 ? d.toFixed(1).replace('.', ',') + ' km' : Math.round(d) + ' km');
 async function sha(s){ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].slice(0, 12).map(x => x.toString(16).padStart(2, '0')).join(''); }
-const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+// Sol en Catania (algoritmo de SunCalc): de noche el mapa y la app pasan a oscuro solos.
+function sunTimes(date, lat, lng){
+  const rad = Math.PI / 180, dayMs = 864e5, J1970 = 2440588, J2000 = 2451545, J0 = 0.0009, e = rad * 23.4397;
+  const toDays = d => d.valueOf() / dayMs - 0.5 + J1970 - J2000, fromJulian = j => new Date((j + 0.5 - J1970) * dayMs);
+  const lw = rad * -lng, phi = rad * lat, d = toDays(date), n = Math.round(d - J0 - lw / (2 * Math.PI)), ds = J0 + lw / (2 * Math.PI) + n;
+  const M = rad * (357.5291 + 0.98560028 * ds), C = rad * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M));
+  const L = M + C + rad * 102.9372 + Math.PI, dec = Math.asin(Math.sin(e) * Math.sin(L));
+  const Jnoon = J2000 + ds + 0.0053 * Math.sin(M) - 0.0069 * Math.sin(2 * L);
+  const w = Math.acos((Math.sin(-0.833 * rad) - Math.sin(phi) * Math.sin(dec)) / (Math.cos(phi) * Math.cos(dec)));
+  const Jset = J2000 + J0 + (w + lw) / (2 * Math.PI) + n + 0.0053 * Math.sin(M) - 0.0069 * Math.sin(2 * L);
+  return { sunrise: fromJulian(Jnoon - (Jset - Jnoon)), sunset: fromJulian(Jset) };
+}
+const prefersDark = matchMedia('(prefers-color-scheme: dark)');
+const isNight = () => { const now = new Date(), t = sunTimes(now, 37.5053, 15.0937); return now < t.sunrise || now >= t.sunset; };
+let dark = prefersDark.matches || isNight();
+document.documentElement.classList.toggle('dark', dark);
 
 // ---------- state ----------
 const S = { me:{ id:null, name:'' }, group:null, db:null, sharing:false, watchId:null, lastSent:0, lastPos:null,
@@ -309,15 +342,24 @@ const origin = () => S.lastPos || CATANIA;
 
 // ---------- map ----------
 const map = new maplibregl.Map({ container:'map', style:'https://tiles.openfreemap.org/styles/' + (dark ? 'dark' : 'positron'), center:[CATANIA.lng, CATANIA.lat], zoom:14.2, attributionControl:{ compact:true }, maxPitch:70 });
-map.on('load', () => {
+function styleExtras(){
   if (window.tuneMapStyle) window.tuneMapStyle(map, dark);
-  addHomeMarker();
   try {
-    map.addLayer({ id:'b3d', type:'fill-extrusion', source:'openmaptiles', 'source-layer':'building', minzoom:14, layout:{ visibility:'none' },
+    if (!map.getLayer('b3d')) map.addLayer({ id:'b3d', type:'fill-extrusion', source:'openmaptiles', 'source-layer':'building', minzoom:14, layout:{ visibility: S.is3d ? 'visible' : 'none' },
       paint:{ 'fill-extrusion-color': dark ? '#2a2a2f' : '#d9d9d9', 'fill-extrusion-height':['coalesce',['get','render_height'],8], 'fill-extrusion-base':['coalesce',['get','render_min_height'],0], 'fill-extrusion-opacity':.9 } });
   } catch (e) { console.warn('3d layer', e); }
-  renderPlaces();
-});
+}
+map.on('style.load', styleExtras);
+map.on('load', () => { addHomeMarker(); renderPlaces(); });
+// Cambia a oscuro al atardecer y a claro al amanecer (o si cambia el tema del móvil).
+function checkTheme(){
+  const want = prefersDark.matches || isNight();
+  if (want === dark) return;
+  dark = want; document.documentElement.classList.toggle('dark', dark);
+  map.setStyle('https://tiles.openfreemap.org/styles/' + (dark ? 'dark' : 'positron'));
+}
+setInterval(checkTheme, 60000);
+prefersDark.addEventListener?.('change', checkTheme);
 map.on('zoom', () => document.body.classList.toggle('labels', map.getZoom() >= 15));
 map.on('click', e => {
   if (S.addMode){ S.addMode = false; openPinForm(e.lngLat); return; }
@@ -332,7 +374,8 @@ function makeMarker(p){
   m._p = p; return m;
 }
 function addHomeMarker(){
-  const el = h('div', { class:'mk home', role:'button', 'aria-label': 'Alojamiento: ' + HOME.name }, h('span', { class:'head', html: ICON.home }), h('span', { class:'lbl' }, 'Casa · ' + HOME.name));
+  const el = h('div', { class:'mk home', role:'button', 'aria-label': 'Alojamiento: ' + HOME.name }, h('span', { class:'head', html: ICON.home }, h('span', { class:'cnt', hidden: true })), h('span', { class:'lbl' }, 'Casa · ' + HOME.name));
+  S.homeEl = el;
   el.addEventListener('click', e => { e.stopPropagation(); goHome(); });
   new maplibregl.Marker({ element: el, anchor:'top', offset:[0, -20] }).setLngLat([HOME.lng, HOME.lat]).addTo(map);
 }
@@ -359,7 +402,44 @@ $('#btn3d').addEventListener('click', () => {
   if (map.getLayer('b3d')) map.setLayoutProperty('b3d', 'visibility', S.is3d ? 'visible' : 'none');
   map.easeTo({ pitch: S.is3d ? 60 : 0, bearing: S.is3d ? -18 : 0, zoom: S.is3d ? Math.max(map.getZoom(), 16) : map.getZoom(), duration: 700 });
 });
-$('#btnMe').addEventListener('click', () => { if (S.lastPos) map.flyTo({ center:[S.lastPos.lng, S.lastPos.lat], zoom: Math.max(map.getZoom(), 16) }); else { toast('Buscando tu posición…'); startLocating(true); } });
+// Seguirte al andar: un toque centra el mapa en ti, lo mantiene centrado y lo gira según hacia dónde miras.
+const ICON_FOLLOW = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l6.5 17.5L12 16l-6.5 3.5z"/></svg>';
+const ICON_ARROW = $('#btnMe').innerHTML;
+const COMPASS = { on:false, last:0 };
+function screenAngle(){ return (screen.orientation && screen.orientation.angle) || window.orientation || 0; }
+function onOrient(e){
+  let hdg = null;
+  if (typeof e.webkitCompassHeading === 'number') hdg = e.webkitCompassHeading;
+  else if ((e.absolute || e.type === 'deviceorientationabsolute') && typeof e.alpha === 'number') hdg = 360 - e.alpha;
+  if (hdg == null || isNaN(hdg)) return;
+  setHeading((hdg + screenAngle() + 360) % 360);
+}
+function setHeading(hdg){
+  S.heading = hdg;
+  if (S.meMarker){ S.meMarker.setRotation(hdg); S.meMarker.getElement().classList.add('has-heading'); }
+  const now = Date.now();
+  if (S.follow && now - COMPASS.last > 150 && Math.abs(((hdg - map.getBearing() + 540) % 360) - 180) > 3){ COMPASS.last = now; map.rotateTo(hdg, { duration: 150 }); }
+}
+function startCompass(){
+  if (COMPASS.on) return; COMPASS.on = true;
+  if ('ondeviceorientationabsolute' in window) addEventListener('deviceorientationabsolute', onOrient); else addEventListener('deviceorientation', onOrient);
+}
+function setFollow(on, resetNorth){
+  S.follow = on; const b = $('#btnMe');
+  b.classList.toggle('follow', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.innerHTML = on ? ICON_FOLLOW : ICON_ARROW;
+  b.setAttribute('aria-label', on ? 'Dejar de seguirte' : 'Seguirte');
+  if (!on){ if (resetNorth) map.easeTo({ bearing: 0, duration: 500 }); return; }
+  if (!S.lastPos){ toast('Buscando tu posición…'); startLocating(false); return; }
+  map.easeTo({ center:[S.lastPos.lng, S.lastPos.lat], zoom: Math.max(map.getZoom(), 16.5), bearing: S.heading ?? map.getBearing(), padding:{ top:120, bottom: cardH() + 30, left:0, right:0 }, duration: 600 });
+}
+$('#btnMe').addEventListener('click', () => {
+  if (S.follow) return setFollow(false, true);
+  // iOS solo deja leer la brújula si se pide en el mismo toque.
+  const ask = (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') ? DeviceOrientationEvent.requestPermission().catch(() => 'denied') : Promise.resolve('granted');
+  startCompass(); ask.then(r => { if (r !== 'granted') console.info('Brújula no autorizada: se usará el rumbo del GPS al andar'); });
+  setFollow(true);
+});
+map.on('dragstart', e => { if (e.originalEvent && S.follow) setFollow(false, false); });
 $('#btnAll').addEventListener('click', () => {
   const pts = Object.values(S.peers).filter(p => p.id !== S.me.id && p.lat && !isStale(p, 15 * 60e3)).map(p => [p.lng, p.lat]);
   if (S.lastPos) pts.push([S.lastPos.lng, S.lastPos.lat]);
@@ -385,7 +465,7 @@ function renderCard(){
   if (sel && sel.type === 'place'){
     const p = sel.p; const d = directions(p);
     body.replaceChildren(h('div', { style:'display:flex;flex-direction:column;gap:12px' },
-      h('div', { class:'ph' }, h('div', { class:'grow' }, h('h2', {}, p.name), h('div', { class:'sub' }, [CAT_LONG[p.cat], fmtKm(kmFrom(origin(), p)) + (S.lastPos ? ' de ti' : ' de Catania')].join(' · ')), p.note ? h('div', { class:'note' }, p.note) : null, p.by ? h('div', { class:'sub' }, 'Añadido por ' + p.by) : null),
+      h('div', { class:'ph' }, h('div', { class:'grow' }, h('h2', {}, p.name), h('div', { class:'sub' }, [CAT_LONG[p.cat], p.cat === 'casa' && atHome(S.lastPos) ? 'estás en casa' : fmtKm(kmFrom(origin(), p)) + (S.lastPos ? ' de ti' : ' de Catania')].join(' · ')), p.cat === 'casa' ? h('div', { class:'sub' }, (S.atHome && S.atHome.length) ? 'En casa ahora: ' + S.atHome.join(', ') : 'Ahora mismo no hay nadie en casa') : null, p.note ? h('div', { class:'note' }, p.note) : null, p.by ? h('div', { class:'sub' }, 'Añadido por ' + p.by) : null),
         h('button', { class:'circle', type:'button', 'aria-label':'Cerrar', html: ICON.x, onclick: () => select(null) })),
       h('a', { class:'btn-primary', href: d.href, target:'_blank', rel:'noopener', html: (d.far ? ICON.car : ICON.walk) + '<span>' + (p.cat === 'casa' ? (d.far ? 'Volver a casa en coche' : 'Volver a casa andando') : (d.far ? 'Ir en coche' : 'Ir andando')) + '</span>' }),
       h('div', { class:'btn-row' },
@@ -412,8 +492,8 @@ function renderCard(){
         switchEl(S.sharing, () => { if (!S.sync) return toast('Para veros entre vosotros hay que abrir la web desde Netlify (ver README)'); setSharing(!S.sharing); }, 'Compartir mi ubicación')),
     ),
     h('div', { class:'tiles3' },
-      h('button', { class:'tile home', type:'button', html: ICON.home + '<span>Casa</span>', onclick: goHome }),
-      h('button', { class:'tile', type:'button', html: ICON.moon + '<span>Marcador</span>', onclick: openNight }),
+      h('button', { class:'tile home', type:'button', onclick: goHome, html: ICON.home + '<span>Casa</span>' }, h('span', { class:'n', id:'homeTileN' }, (S.atHome && S.atHome.length) ? S.atHome.length + ' en casa' : '')),
+      h('button', { class:'tile match', type:'button', html: ICON.heart + '<span>Match</span>', onclick: openNight }),
       h('button', { class:'tile', type:'button', html: ICON.pinAdd + '<span>Añadir pin</span>', onclick: () => { if (!S.sync) return toast('Los pines del grupo necesitan el modo grupo'); S.addMode = true; toast('Toca el mapa donde va el pin'); } }))));
 }
 function escapeText(s){ return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
@@ -477,9 +557,9 @@ async function api(body){
 }
 function sheetNav(title, left, right){ return h('div', { class:'snav' }, left ? h('button', { class:'l', type:'button', onclick: left[1] }, left[0]) : h('span'), h('div', { class:'c' }, title), right ? h('button', { class:'r', type:'button', onclick: right[1] }, right[0]) : h('span')); }
 async function openNight(){
-  if (!S.sync || S.sync.kind !== 'netlify') return toast('El marcador necesita la web de Netlify');
+  if (!S.sync || S.sync.kind !== 'netlify') return toast('El Match necesita la web de Netlify');
   const body = h('div', { style:'display:flex;flex-direction:column;gap:16px' }, h('p', { class:'foot' }, 'Cargando…'));
-  openSheet(sheetNav('Marcador de la noche', null, ['Cerrar', closeSheet]), body);
+  openSheet(sheetNav('Match', null, ['Cerrar', closeSheet]), body);
   try { const res = await api({ action:'matches' }); S.matches = Object.values(res.matches || {}).sort((a, b) => b.t - a.t); drawNight(body); }
   catch (e) { console.warn(e); body.replaceChildren(h('p', { class:'foot' }, 'No se pudo cargar el marcador. Revisa la conexión.')); }
 }
@@ -562,8 +642,16 @@ function startLocating(fly){
 }
 function onPos(pos){
   const { latitude:lat, longitude:lng, accuracy:acc } = pos.coords; const first = !S.lastPos; S.lastPos = { lat, lng, acc, t: Date.now() };
-  if (!S.meMarker){ S.meMarker = new maplibregl.Marker({ element: h('div', { class:'me-dot', 'aria-label':'Tu posición' }) }).setLngLat([lng, lat]).addTo(map); } else S.meMarker.setLngLat([lng, lat]);
-  if (first && S.flyOnFirst) map.flyTo({ center:[lng, lat], zoom: Math.max(map.getZoom(), 15.5) });
+  if (!S.meMarker){
+    const el = h('div', { class:'me', 'aria-label':'Tu posición', html:'<svg class="cone" viewBox="0 0 64 64"><defs><linearGradient id="cg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#007aff" stop-opacity=".55"/><stop offset="1" stop-color="#007aff" stop-opacity="0"/></linearGradient></defs><path d="M32 64 L8 8 A34 34 0 0 1 56 8 Z" fill="url(#cg)"/></svg><div class="me-dot"></div>' });
+    S.meMarker = new maplibregl.Marker({ element: el, rotationAlignment:'map', pitchAlignment:'map' }).setLngLat([lng, lat]).addTo(map);
+    if (S.heading != null) setHeading(S.heading);
+  } else S.meMarker.setLngLat([lng, lat]);
+  // Sin brújula (ordenadores, permisos denegados), el rumbo del GPS al moverse.
+  if (typeof pos.coords.heading === 'number' && !isNaN(pos.coords.heading) && (pos.coords.speed || 0) > 0.8 && !COMPASS.on) setHeading(pos.coords.heading);
+  if (S.follow) map.easeTo({ center:[lng, lat], duration: 800, padding:{ top:120, bottom: cardH() + 30, left:0, right:0 } });
+  else if (first && S.flyOnFirst) map.flyTo({ center:[lng, lat], zoom: Math.max(map.getZoom(), 15.5) });
+  if (!S.peersAt || Date.now() - S.peersAt > 3000){ S.peersAt = Date.now(); renderPeers(); }
   const sub = $('#shareSub'); if (sub) sub.textContent = shareStatus();
   if (S.sync) S.sync.sendPos({ lat, lng, acc: Math.round(acc) });
 }
@@ -577,19 +665,29 @@ function setSharing(on){
 // ---------- peers ----------
 const isStale = (p, ms) => !p.t || (Date.now() - p.t) > ms;
 function ago(t){ const s = Math.max(0, Math.round((Date.now() - (t || 0)) / 1000)); if (s < 60) return s + ' s'; if (s < 3600) return Math.round(s / 60) + ' min'; return Math.round(s / 3600) + ' h'; }
+const HOME_M = 50;
+const atHome = pos => !!pos && kmFrom(HOME, pos) * 1000 <= HOME_M;
+const homeBadge = () => h('span', { class:'hb', title:'En casa', html: ICON.home });
 function renderPeers(){
-  const pe = $('#people'); pe.replaceChildren();
-  { const b = face(S.me.id || 'me', S.me.name, 'button'); b.title = S.me.name + ' (tú)'; b.setAttribute('aria-label', 'Tú'); b.addEventListener('click', () => $('#btnMe').click()); pe.append(b); }
+  const pe = $('#people'); pe.replaceChildren(); const home = [];
+  { const b = face(S.me.id || 'me', S.me.name, 'button'); b.title = S.me.name + ' (tú)'; b.setAttribute('aria-label', 'Tú'); b.addEventListener('click', () => $('#btnMe').click()); if (atHome(S.lastPos)){ b.append(homeBadge()); home.push('tú'); } pe.append(b); }
   for (const p of Object.values(S.peers)){
     if (p.id === S.me.id) continue;
     if (isStale(p, 15 * 60e3)){ if (S.peerMarkers[p.id]){ S.peerMarkers[p.id].remove(); delete S.peerMarkers[p.id]; } continue; }
     const stale = isStale(p, 2 * 60e3);
-    { const b = face(p.id, p.name, 'button'); if (stale) b.classList.add('stale'); b.title = p.name; b.setAttribute('aria-label', p.name); b.addEventListener('click', () => { map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), 16) }); select({ type:'peer', id: p.id }); }); pe.append(b); }
+    const inHome = atHome(p); if (inHome) home.push(p.name);
+    const dist = inHome ? 'en casa' : (S.lastPos ? fmtKm(kmFrom(S.lastPos, p)) : '');
+    { const b = face(p.id, p.name, 'button'); if (stale) b.classList.add('stale'); if (inHome) b.append(homeBadge()); b.title = p.name + (dist ? ' · ' + dist : ''); b.setAttribute('aria-label', p.name + (dist ? ', ' + dist : '')); b.addEventListener('click', () => { map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), 16) }); select({ type:'peer', id: p.id }); }); pe.append(b); }
     let m = S.peerMarkers[p.id];
     if (!m){ const av = face(p.id, p.name); av.classList.add('av'); const el = h('div', { class:'peer', style:'--uc:' + colorFor(p.id) }, av, h('span', { class:'nm' })); el.addEventListener('click', e => { e.stopPropagation(); select({ type:'peer', id: p.id }); const q = S.peers[p.id]; if (q) reveal(q.lng, q.lat); }); m = new maplibregl.Marker({ element: el, anchor:'top', offset:[0, -19] }).setLngLat([p.lng, p.lat]).addTo(map); S.peerMarkers[p.id] = m; }
-    m.setLngLat([p.lng, p.lat]); const el = m.getElement(); el.classList.toggle('stale', stale); el.querySelector('.nm').textContent = p.name + (stale ? ' · ' + ago(p.t) : '');
+    m.setLngLat([p.lng, p.lat]); const el = m.getElement(); el.classList.toggle('stale', stale);
+    el.querySelector('.nm').textContent = [p.name, dist, stale ? 'hace ' + ago(p.t) : ''].filter(Boolean).join(' · ');
+    const av = el.querySelector('.av'); const hb = av.querySelector('.hb'); if (inHome && !hb) av.append(homeBadge()); else if (!inHome && hb) hb.remove();
   }
   for (const id of Object.keys(S.peerMarkers)) if (!S.peers[id]){ S.peerMarkers[id].remove(); delete S.peerMarkers[id]; }
+  S.atHome = home;
+  if (S.homeEl){ const c = S.homeEl.querySelector('.cnt'); c.hidden = !home.length; c.textContent = home.length; S.homeEl.querySelector('.lbl').textContent = 'Casa · ' + HOME.name + (home.length ? ' · en casa: ' + home.join(', ') : ''); }
+  const ht = $('#homeTileN'); if (ht) ht.textContent = home.length ? home.length + ' en casa' : '';
   const sub = $('#shareSub'); if (sub) sub.textContent = shareStatus();
   if (S.selected && S.selected.type === 'peer') renderCard();
 }
