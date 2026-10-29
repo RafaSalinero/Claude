@@ -210,6 +210,8 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 <script>
 (() => {
 'use strict';
+const NETLIFY_URL = 'https://sicilia-en-vivo.netlify.app/sicilia-en-vivo/';
+if (/github\.io$/.test(location.hostname)) { location.replace(NETLIFY_URL); return; }
 const CATANIA = { lat:37.5045, lng:15.0862 };
 const CATS = { ver:'Ver', comer:'Comer', noche:'Noche', ruta:'Excursiones', extra:'Pines del grupo' };
 const CAT_LONG = { ver:'Qué ver', comer:'Dónde comer', noche:'Noche', ruta:'Excursión en coche', extra:'Pin del grupo' };

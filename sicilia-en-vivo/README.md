@@ -1,11 +1,10 @@
 # Sicilia en vivo
 
-Página web con el mapa real de Sicilia oriental, tu posición y la de los otros dos en tiempo real, los sitios del viaje (Catania y excursiones en coche) y pines que añadís sobre la marcha. Se abre desde el móvil con un enlace y se puede añadir a la pantalla de inicio. No pasa por ninguna tienda.
+Página web con el mapa real de Sicilia oriental, la posición de Salinero, Braulio y Pomares en tiempo real, los sitios del viaje (Catania y excursiones en coche) y pines que añadís sobre la marcha. Se abre desde el móvil con un enlace y se puede añadir a la pantalla de inicio. No pasa por ninguna tienda.
 
-Hay dos copias de la web:
+**Enlace para el grupo: https://sicilia-en-vivo.netlify.app/sicilia-en-vivo/**
 
-- **Netlify (la buena):** tiene el modo grupo, os veis entre vosotros. La URL la da Netlify al conectar el repositorio, ver el paso 1.
-- **GitHub Pages:** https://rafasalinero.github.io/Claude/sicilia-en-vivo/ funciona en modo individual: mapa, sitios y tu posición, pero sin ver a los demás.
+Está publicada en Netlify, proyecto `sicilia-en-vivo`, con un pequeño servidor que guarda las posiciones. La copia antigua de GitHub Pages redirige a esta.
 
 Funciona fuera del visor de claude.ai porque ese visor bloquea la ubicación del móvil y los mapas en vivo. La app del plan (artefacto de claude.ai) enlaza a esta página desde la pestaña Mapa.
 
@@ -20,16 +19,9 @@ Funciona fuera del visor de claude.ai porque ese visor bloquea la ubicación del
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `logo-96.png` | Icono de los tres pumas y datos para añadir a la pantalla de inicio. |
 | `config.js`, `database.rules.json` | Solo para la alternativa con Firebase. No hacen falta con Netlify. |
 
-## Paso 1: conectar el repositorio a Netlify (5 minutos, una sola vez)
+## Paso 1: Netlify (ya hecho)
 
-1. Entra en https://app.netlify.com con tu cuenta.
-2. Pulsa **Add new site** (o **Add new project**) y luego **Import an existing project**.
-3. Elige **GitHub**, autoriza a Netlify si lo pide y selecciona el repositorio **RafaSalinero/Claude**.
-4. Deja todo como viene: rama `main`, sin comando de build. Netlify lee el resto de `netlify.toml`. Pulsa **Deploy**.
-5. Cuando termine, en uno o dos minutos, abre `https://NOMBRE-DEL-SITIO.netlify.app/sicilia-en-vivo/`. Puedes poner un nombre más fácil en Site configuration > Change site name, por ejemplo `sicilia-pumas`.
-6. Pásale el enlace a Claude, o pégalo tú en la app del plan: Ajustes > campo del mapa en vivo.
-
-A partir de ahí, cada cambio que se suba a `main` se publica solo en Netlify y en GitHub Pages.
+El proyecto `sicilia-en-vivo` de Netlify se creó y desplegó desde este repositorio con el conector de Netlify de Claude. No está enlazado a GitHub, así que un cambio en `main` no se publica solo en Netlify: pídele a Claude que lo despliegue, o enlaza el repositorio en Netlify (Project configuration > Build & deploy > Link repository) para que cada push se publique solo.
 
 Consumo: cada móvil hace una petición cada 6 segundos mientras comparte y cada 12 si solo mira, y se para cuando la web está en segundo plano. Para tres personas durante el viaje son unas decenas de miles de peticiones, muy por debajo del plan gratuito de Netlify.
 
@@ -54,7 +46,7 @@ Importante en iPhone: la posición solo se envía mientras la página está abie
 
 ## Si algo falla
 
-- No aparece el campo del PIN: estás en la copia de GitHub Pages. Abre la de Netlify.
+- No aparece el campo del PIN: estás en una copia de la web sin servidor. Abre el enlace de Netlify.
 - "Sin conexión con el grupo, reintentando…": no hay cobertura o Netlify no responde. La web reintenta sola.
 - No aparece tu punto azul: el navegador no tiene permiso de ubicación para ese sitio. En iPhone, Ajustes > Safari > Ubicación.
 - El mapa no carga: comprueba que hay conexión; las teselas vienen de tiles.openfreemap.org sin clave.
