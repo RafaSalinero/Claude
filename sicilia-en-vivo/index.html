@@ -131,9 +131,9 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(-
     <img class="logo" src="icon-512.png" alt="Tres pumas con gafas de sol" width="120" height="120">
     <h1>Sicilia<br>en vivo</h1>
     <p class="sub">Mapa del grupo con la posición de cada uno, de Catania a Taormina y Siracusa. Solo os veis entre quienes tenéis el PIN.</p>
-    <div id="cfgWarn" class="notice" hidden>Falta configurar Firebase. Edita <code>config.js</code> siguiendo el README antes de desplegar.</div>
+    <div id="cfgWarn" class="notice" hidden>Aún no está configurado Firebase: puedes entrar y ver el mapa con tu posición, pero todavía no os veréis entre vosotros.</div>
     <div class="field"><label for="gName">Tu nombre</label><input id="gName" required maxlength="18" placeholder="Rafa" autocomplete="nickname"></div>
-    <div class="field"><label for="gPin">PIN del grupo</label><input id="gPin" required minlength="4" maxlength="12" placeholder="El mismo para los tres" autocomplete="off"></div>
+    <div class="field" id="pinField"><label for="gPin">PIN del grupo</label><input id="gPin" required minlength="4" maxlength="12" placeholder="El mismo para los tres" autocomplete="off"></div>
     <button class="btn primary" type="submit">Entrar al mapa</button>
     <p class="sub" style="font-size:12px">Tu posición solo se envía mientras tengas activado el botón verde, y se borra al cerrar la página.</p>
   </form>
@@ -214,7 +214,7 @@ function fitPlaces(){
 $('#btn3d').addEventListener('click', () => { S.is3d = !S.is3d; $('#btn3d').setAttribute('aria-pressed', S.is3d ? 'true' : 'false'); map.easeTo({ pitch: S.is3d ? 58 : 0, bearing: S.is3d ? -17 : 0, zoom: S.is3d ? Math.max(map.getZoom(), 16) : map.getZoom(), duration: 700 }); });
 $('#btnMe').addEventListener('click', () => { if (S.lastPos) map.flyTo({ center:[S.lastPos.lng, S.lastPos.lat], zoom: Math.max(map.getZoom(), 16) }); else { toast('Aún no tengo tu posición. Activa el botón verde.'); startLocating(); } });
 $('#btnAll').addEventListener('click', () => { const pts = Object.values(S.peers).filter(p => p.lat && !isStale(p, 15*60e3)).map(p => [p.lng, p.lat]); if (S.lastPos) pts.push([S.lastPos.lng, S.lastPos.lat]); if (!pts.length) return toast('Nadie está compartiendo posición ahora mismo.'); if (pts.length === 1) return map.flyTo({ center: pts[0], zoom: 16 }); const b = pts.reduce((bb, p) => bb.extend(p), new maplibregl.LngLatBounds(pts[0], pts[0])); map.fitBounds(b, { padding: 90, maxZoom: 17, duration: 700 }); });
-$('#btnAdd').addEventListener('click', () => { if (!S.group) return toast('Entra con el PIN para añadir pines.'); S.addMode = !S.addMode; if (S.addMode){ $('#btnAdd').setAttribute('aria-pressed','true'); toast('Toca el mapa donde va el pin'); } else $('#btnAdd').removeAttribute('aria-pressed'); });
+$('#btnAdd').addEventListener('click', () => { if (!S.db) return toast('Los pines del grupo necesitan Firebase configurado (ver README).'); S.addMode = !S.addMode; if (S.addMode){ $('#btnAdd').setAttribute('aria-pressed','true'); toast('Toca el mapa donde va el pin'); } else $('#btnAdd').removeAttribute('aria-pressed'); });
 $('#pinCancel').addEventListener('click', () => { $('#pinDialog').hidden = true; });
 $('#pinSave').addEventListener('click', () => { const name = $('#pinName').value.trim(); if (!name || !S.pendingLngLat) return; const ref = S.db.ref(`groups/${S.group}/pins`).push(); ref.set({ id: ref.key, name, note: $('#pinNote').value.trim(), lat: S.pendingLngLat.lat, lng: S.pendingLngLat.lng, by: S.me.name, t: firebase.database.ServerValue.TIMESTAMP }); $('#pinDialog').hidden = true; toast('Pin guardado para el grupo'); });
 
@@ -237,7 +237,7 @@ function setSharing(on){
   else { if (S.group) S.db.ref(`groups/${S.group}/people/${S.me.id}`).remove(); $('#status').innerHTML = S.lastPos ? '<b>Solo tú ves tu posición</b>' : 'Posición no compartida.'; }
   store.set('cl-sharing', on ? '1' : '0');
 }
-$('#btnShare').addEventListener('click', () => { if (!S.group) return toast('Entra con el PIN primero.'); setSharing(!S.sharing); });
+$('#btnShare').addEventListener('click', () => { if (!S.db) return toast('Para veros entre vosotros falta configurar Firebase (ver README).'); setSharing(!S.sharing); });
 
 // ---------- peers ----------
 const isStale = (p, ms) => !p.t || (Date.now() - p.t) > ms;
@@ -271,10 +271,15 @@ async function enter(name, pin){
   $('#gate').hidden = true; renderPeers();
   if (store.get('cl-sharing') === '1') setSharing(true); else startLocating();
 }
+function enterLocal(name){
+  S.me.name = name; S.me.id = store.get('cl-uid') || ('u' + Math.random().toString(36).slice(2, 10)); store.set('cl-uid', S.me.id); store.set('cl-name', name);
+  $('#gate').hidden = true; renderPeers(); startLocating();
+  $('#status').innerHTML = '<b>Modo individual.</b> Ves el mapa y tu posición; para veros entre vosotros falta Firebase.';
+}
 const gate = $('#gateForm');
-if (!cfgOk()) { $('#cfgWarn').hidden = false; }
+if (!cfgOk()) { $('#cfgWarn').hidden = false; $('#pinField').hidden = true; $('#gPin').required = false; }
 $('#gName').value = store.get('cl-name') || ''; $('#gPin').value = store.get('cl-pin') || '';
-gate.addEventListener('submit', e => { e.preventDefault(); if (!cfgOk()) return toast('Configura Firebase en config.js primero.'); enter($('#gName').value.trim(), $('#gPin').value.trim()).catch(err => { console.error(err); toast('No se pudo conectar: ' + (err.message || err)); }); });
+gate.addEventListener('submit', e => { e.preventDefault(); if (!cfgOk()) return enterLocal($('#gName').value.trim()); enter($('#gName').value.trim(), $('#gPin').value.trim()).catch(err => { console.error(err); toast('No se pudo conectar: ' + (err.message || err)); }); });
 })();
 </script>
 </body>

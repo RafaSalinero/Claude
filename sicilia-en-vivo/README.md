@@ -18,18 +18,15 @@ Funciona fuera del visor de claude.ai porque ese visor bloquea la ubicación del
 | `database.rules.json` | Reglas de seguridad para la Realtime Database. |
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `logo-96.png` | Icono de los tres pumas y datos para añadir a la pantalla de inicio. |
 
-## Paso 1: activar GitHub Pages (una sola vez, 1 minuto)
+## Paso 1: GitHub Pages (ya hecho)
 
-Si al abrir el enlace de arriba sale un 404:
+La web se publica sola desde la rama `gh-pages`. Cada vez que cambias algo en `main`, una acción de GitHub copia `main` en `gh-pages` y en uno o dos minutos la web se actualiza. Edita siempre en `main`.
 
-1. Entra en https://github.com/RafaSalinero/Claude/settings/pages
-2. En "Build and deployment", Source: **Deploy from a branch**.
-3. Branch: **main**, carpeta **/ (root)**. Guarda.
-4. Espera uno o dos minutos y recarga el enlace.
+Si algún día el enlace diera 404: https://github.com/RafaSalinero/Claude/settings/pages, Source "Deploy from a branch", rama `gh-pages`, carpeta `/ (root)`.
 
 ## Paso 2: Firebase (10 minutos, gratis)
 
-Sin esto el mapa carga y ves los sitios, pero no os veis entre vosotros.
+Sin esto la web funciona en modo individual: ves el mapa, los sitios y tu posición, pero no os veis entre vosotros.
 
 1. Entra en https://console.firebase.google.com con tu cuenta de Google y crea un proyecto (por ejemplo `sicilia-dic`). Puedes desactivar Analytics.
 2. En el menú lateral, Compilación > Realtime Database > Crear base de datos. Elige la región `europe-west1` y empieza en **modo bloqueado**.
