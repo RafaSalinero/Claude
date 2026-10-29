@@ -4,282 +4,446 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>Sicilia en vivo</title>
-<meta name="theme-color" content="#17191d">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Sicilia">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <script src="config.js"></script>
 <script src="places.js"></script>
 <style>
+/* Uber-style map screen with iOS controls: full-bleed grey map, black pins, white floating controls, a bottom card that turns into the place card. */
 :root{
-  --bg:#edeae3; --surface:#fbfaf7; --surface-2:#f1eee7; --fg:#17191d; --muted:#5e6169; --line:#d7d3ca;
-  --accent:#d4421c; --sea:#17798a; --night:#5a45c9; --ok:#2e8b57; --me:#1a73e8;
-  --pin-ver:#17798a; --pin-comer:#d4421c; --pin-noche:#5a45c9; --pin-ruta:#c98a0c; --pin-extra:#8a7f6a;
-  --shadow:0 6px 24px rgba(23,25,29,.18);
-  --display:"Bricolage Grotesque","Arial Narrow",system-ui,sans-serif; --body:"Instrument Sans","Helvetica Neue",Arial,system-ui,sans-serif;
+  --bg:#f2f2f7; --cell:#ffffff; --fill:rgba(118,118,128,.12); --fill2:rgba(120,120,128,.16);
+  --label:#000; --label2:rgba(60,60,67,.6); --label3:rgba(60,60,67,.3); --sep:rgba(60,60,67,.29);
+  --tint:#000; --tint-fg:#fff; --green:#34c759; --red:#ff3b30; --blue:#007aff;
+  --shadow:0 2px 10px rgba(0,0,0,.14); --shadow-lg:0 -4px 30px rgba(0,0,0,.12);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue","Segoe UI",Roboto,system-ui,sans-serif;
+  --font-d:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue","Segoe UI",Roboto,system-ui,sans-serif;
+  --hud-bg:rgba(0,0,0,.86); --hud-fg:#fff;
 }
-@media (prefers-color-scheme: dark){ :root{ --bg:#121315; --surface:#1b1d21; --surface-2:#24272c; --fg:#ece8df; --muted:#a19c91; --line:#34373d; --accent:#ff6b42; --sea:#3fb6c6; --night:#9a89ff; --ok:#5fc08a; --pin-ver:#3fb6c6; --pin-comer:#ff6b42; --pin-noche:#9a89ff; --pin-ruta:#f0b534; --shadow:0 6px 24px rgba(0,0,0,.5); color-scheme:dark } }
-*{box-sizing:border-box}
+@media (prefers-color-scheme: dark){ :root{
+  --bg:#000; --cell:#1c1c1e; --fill:rgba(118,118,128,.24); --fill2:rgba(120,120,128,.36);
+  --label:#fff; --label2:rgba(235,235,245,.6); --label3:rgba(235,235,245,.3); --sep:rgba(84,84,88,.65);
+  --tint:#fff; --tint-fg:#000; --green:#30d158; --red:#ff453a; --blue:#0a84ff;
+  --shadow:0 2px 10px rgba(0,0,0,.6); --shadow-lg:0 -4px 30px rgba(0,0,0,.6); --hud-bg:rgba(255,255,255,.94); --hud-fg:#000; color-scheme:dark } }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.4;overflow:hidden}
-button,input{font:inherit;color:inherit}
+body{background:var(--bg);color:var(--label);font-family:var(--font);font-size:17px;letter-spacing:-.41px;line-height:1.29;overflow:hidden;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit;letter-spacing:inherit}
 button{cursor:pointer;background:none;border:0;padding:0}
-button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--sea);outline-offset:2px}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+[hidden]{display:none!important}
+.grow{flex:1;min-width:0}
 #map{position:absolute;inset:0}
-.maplibregl-ctrl-attrib{font-size:10px}
+.maplibregl-ctrl-attrib{font-size:10px;opacity:.7}
+.maplibregl-ctrl-bottom-right{bottom:var(--card-h,0px)!important;transition:bottom .25s}
 
-/* top bar */
-.top{position:absolute;left:0;right:0;top:0;z-index:5;padding:calc(10px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px));display:flex;gap:8px;align-items:center;pointer-events:none}
+/* top overlays */
+.top{position:absolute;left:0;right:0;top:0;z-index:5;padding:calc(10px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px;pointer-events:none}
 .top > *{pointer-events:auto}
-.brand{background:var(--surface);box-shadow:var(--shadow);border-radius:999px;padding:4px 12px 4px 4px;display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:800;font-size:15px}
+.toprow{display:flex;align-items:center;gap:8px;pointer-events:none}
+.toprow > *{pointer-events:auto}
+.brand{display:flex;align-items:center;gap:8px;height:44px;padding:0 14px 0 6px;border-radius:22px;background:var(--cell);box-shadow:var(--shadow);font-weight:600;font-size:16px}
 .brand img{width:32px;height:32px;border-radius:50%;display:block}
-.brand .live{width:9px;height:9px;border-radius:50%;background:var(--muted)}
-.brand .live.on{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 30%,transparent)}
+.live{width:8px;height:8px;border-radius:50%;background:var(--label3)}
+.live.on{background:var(--green)}
 .spacer{flex:1}
-.people{display:flex;gap:6px;background:var(--surface);box-shadow:var(--shadow);border-radius:999px;padding:4px}
-.people button{width:32px;height:32px;border-radius:50%;color:#fff;font-family:var(--display);font-weight:800;font-size:14px;display:grid;place-items:center;border:2px solid var(--surface)}
+.people{display:flex;align-items:center;height:44px;padding:0 6px;border-radius:22px;background:var(--cell);box-shadow:var(--shadow)}
+.people button{width:32px;height:32px;border-radius:50%;color:#fff;font-weight:700;font-size:14px;display:grid;place-items:center;border:2px solid var(--cell);margin-left:-8px}
+.people button:first-child{margin-left:0}
 .people button.stale{opacity:.45}
-.people button.me{outline:2px solid var(--fg)}
-.filters{position:absolute;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));top:calc(58px + env(safe-area-inset-top,0px));z-index:5;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;pointer-events:none}
-.filters::-webkit-scrollbar{display:none}
-.filters button{pointer-events:auto;flex:0 0 auto;padding:6px 12px;border-radius:999px;background:var(--surface);box-shadow:var(--shadow);font-weight:600;font-size:13px}
-.filters button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px;margin:-2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;padding:7px 14px;border-radius:999px;background:var(--cell);box-shadow:var(--shadow);font-size:15px;font-weight:600;letter-spacing:-.24px}
+.chip[aria-pressed="true"]{background:var(--tint);color:var(--tint-fg)}
 
-/* right controls */
-.ctl{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:5;display:flex;flex-direction:column;gap:8px}
-.ctl button{width:46px;height:46px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:15px}
-.ctl button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
-.ctl button svg{width:22px;height:22px}
-.ctl button.share.on{background:var(--ok);color:#fff}
-.status{position:absolute;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:5;background:var(--surface);box-shadow:var(--shadow);border-radius:12px;padding:8px 12px;font-size:12px;color:var(--muted);max-width:calc(100vw - 90px)}
-.status b{color:var(--fg)}
+/* floating buttons */
+.fabs{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(var(--card-h,180px) + 14px);z-index:5;display:flex;flex-direction:column;gap:10px;transition:bottom .25s}
+.fab{width:44px;height:44px;border-radius:50%;background:var(--cell);box-shadow:var(--shadow);display:grid;place-items:center;font-size:14px;font-weight:700}
+.fab svg{width:20px;height:20px}
+.fab[aria-pressed="true"]{background:var(--tint);color:var(--tint-fg)}
+
+/* bottom card */
+.card{position:absolute;left:0;right:0;bottom:0;z-index:6;background:var(--cell);border-radius:16px 16px 0 0;box-shadow:var(--shadow-lg);padding:6px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.grab{width:36px;height:5px;border-radius:3px;background:var(--label3);margin:0 auto 2px}
+.search{display:flex;align-items:center;gap:10px;width:100%;min-height:50px;padding:0 14px;border-radius:12px;background:var(--fill);font-size:18px;font-weight:600;letter-spacing:-.43px;text-align:left}
+.search svg{width:20px;height:20px;flex:0 0 auto}
+.rows{display:flex;flex-direction:column}
+.crow{display:flex;align-items:center;gap:12px;min-height:56px;width:100%;text-align:left}
+.crow + .crow{border-top:.5px solid var(--sep)}
+.crow .dot{width:38px;height:38px;border-radius:50%;background:var(--fill);display:grid;place-items:center;flex:0 0 auto}
+.crow .dot svg{width:18px;height:18px}
+.crow .dot.on{background:var(--green);color:#fff}
+.crow .t{font-size:16px;font-weight:600;letter-spacing:-.32px;display:block}
+.crow .s{font-size:13px;color:var(--label2);letter-spacing:-.08px;display:block;margin-top:1px}
+.sw{width:51px;height:31px;border-radius:16px;background:var(--fill2);position:relative;flex:0 0 auto;transition:background .2s}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.15),0 3px 1px rgba(0,0,0,.06);transition:transform .2s}
+.sw[aria-checked="true"]{background:var(--green)}
+.sw[aria-checked="true"]::after{transform:translateX(20px)}
+.ph{display:flex;align-items:flex-start;gap:12px}
+.ph h2{font-family:var(--font-d);font-size:24px;font-weight:700;letter-spacing:.07px;line-height:29px;margin:0}
+.ph .sub{font-size:15px;color:var(--label2);letter-spacing:-.24px;margin-top:2px}
+.ph .note{font-size:15px;letter-spacing:-.24px;margin-top:8px;color:var(--label)}
+.circle{width:30px;height:30px;border-radius:50%;background:var(--fill);display:grid;place-items:center;color:var(--label2);flex:0 0 auto}
+.circle svg{width:16px;height:16px}
+.btn-primary{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;border-radius:12px;background:var(--tint);color:var(--tint-fg);font-size:17px;font-weight:600}
+.btn-primary svg{width:20px;height:20px}
+.btn-primary:active{opacity:.8}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn-sec{display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;border-radius:12px;background:var(--fill);font-size:15px;font-weight:600;letter-spacing:-.24px}
+.btn-sec svg{width:18px;height:18px}
+.btn-sec.red{color:var(--red)}
 
 /* markers */
-.pin{width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--pc);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);display:grid;place-items:center;cursor:pointer}
-.pin svg{width:15px;height:15px;transform:rotate(45deg);color:#fff}
-.pin.done{opacity:.55}
-.me-dot{width:18px;height:18px;border-radius:50%;background:var(--me);border:3px solid #fff;box-shadow:0 0 0 2px var(--me),0 2px 8px rgba(0,0,0,.4);position:relative}
-.me-dot::after{content:"";position:absolute;inset:-14px;border-radius:50%;background:var(--me);opacity:.18;animation:pulse 2s ease-out infinite}
-@keyframes pulse{0%{transform:scale(.4);opacity:.35}100%{transform:scale(1.4);opacity:0}}
-.peer{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
-.peer .av{width:34px;height:34px;border-radius:50%;background:var(--uc);color:#fff;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:15px}
-.peer .nm{font-family:var(--display);font-weight:700;font-size:12px;background:var(--surface);color:var(--fg);padding:1px 7px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.3);white-space:nowrap}
-.peer.stale{opacity:.5}
-.maplibregl-popup-content{font-family:var(--body);background:var(--surface);color:var(--fg);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);max-width:260px}
-.maplibregl-popup-anchor-bottom .maplibregl-popup-tip{border-top-color:var(--surface)}
-.maplibregl-popup-anchor-top .maplibregl-popup-tip{border-bottom-color:var(--surface)}
-.maplibregl-popup-close-button{color:var(--muted);font-size:18px;padding:4px 8px}
-.pop h3{font-family:var(--display);font-weight:800;font-size:17px;margin:0 0 2px;padding-right:16px}
-.pop .cat{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--pc)}
-.pop p{margin:6px 0;font-size:13px}
-.pop .small{font-size:12px;color:var(--muted)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border-radius:9px;font-weight:600;font-size:13px;background:var(--surface-2);color:var(--fg);border:1px solid var(--line);text-decoration:none}
-.btn.primary{background:var(--accent);color:#fff;border-color:transparent}
-.btn.sm{padding:5px 9px;font-size:12px}
-.pop .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.mk{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.mk .head{width:28px;height:28px;border-radius:50%;background:#000;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);display:grid;place-items:center;color:#fff;transition:transform .15s}
+.mk .head svg{width:13px;height:13px}
+.mk.extra .head{background:#fff;border-color:#000;color:#000}
+.mk.sel .head{transform:scale(1.3)}
+.mk .lbl{font-size:12px;font-weight:600;line-height:15px;letter-spacing:-.08px;background:#fff;color:#000;padding:3px 7px;border-radius:7px;box-shadow:0 1px 4px rgba(0,0,0,.22);white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;display:none}
+body.labels .mk .lbl,.mk.sel .lbl{display:block}
+.me-dot{width:20px;height:20px;border-radius:50%;background:#007aff;border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.35);position:relative}
+.me-dot::after{content:"";position:absolute;inset:-16px;border-radius:50%;background:#007aff;opacity:.16;animation:pulse 2.2s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.35);opacity:.32}100%{transform:scale(1.3);opacity:0}}
+.peer{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.peer .av{width:38px;height:38px;border-radius:50%;background:var(--uc);color:#fff;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35);display:grid;place-items:center;font-weight:700;font-size:16px}
+.peer .nm{font-size:12px;font-weight:600;background:#fff;color:#000;padding:2px 7px;border-radius:7px;box-shadow:0 1px 4px rgba(0,0,0,.25);white-space:nowrap}
+.peer.stale{opacity:.55}
 
-/* gate & dialogs */
-.gate{position:absolute;inset:0;z-index:20;background:var(--bg);display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-left,0px))}
-.gate .box{width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px}
-.gate .logo{width:120px;height:120px;border-radius:28px;box-shadow:var(--shadow);display:block}
-.gate h1{font-family:var(--display);font-weight:800;font-size:34px;line-height:1;margin:0;letter-spacing:-.01em}
-.gate .sub{color:var(--muted);margin:0}
-.field{display:flex;flex-direction:column;gap:4px}
-.field label{font-size:12px;font-weight:600;color:var(--muted)}
-.field input{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:16px}
-.gate .btn{padding:12px;font-size:15px;border-radius:12px}
-.notice{background:var(--surface-2);border-left:3px solid var(--accent);padding:10px 12px;border-radius:8px;font-size:13px}
-.notice code{font-size:12px}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;z-index:30;opacity:0;transition:.2s;pointer-events:none;max-width:90vw;text-align:center}
-.toast.show{opacity:1}
-.dialog{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:25;background:var(--surface);border-radius:14px;box-shadow:var(--shadow);padding:16px;width:min(92vw,360px);display:flex;flex-direction:column;gap:10px}
-.dialog h2{font-family:var(--display);font-size:20px;margin:0}
-.dialog .actions{display:flex;justify-content:flex-end;gap:8px}
-[hidden]{display:none!important}
-@media (prefers-reduced-motion: reduce){ .me-dot::after{animation:none} }
+/* sheets */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:20;opacity:0;transition:opacity .25s}
+.backdrop.show{opacity:1}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--bg);border-radius:12px 12px 0 0;max-height:calc(100% - 44px);overflow:auto;transform:translateY(100%);transition:transform .32s cubic-bezier(.32,.72,0,1);max-width:640px;margin:0 auto;padding:6px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:16px}
+.sheet.show{transform:none}
+.snav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:44px}
+.snav .l{justify-self:start;color:var(--tint);font-size:17px}
+.snav .c{font-weight:600;font-size:17px}
+.snav .r{justify-self:end;color:var(--tint);font-size:17px;font-weight:600}
+.list{background:var(--cell);border-radius:12px;overflow:hidden}
+.lrow{display:flex;align-items:center;gap:12px;padding-left:16px;width:100%;text-align:left;min-height:44px}
+.lrow .body{flex:1;min-width:0;display:flex;align-items:center;gap:10px;min-height:44px;padding:10px 16px 10px 0;border-bottom:.5px solid var(--sep);align-self:stretch}
+.list > .lrow:last-child .body{border-bottom:0}
+.lrow .t{font-size:17px;line-height:22px}
+.lrow .s{font-size:15px;color:var(--label2);letter-spacing:-.24px;line-height:20px}
+.lrow .chev{color:var(--label3);display:grid}
+.lrow .chev svg{width:8px;height:13px}
+.ico{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;background:#000;color:#fff}
+.ico.extra{background:#fff;color:#000;box-shadow:inset 0 0 0 1.5px #000}
+@media (prefers-color-scheme: dark){ .ico{background:#fff;color:#000} .ico.extra{background:#000;color:#fff;box-shadow:inset 0 0 0 1.5px #fff} }
+.ico svg{width:15px;height:15px}
+.in{flex:1;min-width:0;border:0;background:transparent;outline:none;font-size:17px;padding:11px 0;color:var(--label)}
+.in::placeholder{color:var(--label3)}
+.searchfield{display:flex;align-items:center;gap:6px;background:var(--fill);border-radius:10px;padding:0 8px;min-height:36px;color:var(--label2)}
+.searchfield svg{width:16px;height:16px;flex:0 0 auto}
+.searchfield input{flex:1;border:0;background:transparent;outline:none;font-size:17px;padding:7px 0;color:var(--label);min-width:0}
+.foot{font-size:13px;color:var(--label2);letter-spacing:-.08px;padding:0 16px;line-height:18px}
+
+/* gate */
+.gate{position:fixed;inset:0;z-index:30;background:var(--bg);overflow:auto;display:flex;justify-content:center;padding:calc(48px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.gate form{width:100%;max-width:400px;display:flex;flex-direction:column;gap:18px}
+.gate .logo{width:100px;height:100px;border-radius:23px;display:block;margin:0 auto;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.gate h1{font-family:var(--font-d);font-size:34px;font-weight:700;letter-spacing:.37px;line-height:41px;margin:6px 0 0;text-align:center}
+.gate .lead{font-size:17px;color:var(--label2);text-align:center;margin:0}
+.toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top,0px));transform:translate(-50%,-8px);background:var(--hud-bg);color:var(--hud-fg);font-size:15px;font-weight:600;letter-spacing:-.24px;padding:11px 18px;border-radius:14px;z-index:60;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;max-width:calc(100vw - 48px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} .me-dot::after{animation:none} }
 </style>
 </head>
 <body>
-<div id="map" role="application" aria-label="Mapa de Catania en vivo"></div>
+<div id="map" role="application" aria-label="Mapa de Sicilia en vivo"></div>
 
 <div class="top">
-  <div class="brand"><img src="logo-96.png" alt="" width="32" height="32"><span>Sicilia</span><span class="live" id="liveDot"></span></div>
-  <span class="spacer"></span>
-  <div class="people" id="people" aria-label="Quién está conectado"></div>
+  <div class="toprow">
+    <div class="brand"><img src="logo-96.png" alt="" width="32" height="32"><span>Sicilia</span><span class="live" id="liveDot"></span></div>
+    <span class="spacer"></span>
+    <div class="people" id="people" aria-label="Quién está conectado"></div>
+  </div>
+  <div class="chips" id="filters"></div>
 </div>
-<div class="filters" id="filters"></div>
 
-<div class="ctl">
-  <button id="btnShare" class="share" aria-pressed="false" aria-label="Compartir mi ubicación"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
-  <button id="btnAll" aria-label="Ver a todos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></button>
-  <button id="btn3d" aria-pressed="false" aria-label="Vista 3D">3D</button>
-  <button id="btnMe" aria-label="Centrar en mí"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></button>
-  <button id="btnAdd" aria-label="Añadir pin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+<div class="fabs">
+  <button class="fab" id="btn3d" aria-pressed="false" aria-label="Vista 3D">3D</button>
+  <button class="fab" id="btnAll" aria-label="Ver a todos"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 19c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5z"/><circle cx="17" cy="8.5" r="2.8"/><path d="M16.5 13.6c3 .2 5 2.2 5 5.4h-4.3c0-2.1-.3-3.9-.7-5.4z"/></svg></button>
+  <button class="fab" id="btnMe" aria-label="Centrar en mí"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5L3.6 10.4c-.7.3-.6 1.3.1 1.5l6.6 1.8 1.8 6.6c.2.7 1.2.8 1.5.1l6.9-16.9z"/></svg></button>
 </div>
-<div class="status" id="status">Preparando el mapa…</div>
+
+<div class="card" id="card">
+  <div class="grab"></div>
+  <div id="cardBody"></div>
+</div>
+
+<div class="backdrop" id="backdrop" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" hidden></div>
 
 <div class="gate" id="gate">
-  <form class="box" id="gateForm">
-    <img class="logo" src="icon-512.png" alt="Tres pumas con gafas de sol" width="120" height="120">
-    <h1>Sicilia<br>en vivo</h1>
-    <p class="sub">Mapa del grupo con la posición de cada uno, de Catania a Taormina y Siracusa. Solo os veis entre quienes tenéis el PIN.</p>
-    <div id="cfgWarn" class="notice" hidden>Aún no está configurado Firebase: puedes entrar y ver el mapa con tu posición, pero todavía no os veréis entre vosotros.</div>
-    <div class="field"><label for="gName">Tu nombre</label><input id="gName" required maxlength="18" placeholder="Rafa" autocomplete="nickname"></div>
-    <div class="field" id="pinField"><label for="gPin">PIN del grupo</label><input id="gPin" required minlength="4" maxlength="12" placeholder="El mismo para los tres" autocomplete="off"></div>
-    <button class="btn primary" type="submit">Entrar al mapa</button>
-    <p class="sub" style="font-size:12px">Tu posición solo se envía mientras tengas activado el botón verde, y se borra al cerrar la página.</p>
+  <form id="gateForm">
+    <img class="logo" src="icon-512.png" alt="Tres pumas con gafas de sol" width="100" height="100">
+    <div>
+      <h1>Sicilia en vivo</h1>
+      <p class="lead">El mapa del grupo, con dónde está cada uno.</p>
+    </div>
+    <div class="list">
+      <div class="lrow"><div class="body"><input class="in" id="gName" required maxlength="18" placeholder="Tu nombre" autocomplete="nickname"></div></div>
+      <div class="lrow" id="pinField"><div class="body"><input class="in" id="gPin" required minlength="4" maxlength="12" placeholder="PIN del grupo" autocomplete="off" inputmode="text"></div></div>
+    </div>
+    <p class="foot" id="gateFoot">Usad los tres el mismo PIN. Tu posición solo se comparte mientras tengas el interruptor activado y se borra al cerrar la página.</p>
+    <button class="btn-primary" type="submit">Entrar</button>
   </form>
-</div>
-
-<div class="dialog" id="pinDialog" hidden>
-  <h2>Nuevo pin</h2>
-  <div class="field"><label for="pinName">Nombre</label><input id="pinName" maxlength="40" placeholder="Bar con terraza"></div>
-  <div class="field"><label for="pinNote">Nota</label><input id="pinNote" maxlength="120" placeholder="Opcional"></div>
-  <div class="actions"><button class="btn" type="button" id="pinCancel">Cancelar</button><button class="btn primary" type="button" id="pinSave">Guardar</button></div>
 </div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
 (() => {
 'use strict';
-const CENTER = [15.0862, 37.5045];
-const CATS = { ver:'Ver', comer:'Comer', noche:'Noche', ruta:'Excursiones', extra:'Pines del grupo' };
 const CATANIA = { lat:37.5045, lng:15.0862 };
-const kmFrom = (a, b) => { const R=6371, dLat=(b.lat-a.lat)*Math.PI/180, dLng=(b.lng-a.lng)*Math.PI/180; const x=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2; return 2*R*Math.asin(Math.sqrt(x)); };
+const CATS = { ver:'Ver', comer:'Comer', noche:'Noche', ruta:'Excursiones', extra:'Pines del grupo' };
+const CAT_LONG = { ver:'Qué ver', comer:'Dónde comer', noche:'Noche', ruta:'Excursión en coche', extra:'Pin del grupo' };
 const ICON = {
-  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>',
-  food:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7a3 3 0 0 0 6 0V2M6 2v20M20 2c-3 0-4 3-4 7v3h4v10"/></svg>',
-  moon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
-  star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 17l-6.5 4 2-7.5L2 9h7z"/></svg>',
-  car:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14v-5l-2-5H7l-2 5z"/><circle cx="7.5" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/><path d="M5 12h14"/></svg>'
+  eye:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 21V10l8-6 8 6v11h-5.5v-6h-5v6z"/></svg>',
+  food:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h1.5v6.2c0 1-.6 1.9-1.5 2.3V22H5.5V10.5C4.6 10.1 4 9.2 4 8.2V2h1.5v6h.75V2h.75v6H7zM18.5 2C16 2 14.5 4.5 14.5 8v5h2.5v9h1.5z"/></svg>',
+  moon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
+  car:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.6 6.2A2 2 0 0 1 7.5 5h9a2 2 0 0 1 1.9 1.2L20 10.5c.6.3 1 .9 1 1.6V17a1 1 0 0 1-1 1h-1v1.2a1.3 1.3 0 0 1-2.6 0V18H7.6v1.2a1.3 1.3 0 0 1-2.6 0V18H4a1 1 0 0 1-1-1v-4.9c0-.7.4-1.3 1-1.6zM7.3 7l-1.3 3.5h12L16.7 7zM6.5 15.3a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6zm11 0a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6z"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.8l2.8 6 6.5.7-4.9 4.4 1.4 6.4L12 17l-5.8 3.3 1.4-6.4-4.9-4.4 6.5-.7z"/></svg>',
+  walk:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="13.5" cy="4" r="2"/><path d="M10.6 8.2l-3 1.5-1.1 3.5 1.7.6.9-2.6 1.3-.6-1.6 7.6-3.3 3.6 1.4 1.2 3.7-4 .9-3 2.1 2v5h1.8v-6l-2.3-2.4.7-3.3c.8 1.2 2.1 2 3.6 2.3v-1.8c-1.3-.3-2.4-1.1-3-2.3l-.8-1.4c-.5-.8-1.5-1.2-2.4-.9z"/></svg>',
+  map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4.5l-5.5 2v13l5.5-2 6 2 5.5-2v-13l-5.5 2z"/><path d="M9 4.5v13M15 6.5v13"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M17 7L7 17M7 7l10 10"/></svg>',
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.5-4.5"/></svg>',
+  arrow:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5L3.6 10.4c-.7.3-.6 1.3.1 1.5l6.6 1.8 1.8 6.6c.2.7 1.2.8 1.5.1l6.9-16.9z"/></svg>',
+  pinAdd:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22s-7-6.1-7-12a7 7 0 0 1 14 0c0 5.9-7 12-7 12zm-1-15v2.5H8.5v2H11V14h2v-2.5h2.5v-2H13V7z"/></svg>',
+  chev:'<svg viewBox="0 0 8 13"><path d="M1.5 1.5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3h6l1 2h4v2H4V5h4zM6 9h12l-1 12H7z"/></svg>'
 };
 const PIN_ICON = { ver: ICON.eye, comer: ICON.food, noche: ICON.moon, ruta: ICON.car, extra: ICON.star };
 const $ = s => document.querySelector(s);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2800); }
-const store = { get(k){ try { return localStorage.getItem(k); } catch { return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch {} } };
-const colorFor = id => `hsl(${[...id].reduce((a,c) => (a*31 + c.charCodeAt(0)) % 360, 7)} 65% 45%)`;
-async function sha(s){ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].slice(0,12).map(x => x.toString(16).padStart(2,'0')).join(''); }
+function h(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  if (attrs) for (const [k, v] of Object.entries(attrs)){
+    if (v == null || v === false) continue;
+    if (k === 'class') e.className = v; else if (k === 'html') e.innerHTML = v; else if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else if (k === 'style') e.style.cssText = v; else e.setAttribute(k, v === true ? '' : v);
+  }
+  for (const k of kids.flat()){ if (k == null || k === false || k === '') continue; e.append(k.nodeType ? k : document.createTextNode(String(k))); }
+  return e;
+}
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2600); }
+const store = { get(k){ try { return localStorage.getItem(k); } catch { return null; } }, set(k, v){ try { localStorage.setItem(k, v); } catch {} } };
+const colorFor = id => `hsl(${[...id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7)} 62% 46%)`;
+const kmFrom = (a, b) => { const R = 6371, dLat = (b.lat - a.lat) * Math.PI / 180, dLng = (b.lng - a.lng) * Math.PI / 180; const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(x)); };
+const fmtKm = d => d < 1 ? Math.round(d * 100) * 10 + ' m' : (d < 10 ? d.toFixed(1).replace('.', ',') + ' km' : Math.round(d) + ' km');
+async function sha(s){ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].slice(0, 12).map(x => x.toString(16).padStart(2, '0')).join(''); }
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
 
 // ---------- state ----------
-const S = { me:{ id:null, name:'' }, group:null, db:null, map:null, sharing:false, watchId:null, lastSent:0, lastPos:null,
-  peers:{}, peerMarkers:{}, meMarker:null, placeMarkers:[], extraPins:{}, filter:'all', is3d:false, addMode:false, pendingLngLat:null, popups:{} };
+const S = { me:{ id:null, name:'' }, group:null, db:null, sharing:false, watchId:null, lastSent:0, lastPos:null,
+  peers:{}, peerMarkers:{}, meMarker:null, placeMarkers:[], extraPins:{}, filter:'all', is3d:false, addMode:false, selected:null };
 const cfgOk = () => window.FIREBASE_CONFIG && typeof FIREBASE_CONFIG.apiKey === 'string' && !/^PEGA|^TU_|^YOUR_/i.test(FIREBASE_CONFIG.apiKey) && FIREBASE_CONFIG.databaseURL;
+const origin = () => S.lastPos || CATANIA;
 
 // ---------- map ----------
-const map = new maplibregl.Map({ container:'map', style:'https://tiles.openfreemap.org/styles/liberty', center:CENTER, zoom:15.2, pitch:0, bearing:0, attributionControl:{ compact:true }, maxPitch:70 });
-S.map = map;
-map.touchZoomRotate.enableRotation();
-map.on('load', () => { $('#status').textContent = 'Mapa cargado. Activa el botón verde para compartir tu posición.'; renderPlaces(); });
-map.on('error', e => { if (e?.error?.message) console.warn('map', e.error.message); });
-map.on('click', e => { if (!S.addMode) return; S.addMode = false; $('#btnAdd').removeAttribute('aria-pressed'); S.pendingLngLat = e.lngLat; $('#pinName').value = ''; $('#pinNote').value = ''; $('#pinDialog').hidden = false; $('#pinName').focus(); });
+const map = new maplibregl.Map({ container:'map', style:'https://tiles.openfreemap.org/styles/' + (dark ? 'dark' : 'positron'), center:[CATANIA.lng, CATANIA.lat], zoom:14.2, attributionControl:{ compact:true }, maxPitch:70 });
+map.on('load', () => {
+  try {
+    map.addLayer({ id:'b3d', type:'fill-extrusion', source:'openmaptiles', 'source-layer':'building', minzoom:14, layout:{ visibility:'none' },
+      paint:{ 'fill-extrusion-color': dark ? '#2c2c2e' : '#dedee3', 'fill-extrusion-height':['coalesce',['get','render_height'],8], 'fill-extrusion-base':['coalesce',['get','render_min_height'],0], 'fill-extrusion-opacity':.9 } });
+  } catch (e) { console.warn('3d layer', e); }
+  renderPlaces();
+});
+map.on('zoom', () => document.body.classList.toggle('labels', map.getZoom() >= 15));
+map.on('click', e => {
+  if (S.addMode){ S.addMode = false; openPinForm(e.lngLat); return; }
+  if (e.originalEvent && e.originalEvent.target && e.originalEvent.target.closest && e.originalEvent.target.closest('.mk,.peer')) return;
+  if (S.selected) select(null);
+});
 
-function placePopup(p, extra){
-  const far = kmFrom(S.lastPos || CATANIA, p) > 3;
-  const dir = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=${far ? 'driving' : 'walking'}`;
-  const see = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
-  const html = `<div class="pop" style="--pc:var(--pin-${p.cat in CATS ? p.cat : 'extra'})"><div class="cat">${esc(CATS[p.cat] || p.cat)}</div><h3>${esc(p.name)}</h3>${p.addr ? `<div class="small">${esc(p.addr)}</div>` : ''}${p.note ? `<p>${esc(p.note)}</p>` : ''}${extra && p.by ? `<div class="small">Añadido por ${esc(p.by)}</div>` : ''}<div class="small">${Math.round(kmFrom(CATANIA, p))} km desde Catania</div><div class="row"><a class="btn primary sm" target="_blank" rel="noopener" href="${dir}">${far ? 'Ir en coche' : 'Cómo llegar a pie'}</a><a class="btn sm" target="_blank" rel="noopener" href="${see}">Ver en Maps</a>${extra ? `<button class="btn sm" data-del="${esc(p.id)}">Borrar</button>` : ''}</div></div>`;
-  const pop = new maplibregl.Popup({ offset: 22, maxWidth:'280px' }).setHTML(html);
-  pop.on('open', () => { const b = pop.getElement().querySelector('[data-del]'); if (b) b.addEventListener('click', () => { if (S.group) S.db.ref(`groups/${S.group}/pins/${p.id}`).remove(); pop.remove(); }); });
-  return pop;
+function makeMarker(p){
+  const el = h('div', { class:'mk' + (p.cat === 'extra' ? ' extra' : ''), role:'button', 'aria-label': p.name }, h('span', { class:'head', html: PIN_ICON[p.cat] || ICON.star }), h('span', { class:'lbl' }, p.name));
+  el.addEventListener('click', e => { e.stopPropagation(); select({ type:'place', p }); reveal(p.lng, p.lat); });
+  const m = new maplibregl.Marker({ element: el, anchor:'top', offset:[0, -14] }).setLngLat([p.lng, p.lat]).addTo(map);
+  m._p = p; return m;
 }
-function makePin(p, extra){
-  const el = document.createElement('button');
-  el.className = 'pin' + (p.done ? ' done' : ''); el.style.setProperty('--pc', `var(--pin-${p.cat in CATS ? p.cat : 'extra'})`); el.innerHTML = PIN_ICON[p.cat] || ICON.star; el.setAttribute('aria-label', p.name);
-  return new maplibregl.Marker({ element: el, anchor:'bottom', offset:[0, 4] }).setLngLat([p.lng, p.lat]).setPopup(placePopup(p, extra));
-}
+function allPlaces(){ return [...(window.PLACES || []), ...Object.values(S.extraPins).map(p => ({ ...p, cat:'extra' }))].filter(p => typeof p.lat === 'number'); }
 function renderPlaces(){
   for (const m of S.placeMarkers) m.remove(); S.placeMarkers = [];
-  const all = [...(window.PLACES || []).map(p => ({ ...p, extra:false })), ...Object.values(S.extraPins).map(p => ({ ...p, cat:'extra', extra:true }))];
-  for (const p of all){ if (S.filter !== 'all' && p.cat !== S.filter) continue; if (typeof p.lat !== 'number') continue; const m = makePin(p, p.extra).addTo(map); S.placeMarkers.push(m); }
+  for (const p of allPlaces()){ if (S.filter !== 'all' && p.cat !== S.filter) continue; S.placeMarkers.push(makeMarker(p)); }
+  markSelected();
 }
-const filt = $('#filters');
-for (const [k, lab] of [['all','Todo'], ...Object.entries(CATS)]) { const b = document.createElement('button'); b.textContent = lab; b.setAttribute('aria-pressed', k === 'all' ? 'true' : 'false'); b.addEventListener('click', () => { S.filter = k; for (const x of filt.children) x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); renderPlaces(); fitPlaces(); }); filt.append(b); }
+function markSelected(){ for (const m of S.placeMarkers) m.getElement().classList.toggle('sel', !!(S.selected && S.selected.type === 'place' && S.selected.p.id === m._p.id)); }
 function fitPlaces(){
   const pts = S.placeMarkers.map(m => m.getLngLat()).map(l => [l.lng, l.lat]);
-  if (!pts.length) return toast('No hay sitios en esta categoría.');
+  if (!pts.length) return toast('No hay sitios en esta categoría');
   if (pts.length === 1) return map.flyTo({ center: pts[0], zoom: 15 });
   const b = pts.reduce((bb, p) => bb.extend(p), new maplibregl.LngLatBounds(pts[0], pts[0]));
-  map.fitBounds(b, { padding: { top: 120, bottom: 70, left: 50, right: 80 }, maxZoom: 16, duration: 800 });
+  map.fitBounds(b, { padding:{ top: 130, bottom: cardH() + 40, left: 40, right: 70 }, maxZoom: 16, duration: 800 });
+}
+const filt = $('#filters');
+for (const [k, lab] of [['all','Todo'], ...Object.entries(CATS)]) filt.append(h('button', { class:'chip', type:'button', 'aria-pressed': k === 'all' ? 'true' : 'false', onclick: e => { S.filter = k; for (const x of filt.children) x.setAttribute('aria-pressed', x === e.currentTarget ? 'true' : 'false'); renderPlaces(); fitPlaces(); } }, lab));
+
+$('#btn3d').addEventListener('click', () => {
+  S.is3d = !S.is3d; $('#btn3d').setAttribute('aria-pressed', S.is3d ? 'true' : 'false');
+  if (map.getLayer('b3d')) map.setLayoutProperty('b3d', 'visibility', S.is3d ? 'visible' : 'none');
+  map.easeTo({ pitch: S.is3d ? 60 : 0, bearing: S.is3d ? -18 : 0, zoom: S.is3d ? Math.max(map.getZoom(), 16) : map.getZoom(), duration: 700 });
+});
+$('#btnMe').addEventListener('click', () => { if (S.lastPos) map.flyTo({ center:[S.lastPos.lng, S.lastPos.lat], zoom: Math.max(map.getZoom(), 16) }); else { toast('Buscando tu posición…'); startLocating(true); } });
+$('#btnAll').addEventListener('click', () => {
+  const pts = Object.values(S.peers).filter(p => p.id !== S.me.id && p.lat && !isStale(p, 15 * 60e3)).map(p => [p.lng, p.lat]);
+  if (S.lastPos) pts.push([S.lastPos.lng, S.lastPos.lat]);
+  if (!pts.length) return toast('Nadie está compartiendo su posición');
+  if (pts.length === 1) return map.flyTo({ center: pts[0], zoom: 16 });
+  const b = pts.reduce((bb, p) => bb.extend(p), new maplibregl.LngLatBounds(pts[0], pts[0]));
+  map.fitBounds(b, { padding:{ top: 130, bottom: cardH() + 40, left: 60, right: 80 }, maxZoom: 17, duration: 700 });
+});
+
+// ---------- bottom card ----------
+const cardH = () => $('#card').offsetHeight;
+function syncCardH(){ document.documentElement.style.setProperty('--card-h', cardH() + 'px'); }
+new ResizeObserver(syncCardH).observe($('#card'));
+function switchEl(on, onToggle, label){ return h('button', { class:'sw', type:'button', role:'switch', 'aria-checked': on ? 'true' : 'false', 'aria-label': label, onclick: e => { e.stopPropagation(); onToggle(); } }); }
+function select(sel){ S.selected = sel; markSelected(); renderCard(); }
+function reveal(lng, lat){ requestAnimationFrame(() => map.easeTo({ center:[lng, lat], padding:{ top:120, bottom: cardH() + 30, left:0, right:0 }, duration:450 })); }
+function directions(p){ const far = kmFrom(origin(), p) > 3; return { far, href: `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=${far ? 'driving' : 'walking'}` }; }
+function renderCard(){
+  const body = $('#cardBody'); const sel = S.selected;
+  if (sel && sel.type === 'place'){
+    const p = sel.p; const d = directions(p);
+    body.replaceChildren(h('div', { style:'display:flex;flex-direction:column;gap:12px' },
+      h('div', { class:'ph' }, h('div', { class:'grow' }, h('h2', {}, p.name), h('div', { class:'sub' }, [CAT_LONG[p.cat], fmtKm(kmFrom(origin(), p)) + (S.lastPos ? ' de ti' : ' de Catania')].join(' · ')), p.note ? h('div', { class:'note' }, p.note) : null, p.by ? h('div', { class:'sub' }, 'Añadido por ' + p.by) : null),
+        h('button', { class:'circle', type:'button', 'aria-label':'Cerrar', html: ICON.x, onclick: () => select(null) })),
+      h('a', { class:'btn-primary', href: d.href, target:'_blank', rel:'noopener', html: (d.far ? ICON.car : ICON.walk) + '<span>' + (d.far ? 'Ir en coche' : 'Ir andando') + '</span>' }),
+      h('div', { class:'btn-row' },
+        h('a', { class:'btn-sec', href:`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`, target:'_blank', rel:'noopener', html: ICON.map + '<span>Ver en Maps</span>' }),
+        p.cat === 'extra' && S.db ? h('button', { class:'btn-sec red', type:'button', html: ICON.trash + '<span>Borrar pin</span>', onclick: () => { S.db.ref(`groups/${S.group}/pins/${p.id}`).remove(); select(null); toast('Pin borrado'); } })
+          : h('button', { class:'btn-sec', type:'button', html: ICON.arrow + '<span>Centrar</span>', onclick: () => map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), 15.5) }) }))));
+    return;
+  }
+  if (sel && sel.type === 'peer'){
+    const p = S.peers[sel.id]; if (!p){ S.selected = null; return renderCard(); }
+    const d = directions(p);
+    body.replaceChildren(h('div', { style:'display:flex;flex-direction:column;gap:12px' },
+      h('div', { class:'ph' }, h('span', { class:'peer', style:'--uc:' + colorFor(p.id) }, h('span', { class:'av' }, (p.name || '?')[0].toUpperCase())),
+        h('div', { class:'grow' }, h('h2', {}, p.name), h('div', { class:'sub' }, 'Hace ' + ago(p.t) + ' · ' + (S.lastPos ? fmtKm(kmFrom(S.lastPos, p)) + ' de ti' : 'precisión ' + (p.acc || '?') + ' m'))),
+        h('button', { class:'circle', type:'button', 'aria-label':'Cerrar', html: ICON.x, onclick: () => select(null) })),
+      h('a', { class:'btn-primary', href: d.href, target:'_blank', rel:'noopener', html: (d.far ? ICON.car : ICON.walk) + '<span>Ir hasta ' + escapeText(p.name) + '</span>' })));
+    return;
+  }
+  body.replaceChildren(h('div', { style:'display:flex;flex-direction:column;gap:10px' },
+    h('button', { class:'search', type:'button', html: ICON.search + '<span>¿A dónde vamos?</span>', onclick: openSearch }),
+    h('div', { class:'rows' },
+      h('div', { class:'crow' }, h('span', { class:'dot' + (S.sharing ? ' on' : ''), html: ICON.arrow }),
+        h('span', { class:'grow' }, h('span', { class:'t' }, 'Compartir mi ubicación'), h('span', { class:'s', id:'shareSub' }, shareStatus())),
+        switchEl(S.sharing, () => { if (!S.db) return toast('Para veros entre vosotros falta configurar Firebase'); setSharing(!S.sharing); }, 'Compartir mi ubicación')),
+      h('button', { class:'crow', type:'button', onclick: () => { if (!S.db) return toast('Los pines del grupo necesitan Firebase'); S.addMode = true; toast('Toca el mapa donde va el pin'); } },
+        h('span', { class:'dot', html: ICON.pinAdd }), h('span', { class:'grow' }, h('span', { class:'t' }, 'Añadir pin del grupo'), h('span', { class:'s' }, 'El bar donde estáis, el parking…')), h('span', { class:'chev', style:'color:var(--label3)', html: ICON.chev })))));
+}
+function escapeText(s){ return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
+function shareStatus(){
+  if (!S.db) return 'Modo individual: falta configurar Firebase';
+  if (!S.sharing) return 'Los demás no te ven';
+  const n = Object.values(S.peers).filter(p => p.id !== S.me.id && !isStale(p, 15 * 60e3)).length;
+  return 'Te ven ' + (n ? (n === 1 ? '1 persona' : n + ' personas') : 'los del grupo al conectarse') + (S.lastPos ? ' · precisión ' + Math.round(S.lastPos.acc) + ' m' : '');
 }
 
-$('#btn3d').addEventListener('click', () => { S.is3d = !S.is3d; $('#btn3d').setAttribute('aria-pressed', S.is3d ? 'true' : 'false'); map.easeTo({ pitch: S.is3d ? 58 : 0, bearing: S.is3d ? -17 : 0, zoom: S.is3d ? Math.max(map.getZoom(), 16) : map.getZoom(), duration: 700 }); });
-$('#btnMe').addEventListener('click', () => { if (S.lastPos) map.flyTo({ center:[S.lastPos.lng, S.lastPos.lat], zoom: Math.max(map.getZoom(), 16) }); else { toast('Aún no tengo tu posición. Activa el botón verde.'); startLocating(); } });
-$('#btnAll').addEventListener('click', () => { const pts = Object.values(S.peers).filter(p => p.lat && !isStale(p, 15*60e3)).map(p => [p.lng, p.lat]); if (S.lastPos) pts.push([S.lastPos.lng, S.lastPos.lat]); if (!pts.length) return toast('Nadie está compartiendo posición ahora mismo.'); if (pts.length === 1) return map.flyTo({ center: pts[0], zoom: 16 }); const b = pts.reduce((bb, p) => bb.extend(p), new maplibregl.LngLatBounds(pts[0], pts[0])); map.fitBounds(b, { padding: 90, maxZoom: 17, duration: 700 }); });
-$('#btnAdd').addEventListener('click', () => { if (!S.db) return toast('Los pines del grupo necesitan Firebase configurado (ver README).'); S.addMode = !S.addMode; if (S.addMode){ $('#btnAdd').setAttribute('aria-pressed','true'); toast('Toca el mapa donde va el pin'); } else $('#btnAdd').removeAttribute('aria-pressed'); });
-$('#pinCancel').addEventListener('click', () => { $('#pinDialog').hidden = true; });
-$('#pinSave').addEventListener('click', () => { const name = $('#pinName').value.trim(); if (!name || !S.pendingLngLat) return; const ref = S.db.ref(`groups/${S.group}/pins`).push(); ref.set({ id: ref.key, name, note: $('#pinNote').value.trim(), lat: S.pendingLngLat.lat, lng: S.pendingLngLat.lng, by: S.me.name, t: firebase.database.ServerValue.TIMESTAMP }); $('#pinDialog').hidden = true; toast('Pin guardado para el grupo'); });
+// ---------- sheets ----------
+function openSheet(...kids){ const b = $('#backdrop'), s = $('#sheet'); s.replaceChildren(...kids.flat().filter(Boolean)); b.hidden = false; s.hidden = false; requestAnimationFrame(() => { b.classList.add('show'); s.classList.add('show'); }); }
+function closeSheet(){ const b = $('#backdrop'), s = $('#sheet'); b.classList.remove('show'); s.classList.remove('show'); setTimeout(() => { b.hidden = true; s.hidden = true; }, 320); }
+$('#backdrop').addEventListener('click', closeSheet);
+function openSearch(){
+  const q = h('input', { type:'search', placeholder:'Buscar sitios', autocomplete:'off', id:'q' });
+  const box = h('div', { class:'list' });
+  const draw = () => {
+    const term = q.value.trim().toLowerCase();
+    const ps = allPlaces().filter(p => !term || (p.name + ' ' + (p.addr || '') + ' ' + (CATS[p.cat] || '')).toLowerCase().includes(term)).sort((a, b) => kmFrom(origin(), a) - kmFrom(origin(), b));
+    box.replaceChildren(...(ps.length ? ps.map(p => h('button', { class:'lrow', type:'button', onclick: () => { closeSheet(); select({ type:'place', p }); map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), kmFrom(origin(), p) > 20 ? 12 : 15.5), padding:{ bottom: 260 } }); } },
+      h('span', { class:'ico' + (p.cat === 'extra' ? ' extra' : ''), html: PIN_ICON[p.cat] || ICON.star }),
+      h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, p.name), h('span', { class:'s', style:'display:block' }, [CATS[p.cat], fmtKm(kmFrom(origin(), p))].join(' · '))), h('span', { class:'chev', html: ICON.chev }))))
+      : [h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'s' }, 'Sin resultados')))]));
+  };
+  q.addEventListener('input', draw);
+  openSheet(h('div', { class:'snav' }, h('span'), h('div', { class:'c' }, '¿A dónde vamos?'), h('button', { class:'r', type:'button', onclick: closeSheet }, 'Cerrar')),
+    h('label', { class:'searchfield', html: ICON.search }, q), box);
+  draw();
+}
+function openPinForm(lngLat){
+  const name = h('input', { class:'in', placeholder:'Nombre', maxlength:'40', id:'pinName' });
+  const note = h('input', { class:'in', placeholder:'Nota (opcional)', maxlength:'120', id:'pinNote' });
+  const save = () => { const n = name.value.trim(); if (!n) return toast('Ponle un nombre'); const ref = S.db.ref(`groups/${S.group}/pins`).push(); ref.set({ id: ref.key, name: n, note: note.value.trim(), lat: lngLat.lat, lng: lngLat.lng, by: S.me.name, t: firebase.database.ServerValue.TIMESTAMP }); closeSheet(); toast('Pin guardado para el grupo'); };
+  openSheet(h('div', { class:'snav' }, h('button', { class:'l', type:'button', onclick: closeSheet }, 'Cancelar'), h('div', { class:'c' }, 'Nuevo pin'), h('button', { class:'r', type:'button', onclick: save }, 'Guardar')),
+    h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, name)), h('div', { class:'lrow' }, h('div', { class:'body' }, note))),
+    h('p', { class:'foot' }, 'Lo verán los tres en el mapa. Se puede borrar desde su ficha.'));
+  setTimeout(() => name.focus(), 350);
+}
 
 // ---------- geolocation ----------
-function startLocating(){
-  if (!('geolocation' in navigator)) return toast('Este navegador no da acceso a la ubicación.');
+function startLocating(fly){
+  if (!('geolocation' in navigator)) return toast('Este navegador no da acceso a la ubicación');
   if (S.watchId != null) return;
-  S.watchId = navigator.geolocation.watchPosition(onPos, err => { console.warn(err); $('#status').innerHTML = '<b>Sin ubicación.</b> ' + (err.code === 1 ? 'Has denegado el permiso: actívalo en los ajustes del navegador para este sitio.' : 'No se pudo obtener la posición. ¿GPS activado?'); if (S.sharing) setSharing(false); }, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
+  S.flyOnFirst = fly !== false;
+  S.watchId = navigator.geolocation.watchPosition(onPos, err => { console.warn(err); S.watchId = null; toast(err.code === 1 ? 'Permiso de ubicación denegado. Actívalo en los ajustes del navegador.' : 'No se pudo obtener tu posición. ¿GPS activado?'); if (S.sharing) setSharing(false); }, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
 }
 function onPos(pos){
-  const { latitude:lat, longitude:lng, accuracy:acc, heading } = pos.coords; const first = !S.lastPos; S.lastPos = { lat, lng, acc, heading, t: Date.now() };
-  if (!S.meMarker){ const el = document.createElement('div'); el.className = 'me-dot'; el.setAttribute('aria-label','Tu posición'); S.meMarker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map); } else S.meMarker.setLngLat([lng, lat]);
-  if (first) map.flyTo({ center:[lng, lat], zoom: Math.max(map.getZoom(), 16) });
-  $('#status').innerHTML = `<b>${S.sharing ? 'Compartiendo' : 'Solo tú ves tu posición'}</b> · precisión ${Math.round(acc)} m`;
+  const { latitude:lat, longitude:lng, accuracy:acc } = pos.coords; const first = !S.lastPos; S.lastPos = { lat, lng, acc, t: Date.now() };
+  if (!S.meMarker){ S.meMarker = new maplibregl.Marker({ element: h('div', { class:'me-dot', 'aria-label':'Tu posición' }) }).setLngLat([lng, lat]).addTo(map); } else S.meMarker.setLngLat([lng, lat]);
+  if (first && S.flyOnFirst) map.flyTo({ center:[lng, lat], zoom: Math.max(map.getZoom(), 15.5) });
+  const sub = $('#shareSub'); if (sub) sub.textContent = shareStatus();
   if (S.sharing && S.group){ const now = Date.now(); if (now - S.lastSent > 4000){ S.lastSent = now; S.db.ref(`groups/${S.group}/people/${S.me.id}`).set({ name: S.me.name, lat, lng, acc: Math.round(acc), t: firebase.database.ServerValue.TIMESTAMP }); } }
 }
 function setSharing(on){
-  S.sharing = on; $('#btnShare').classList.toggle('on', on); $('#btnShare').setAttribute('aria-pressed', on ? 'true' : 'false'); $('#liveDot').classList.toggle('on', on);
-  if (on){ startLocating(); if (S.lastPos) { S.lastSent = 0; onPos({ coords: { latitude:S.lastPos.lat, longitude:S.lastPos.lng, accuracy:S.lastPos.acc, heading:S.lastPos.heading } }); } toast('Compartiendo tu posición con el grupo'); }
-  else { if (S.group) S.db.ref(`groups/${S.group}/people/${S.me.id}`).remove(); $('#status').innerHTML = S.lastPos ? '<b>Solo tú ves tu posición</b>' : 'Posición no compartida.'; }
-  store.set('cl-sharing', on ? '1' : '0');
+  S.sharing = on; $('#liveDot').classList.toggle('on', on); store.set('cl-sharing', on ? '1' : '0');
+  if (on){ startLocating(); if (S.lastPos){ S.lastSent = 0; onPos({ coords:{ latitude:S.lastPos.lat, longitude:S.lastPos.lng, accuracy:S.lastPos.acc } }); } toast('Compartiendo tu ubicación'); }
+  else if (S.group) S.db.ref(`groups/${S.group}/people/${S.me.id}`).remove();
+  renderCard();
 }
-$('#btnShare').addEventListener('click', () => { if (!S.db) return toast('Para veros entre vosotros falta configurar Firebase (ver README).'); setSharing(!S.sharing); });
 
 // ---------- peers ----------
 const isStale = (p, ms) => !p.t || (Date.now() - p.t) > ms;
+function ago(t){ const s = Math.max(0, Math.round((Date.now() - (t || 0)) / 1000)); if (s < 60) return s + ' s'; if (s < 3600) return Math.round(s / 60) + ' min'; return Math.round(s / 3600) + ' h'; }
 function renderPeers(){
-  const list = Object.values(S.peers).filter(p => p.id !== S.me.id);
   const pe = $('#people'); pe.replaceChildren();
-  const meB = document.createElement('button'); meB.className = 'me'; meB.style.background = colorFor(S.me.id || 'me'); meB.textContent = (S.me.name || '?')[0].toUpperCase(); meB.title = S.me.name + ' (tú)'; meB.addEventListener('click', () => $('#btnMe').click()); pe.append(meB);
-  for (const p of list){
-    if (isStale(p, 15*60e3)){ if (S.peerMarkers[p.id]){ S.peerMarkers[p.id].remove(); delete S.peerMarkers[p.id]; } continue; }
-    const stale = isStale(p, 2*60e3);
-    const b = document.createElement('button'); b.style.background = colorFor(p.id); b.textContent = (p.name || '?')[0].toUpperCase(); b.title = p.name; b.className = stale ? 'stale' : ''; b.addEventListener('click', () => map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), 16) })); pe.append(b);
+  pe.append(h('button', { style:'background:' + colorFor(S.me.id || 'me'), title: S.me.name + ' (tú)', 'aria-label': 'Tú', onclick: () => $('#btnMe').click() }, (S.me.name || '?')[0].toUpperCase()));
+  for (const p of Object.values(S.peers)){
+    if (p.id === S.me.id) continue;
+    if (isStale(p, 15 * 60e3)){ if (S.peerMarkers[p.id]){ S.peerMarkers[p.id].remove(); delete S.peerMarkers[p.id]; } continue; }
+    const stale = isStale(p, 2 * 60e3);
+    pe.append(h('button', { class: stale ? 'stale' : '', style:'background:' + colorFor(p.id), title: p.name, 'aria-label': p.name, onclick: () => { map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), 16) }); select({ type:'peer', id: p.id }); } }, (p.name || '?')[0].toUpperCase()));
     let m = S.peerMarkers[p.id];
-    if (!m){ const el = document.createElement('div'); el.className = 'peer'; el.style.setProperty('--uc', colorFor(p.id)); el.innerHTML = `<div class="av"></div><div class="nm"></div>`; m = new maplibregl.Marker({ element: el, anchor:'center' }).setLngLat([p.lng, p.lat]).addTo(map); S.peerMarkers[p.id] = m; el.addEventListener('click', () => toast(`${p.name}: hace ${ago(p.t)} · precisión ${p.acc || '?'} m`)); }
+    if (!m){ const el = h('div', { class:'peer', style:'--uc:' + colorFor(p.id) }, h('span', { class:'av' }), h('span', { class:'nm' })); el.addEventListener('click', e => { e.stopPropagation(); select({ type:'peer', id: p.id }); const q = S.peers[p.id]; if (q) reveal(q.lng, q.lat); }); m = new maplibregl.Marker({ element: el, anchor:'top', offset:[0, -19] }).setLngLat([p.lng, p.lat]).addTo(map); S.peerMarkers[p.id] = m; }
     m.setLngLat([p.lng, p.lat]); const el = m.getElement(); el.classList.toggle('stale', stale); el.querySelector('.av').textContent = (p.name || '?')[0].toUpperCase(); el.querySelector('.nm').textContent = p.name + (stale ? ' · ' + ago(p.t) : '');
   }
   for (const id of Object.keys(S.peerMarkers)) if (!S.peers[id]){ S.peerMarkers[id].remove(); delete S.peerMarkers[id]; }
+  const sub = $('#shareSub'); if (sub) sub.textContent = shareStatus();
+  if (S.selected && S.selected.type === 'peer') renderCard();
 }
-function ago(t){ const s = Math.round((Date.now() - (t || 0)) / 1000); if (s < 60) return s + ' s'; if (s < 3600) return Math.round(s/60) + ' min'; return Math.round(s/3600) + ' h'; }
 setInterval(renderPeers, 20000);
 
-// ---------- gate / firebase ----------
+// ---------- entry ----------
+function enterCommon(name){
+  S.me.name = name; S.me.id = store.get('cl-uid') || ('u' + Math.random().toString(36).slice(2, 10)); store.set('cl-uid', S.me.id); store.set('cl-name', name);
+  $('#gate').hidden = true; renderPeers(); renderCard();
+}
 async function enter(name, pin){
-  S.me.name = name; S.me.id = store.get('cl-uid') || ('u' + Math.random().toString(36).slice(2, 10)); store.set('cl-uid', S.me.id); store.set('cl-name', name); store.set('cl-pin', pin);
+  enterCommon(name); store.set('cl-pin', pin);
   S.group = await sha('catania:' + pin);
   if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
   S.db = firebase.database();
   S.db.ref(`groups/${S.group}/people/${S.me.id}`).onDisconnect().remove();
-  S.db.ref(`groups/${S.group}/people`).on('value', snap => { S.peers = snap.val() || {}; for (const [id, p] of Object.entries(S.peers)) p.id = id; renderPeers(); }, err => { console.error(err); toast('Sin conexión con el grupo: revisa las reglas de Firebase.'); });
+  S.db.ref(`groups/${S.group}/people`).on('value', snap => { S.peers = snap.val() || {}; for (const [id, p] of Object.entries(S.peers)) p.id = id; renderPeers(); }, err => { console.error(err); toast('Sin conexión con el grupo: revisa las reglas de Firebase'); });
   S.db.ref(`groups/${S.group}/pins`).on('value', snap => { S.extraPins = snap.val() || {}; renderPlaces(); });
-  S.db.ref('.info/connected').on('value', snap => { $('#liveDot').classList.toggle('on', !!snap.val() && S.sharing); });
-  $('#gate').hidden = true; renderPeers();
+  renderCard();
   if (store.get('cl-sharing') === '1') setSharing(true); else startLocating();
 }
-function enterLocal(name){
-  S.me.name = name; S.me.id = store.get('cl-uid') || ('u' + Math.random().toString(36).slice(2, 10)); store.set('cl-uid', S.me.id); store.set('cl-name', name);
-  $('#gate').hidden = true; renderPeers(); startLocating();
-  $('#status').innerHTML = '<b>Modo individual.</b> Ves el mapa y tu posición; para veros entre vosotros falta Firebase.';
-}
+function enterLocal(name){ enterCommon(name); startLocating(); }
+renderCard();
 const gate = $('#gateForm');
-if (!cfgOk()) { $('#cfgWarn').hidden = false; $('#pinField').hidden = true; $('#gPin').required = false; }
+if (!cfgOk()){ $('#pinField').hidden = true; $('#gPin').required = false; $('#gateFoot').textContent = 'Todavía no está configurado el modo grupo: verás el mapa y tu posición, pero aún no os veréis entre vosotros.'; }
 $('#gName').value = store.get('cl-name') || ''; $('#gPin').value = store.get('cl-pin') || '';
-gate.addEventListener('submit', e => { e.preventDefault(); if (!cfgOk()) return enterLocal($('#gName').value.trim()); enter($('#gName').value.trim(), $('#gPin').value.trim()).catch(err => { console.error(err); toast('No se pudo conectar: ' + (err.message || err)); }); });
+gate.addEventListener('submit', e => { e.preventDefault(); const n = $('#gName').value.trim(); if (!cfgOk()) return enterLocal(n); enter(n, $('#gPin').value.trim()).catch(err => { console.error(err); toast('No se pudo conectar: ' + (err.message || err)); }); });
 })();
 </script>
 </body>

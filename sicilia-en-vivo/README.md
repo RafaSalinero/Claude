@@ -46,15 +46,14 @@ Qué protege esto: nadie fuera del grupo puede leer nada salvo que conozca el PI
 
 Importante en iPhone: la posición solo se envía mientras la página está abierta en primer plano. Si bloqueas el móvil, deja de actualizarse hasta que vuelvas a abrirla. Es una limitación de iOS para webs, no de la app.
 
-## Qué hace cada botón
+## Cómo se usa
 
-- **Verde (avión)**: compartir o dejar de compartir tu posición.
-- **Personas**: encuadra a todos los que están compartiendo.
-- **3D**: inclina la cámara y levanta los edificios.
-- **Diana**: centra el mapa en ti.
-- **+**: añadir un pin del grupo (toca luego el mapa). Se borra desde su ficha.
-- Filtros arriba: Ver, Comer, Noche, Excursiones, Pines del grupo. Al tocar uno, el mapa encuadra esos sitios.
-- Cada pin tiene "Ir en coche" si está a más de 3 km, o "Cómo llegar a pie" si está cerca. Ambos abren Google Maps con la ruta desde donde estás.
+- **Ficha inferior**: "¿A dónde vamos?" abre el buscador de sitios, ordenados por cercanía. El interruptor "Compartir mi ubicación" hace que los demás te vean; al apagarlo o cerrar la página desapareces. "Añadir pin del grupo" y luego toca el mapa para guardar un sitio para los tres.
+- **Al tocar un sitio**, la ficha se convierte en su tarjeta: botón negro "Ir en coche" si está a más de 3 km o "Ir andando" si está cerca, ambos con la ruta en Google Maps, y "Ver en Maps".
+- **Al tocar a un amigo**, en el mapa o en sus iniciales arriba a la derecha, ves hace cuánto se actualizó y un botón para ir hasta él.
+- **Botones redondos**: 3D inclina el mapa y levanta los edificios; el de personas encuadra a todos; la flecha te centra.
+- **Filtros arriba**: Ver, Comer, Noche, Excursiones y Pines del grupo. Al tocar uno, el mapa encuadra esos sitios.
+- El mapa usa el tema claro u oscuro del móvil.
 
 ## Si algo falla
 
