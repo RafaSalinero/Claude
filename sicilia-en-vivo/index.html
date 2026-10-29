@@ -312,11 +312,11 @@ $('#btnAll').addEventListener('click', () => {
 
 // ---------- bottom card ----------
 // Netlify's free plan injects a badge bottom-right; leave room under the card so it covers nothing.
-const badgeCheck = () => document.body.classList.toggle('has-badge', !!document.getElementById('nl-badge-frame'));
+const badgeCheck = () => { document.body.classList.toggle('has-badge', !!document.getElementById('nl-badge-frame')); if (typeof syncCardH === 'function') requestAnimationFrame(syncCardH); };
 new MutationObserver(badgeCheck).observe(document.body, { childList:true }); badgeCheck();
 const cardH = () => $('#card').offsetHeight;
 function syncCardH(){ document.documentElement.style.setProperty('--card-h', cardH() + 'px'); }
-new ResizeObserver(syncCardH).observe($('#card'));
+new ResizeObserver(syncCardH).observe($('#card'), { box:'border-box' });
 function switchEl(on, onToggle, label){ return h('button', { class:'sw', type:'button', role:'switch', 'aria-checked': on ? 'true' : 'false', 'aria-label': label, onclick: e => { e.stopPropagation(); onToggle(); } }); }
 function select(sel){ S.selected = sel; markSelected(); renderCard(); }
 function reveal(lng, lat){ requestAnimationFrame(() => map.easeTo({ center:[lng, lat], padding:{ top:120, bottom: cardH() + 30, left:0, right:0 }, duration:450 })); }
