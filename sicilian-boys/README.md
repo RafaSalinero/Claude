@@ -17,6 +17,7 @@ Funciona fuera del visor de claude.ai porque ese visor bloquea la ubicación del
 | `../netlify/functions/sync.mjs` | El pequeño servidor que guarda posiciones y pines del grupo en Netlify. |
 | `../netlify.toml`, `../package.json` | Configuración de Netlify y su única dependencia. |
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `logo-96.png` | Icono de los tres pumas y datos para añadir a la pantalla de inicio. |
+| `map-style.js` | Colores del mapa estilo Uber, con calles legibles en claro y en oscuro. |
 | `fotos/` | Fotos de Salinero, Braulio y Pomares. Se activan en la lista `TRAVELLERS` de `index.html`; sin foto se ve la inicial. |
 | `config.js`, `database.rules.json` | Solo para la alternativa con Firebase. No hacen falta con Netlify. |
 
@@ -40,6 +41,8 @@ Importante en iPhone: la posición solo se envía mientras la página está abie
 
 ## Cómo se usa
 
+- **Casa**: el alojamiento, Dimora Lucia Majorana (Piazza Angelo Majorana 4), está marcado con un pin negro grande. El botón "Casa" de la ficha inferior lo centra y da la ruta de vuelta, andando o en coche según la distancia.
+- **Marcador**: el botón "Marcador" abre el ranking de la noche de Salinero, Braulio y Pomares (Conversación 1, Beso 2, Liado 3, Otro 1 punto) y el historial. "Apuntar match" guarda nombre, Instagram, hasta dónde llegó, noche, foto y nota. Solo quien lo apuntó puede borrarlo. Ojo: sin PIN, cualquiera con el enlace podría verlo.
 - **Ficha inferior**: "¿A dónde vamos?" abre el buscador de sitios, ordenados por cercanía. El interruptor "Compartir mi ubicación" hace que los demás te vean. "Añadir pin del grupo" y luego toca el mapa para guardar un sitio para los tres.
 - **Al tocar un sitio**, la ficha se convierte en su tarjeta: botón negro "Ir en coche" si está a más de 3 km o "Ir andando" si está cerca, ambos con la ruta en Google Maps, y "Ver en Maps".
 - **Al tocar a un amigo**, en el mapa o en sus iniciales arriba a la derecha, ves hace cuánto se actualizó y un botón para ir hasta él.

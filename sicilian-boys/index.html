@@ -14,6 +14,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="map-style.js"></script>
 <script src="config.js"></script>
 <script src="places.js"></script>
 <style>
@@ -25,17 +26,17 @@
   --shadow:0 2px 10px rgba(0,0,0,.14); --shadow-lg:0 -4px 30px rgba(0,0,0,.12);
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue","Segoe UI",Roboto,system-ui,sans-serif;
   --font-d:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue","Segoe UI",Roboto,system-ui,sans-serif;
-  --hud-bg:rgba(0,0,0,.86); --hud-fg:#fff;
+  --hud-bg:rgba(0,0,0,.86); --hud-fg:#fff; --seg-on:#ffffff; --as-bg:rgba(250,250,250,.94);
 }
 @media (prefers-color-scheme: dark){ :root{
   --bg:#000; --cell:#1c1c1e; --fill:rgba(118,118,128,.24); --fill2:rgba(120,120,128,.36);
   --label:#fff; --label2:rgba(235,235,245,.6); --label3:rgba(235,235,245,.3); --sep:rgba(84,84,88,.65);
   --tint:#fff; --tint-fg:#000; --green:#30d158; --red:#ff453a; --blue:#0a84ff;
-  --shadow:0 2px 10px rgba(0,0,0,.6); --shadow-lg:0 -4px 30px rgba(0,0,0,.6); --hud-bg:rgba(255,255,255,.94); --hud-fg:#000; color-scheme:dark } }
+  --shadow:0 2px 10px rgba(0,0,0,.6); --shadow-lg:0 -4px 30px rgba(0,0,0,.6); --hud-bg:rgba(255,255,255,.94); --hud-fg:#000; --seg-on:#636366; --as-bg:rgba(44,44,46,.96); color-scheme:dark } }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--label);font-family:var(--font);font-size:17px;letter-spacing:-.41px;line-height:1.29;overflow:hidden;-webkit-font-smoothing:antialiased}
-button,input{font:inherit;color:inherit;letter-spacing:inherit}
+button,input,textarea,select{font:inherit;color:inherit;letter-spacing:inherit}
 button{cursor:pointer;background:none;border:0;padding:0}
 a{color:inherit;text-decoration:none}
 :focus-visible{outline:2px solid var(--blue);outline-offset:2px}
@@ -101,6 +102,43 @@ body.has-badge .card{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))
 .btn-sec{display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;border-radius:12px;background:var(--fill);font-size:15px;font-weight:600;letter-spacing:-.24px}
 .btn-sec svg{width:18px;height:18px}
 .btn-sec.red{color:var(--red)}
+.tiles3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:62px;border-radius:12px;background:var(--fill);font-size:13px;font-weight:600;letter-spacing:-.08px}
+.tile svg{width:22px;height:22px}
+.tile.home{background:var(--tint);color:var(--tint-fg)}
+.mk.home{z-index:3}
+.mk.home .head{width:40px;height:40px;border-radius:12px;background:#000;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.45)}
+.mk.home .head svg{width:20px;height:20px}
+.mk.home .lbl{display:block;background:#000;color:#fff;font-weight:700;max-width:none}
+.seg{display:flex;background:var(--fill);border-radius:9px;padding:2px}
+.seg button{flex:1;min-height:30px;padding:4px 6px;font-size:13px;font-weight:500;letter-spacing:-.08px;border-radius:7px;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--seg-on);box-shadow:0 3px 8px rgba(0,0,0,.12),0 3px 1px rgba(0,0,0,.04);font-weight:600}
+.sec-h{font-size:13px;color:var(--label2);text-transform:uppercase;letter-spacing:-.08px;padding:0 16px;margin:0 0 -8px}
+.lvl{display:inline-block;font-size:13px;font-weight:600;letter-spacing:-.08px;padding:3px 9px;border-radius:999px;color:var(--lc);background:color-mix(in srgb,var(--lc) 15%,transparent);white-space:nowrap}
+.thumb{width:52px;height:52px;border-radius:10px;object-fit:cover;flex:0 0 auto;background:var(--fill);display:grid;place-items:center;color:var(--label3)}
+.thumb svg{width:22px;height:22px}
+.rank-n{width:16px;text-align:center;font-weight:600;color:var(--label2);flex:0 0 auto}
+.big{font-family:var(--font-d);font-size:22px;font-weight:700;white-space:nowrap}
+.big small{font-family:var(--font);font-size:13px;font-weight:500;color:var(--label2);margin-left:2px}
+.lrow .pav{width:36px;height:36px}
+.lrow .s2{font-size:15px;line-height:20px;letter-spacing:-.24px;display:block;margin-top:3px}
+.ctl{appearance:none;-webkit-appearance:none;border:0;background:transparent;font-size:17px;color:var(--label2);text-align:right;text-align-last:right;outline:none;padding:0}
+.ctl option{color:#000}
+textarea.in{resize:none;min-height:84px;line-height:22px}
+.preview{width:100%;max-height:240px;object-fit:cover;border-radius:12px;display:block}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:50;display:grid;place-items:center;padding:16px}
+.lightbox img{max-width:100%;max-height:100%;border-radius:10px}
+.aswrap{position:fixed;inset:0;z-index:40}
+.as-bd{position:absolute;inset:0;background:rgba(0,0,0,.35);opacity:0;transition:opacity .2s}
+.as{position:absolute;left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;transform:translateY(110%);transition:transform .3s cubic-bezier(.32,.72,0,1);max-width:560px;margin:0 auto}
+.aswrap.show .as-bd{opacity:1}
+.aswrap.show .as{transform:none}
+.as-g{background:var(--as-bg);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.as-title{font-size:13px;color:var(--label2);text-align:center;padding:14px 16px;border-bottom:.5px solid var(--sep)}
+.as-b{display:grid;place-items:center;width:100%;min-height:57px;font-size:20px;color:var(--tint);letter-spacing:.38px}
+.as-b + .as-b{border-top:.5px solid var(--sep)}
+.as-b.red{color:var(--red)}
+.as-b.bold{font-weight:600}
 
 /* markers */
 .mk{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
@@ -203,6 +241,7 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
     <button class="btn-primary" type="submit">Bellaquear</button>
   </form>
 </div>
+<div class="aswrap" id="actions" hidden></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -212,7 +251,11 @@ const NETLIFY_URL = 'https://sicilian-boys.netlify.app/';
 if (/github\.io$/.test(location.hostname)) { location.replace(NETLIFY_URL); return; }
 const CATANIA = { lat:37.5045, lng:15.0862 };
 const CATS = { ver:'Ver', comer:'Comer', noche:'Noche', ruta:'Excursiones', extra:'Pines del grupo' };
-const CAT_LONG = { ver:'Qué ver', comer:'Dónde comer', noche:'Noche', ruta:'Excursión en coche', extra:'Pin del grupo' };
+const CAT_LONG = { ver:'Qué ver', comer:'Dónde comer', noche:'Noche', ruta:'Excursión en coche', extra:'Pin del grupo', casa:'Nuestro alojamiento' };
+// Alojamiento del grupo. Coordenadas del centro de la plaza (OpenStreetMap); el portal 4 está en ella.
+const HOME = { id:'casa', cat:'casa', name:'Dimora Lucia Majorana', addr:'Piazza Angelo Majorana 4, Catania', lat:37.50528, lng:15.09368, note:'Piazza Angelo Majorana 4' };
+const DAYS = [['04', 'Jue 4'], ['05', 'Vie 5'], ['06', 'Sáb 6']];
+const LEVELS = { charla:['Conversación', 1, '#30b0c7'], beso:['Beso', 2, '#ff2d55'], lio:['Liado', 3, '#af52de'], otro:['Otro', 1, '#8e8e93'] };
 const ICON = {
   eye:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 21V10l8-6 8 6v11h-5.5v-6h-5v6z"/></svg>',
   food:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h1.5v6.2c0 1-.6 1.9-1.5 2.3V22H5.5V10.5C4.6 10.1 4 9.2 4 8.2V2h1.5v6h.75V2h.75v6H7zM18.5 2C16 2 14.5 4.5 14.5 8v5h2.5v9h1.5z"/></svg>',
@@ -226,9 +269,13 @@ const ICON = {
   arrow:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5L3.6 10.4c-.7.3-.6 1.3.1 1.5l6.6 1.8 1.8 6.6c.2.7 1.2.8 1.5.1l6.9-16.9z"/></svg>',
   pinAdd:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22s-7-6.1-7-12a7 7 0 0 1 14 0c0 5.9-7 12-7 12zm-1-15v2.5H8.5v2H11V14h2v-2.5h2.5v-2H13V7z"/></svg>',
   chev:'<svg viewBox="0 0 8 13"><path d="M1.5 1.5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  trash:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3h6l1 2h4v2H4V5h4zM6 9h12l-1 12H7z"/></svg>'
+  trash:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3h6l1 2h4v2H4V5h4zM6 9h12l-1 12H7z"/></svg>',
+  home:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2l9 7.4-1.3 1.5-1.2-1V20h-5v-6h-3v6h-5v-8.9l-1.2 1L2.9 10.6z"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.5s-8.5-5.2-8.5-11a4.8 4.8 0 0 1 8.5-3 4.8 4.8 0 0 1 8.5 3c0 5.8-8.5 11-8.5 11z"/></svg>',
+  camera:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 4h6l1.5 2H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.5zm3 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'
 };
-const PIN_ICON = { ver: ICON.eye, comer: ICON.food, noche: ICON.moon, ruta: ICON.car, extra: ICON.star };
+const PIN_ICON = { ver: ICON.eye, comer: ICON.food, noche: ICON.moon, ruta: ICON.car, extra: ICON.star, casa: ICON.home };
 const $ = s => document.querySelector(s);
 function h(tag, attrs, ...kids){
   const e = document.createElement(tag);
@@ -263,9 +310,11 @@ const origin = () => S.lastPos || CATANIA;
 // ---------- map ----------
 const map = new maplibregl.Map({ container:'map', style:'https://tiles.openfreemap.org/styles/' + (dark ? 'dark' : 'positron'), center:[CATANIA.lng, CATANIA.lat], zoom:14.2, attributionControl:{ compact:true }, maxPitch:70 });
 map.on('load', () => {
+  if (window.tuneMapStyle) window.tuneMapStyle(map, dark);
+  addHomeMarker();
   try {
     map.addLayer({ id:'b3d', type:'fill-extrusion', source:'openmaptiles', 'source-layer':'building', minzoom:14, layout:{ visibility:'none' },
-      paint:{ 'fill-extrusion-color': dark ? '#2c2c2e' : '#dedee3', 'fill-extrusion-height':['coalesce',['get','render_height'],8], 'fill-extrusion-base':['coalesce',['get','render_min_height'],0], 'fill-extrusion-opacity':.9 } });
+      paint:{ 'fill-extrusion-color': dark ? '#2a2a2f' : '#d9d9d9', 'fill-extrusion-height':['coalesce',['get','render_height'],8], 'fill-extrusion-base':['coalesce',['get','render_min_height'],0], 'fill-extrusion-opacity':.9 } });
   } catch (e) { console.warn('3d layer', e); }
   renderPlaces();
 });
@@ -282,6 +331,12 @@ function makeMarker(p){
   const m = new maplibregl.Marker({ element: el, anchor:'top', offset:[0, -14] }).setLngLat([p.lng, p.lat]).addTo(map);
   m._p = p; return m;
 }
+function addHomeMarker(){
+  const el = h('div', { class:'mk home', role:'button', 'aria-label': 'Alojamiento: ' + HOME.name }, h('span', { class:'head', html: ICON.home }), h('span', { class:'lbl' }, 'Casa · ' + HOME.name));
+  el.addEventListener('click', e => { e.stopPropagation(); goHome(); });
+  new maplibregl.Marker({ element: el, anchor:'top', offset:[0, -20] }).setLngLat([HOME.lng, HOME.lat]).addTo(map);
+}
+function goHome(){ select({ type:'place', p: HOME }); reveal(HOME.lng, HOME.lat); }
 function allPlaces(){ return [...(window.PLACES || []), ...Object.values(S.extraPins).map(p => ({ ...p, cat:'extra' }))].filter(p => typeof p.lat === 'number'); }
 function renderPlaces(){
   for (const m of S.placeMarkers) m.remove(); S.placeMarkers = [];
@@ -332,7 +387,7 @@ function renderCard(){
     body.replaceChildren(h('div', { style:'display:flex;flex-direction:column;gap:12px' },
       h('div', { class:'ph' }, h('div', { class:'grow' }, h('h2', {}, p.name), h('div', { class:'sub' }, [CAT_LONG[p.cat], fmtKm(kmFrom(origin(), p)) + (S.lastPos ? ' de ti' : ' de Catania')].join(' · ')), p.note ? h('div', { class:'note' }, p.note) : null, p.by ? h('div', { class:'sub' }, 'Añadido por ' + p.by) : null),
         h('button', { class:'circle', type:'button', 'aria-label':'Cerrar', html: ICON.x, onclick: () => select(null) })),
-      h('a', { class:'btn-primary', href: d.href, target:'_blank', rel:'noopener', html: (d.far ? ICON.car : ICON.walk) + '<span>' + (d.far ? 'Ir en coche' : 'Ir andando') + '</span>' }),
+      h('a', { class:'btn-primary', href: d.href, target:'_blank', rel:'noopener', html: (d.far ? ICON.car : ICON.walk) + '<span>' + (p.cat === 'casa' ? (d.far ? 'Volver a casa en coche' : 'Volver a casa andando') : (d.far ? 'Ir en coche' : 'Ir andando')) + '</span>' }),
       h('div', { class:'btn-row' },
         h('a', { class:'btn-sec', href:`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`, target:'_blank', rel:'noopener', html: ICON.map + '<span>Ver en Maps</span>' }),
         p.cat === 'extra' && S.sync ? h('button', { class:'btn-sec red', type:'button', html: ICON.trash + '<span>Borrar pin</span>', onclick: () => { S.sync.delPin(p.id).then(() => toast('Pin borrado'), () => toast('No se pudo borrar')); delete S.extraPins[p.id]; renderPlaces(); select(null); } })
@@ -355,8 +410,11 @@ function renderCard(){
       h('div', { class:'crow' }, h('span', { class:'dot' + (S.sharing ? ' on' : ''), html: ICON.arrow }),
         h('span', { class:'grow' }, h('span', { class:'t' }, 'Compartir mi ubicación'), h('span', { class:'s', id:'shareSub' }, shareStatus())),
         switchEl(S.sharing, () => { if (!S.sync) return toast('Para veros entre vosotros hay que abrir la web desde Netlify (ver README)'); setSharing(!S.sharing); }, 'Compartir mi ubicación')),
-      h('button', { class:'crow', type:'button', onclick: () => { if (!S.sync) return toast('Los pines del grupo necesitan el modo grupo (ver README)'); S.addMode = true; toast('Toca el mapa donde va el pin'); } },
-        h('span', { class:'dot', html: ICON.pinAdd }), h('span', { class:'grow' }, h('span', { class:'t' }, 'Añadir pin del grupo'), h('span', { class:'s' }, 'El bar donde estáis, el parking…')), h('span', { class:'chev', style:'color:var(--label3)', html: ICON.chev })))));
+    ),
+    h('div', { class:'tiles3' },
+      h('button', { class:'tile home', type:'button', html: ICON.home + '<span>Casa</span>', onclick: goHome }),
+      h('button', { class:'tile', type:'button', html: ICON.moon + '<span>Marcador</span>', onclick: openNight }),
+      h('button', { class:'tile', type:'button', html: ICON.pinAdd + '<span>Añadir pin</span>', onclick: () => { if (!S.sync) return toast('Los pines del grupo necesitan el modo grupo'); S.addMode = true; toast('Toca el mapa donde va el pin'); } }))));
 }
 function escapeText(s){ return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
 function shareStatus(){
@@ -376,7 +434,7 @@ function openSearch(){
   const box = h('div', { class:'list' });
   const draw = () => {
     const term = q.value.trim().toLowerCase();
-    const ps = allPlaces().filter(p => !term || (p.name + ' ' + (p.addr || '') + ' ' + (CATS[p.cat] || '')).toLowerCase().includes(term)).sort((a, b) => kmFrom(origin(), a) - kmFrom(origin(), b));
+    const ps = [HOME, ...allPlaces()].filter(p => !term || (p.name + ' ' + (p.addr || '') + ' ' + (CATS[p.cat] || '')).toLowerCase().includes(term)).sort((a, b) => kmFrom(origin(), a) - kmFrom(origin(), b));
     box.replaceChildren(...(ps.length ? ps.map(p => h('button', { class:'lrow', type:'button', onclick: () => { closeSheet(); select({ type:'place', p }); map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), kmFrom(origin(), p) > 20 ? 12 : 15.5), padding:{ bottom: 260 } }); } },
       h('span', { class:'ico' + (p.cat === 'extra' ? ' extra' : ''), html: PIN_ICON[p.cat] || ICON.star }),
       h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, p.name), h('span', { class:'s', style:'display:block' }, [CATS[p.cat], fmtKm(kmFrom(origin(), p))].join(' · '))), h('span', { class:'chev', html: ICON.chev }))))
@@ -395,6 +453,104 @@ function openPinForm(lngLat){
     h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, name)), h('div', { class:'lrow' }, h('div', { class:'body' }, note))),
     h('p', { class:'foot' }, 'Lo verán los tres en el mapa. Se puede borrar desde su ficha.'));
   setTimeout(() => name.focus(), 350);
+}
+
+// ---------- action sheet ----------
+function actionSheet(title, actions){
+  const w = $('#actions');
+  const close = () => { w.classList.remove('show'); setTimeout(() => { w.hidden = true; w.replaceChildren(); }, 260); };
+  const btn = a => a.href ? h('a', { class:'as-b', href: a.href, target:'_blank', rel:'noopener', onclick: close }, a.label)
+                        : h('button', { type:'button', class:'as-b' + (a.destructive ? ' red' : ''), onclick: () => { close(); setTimeout(a.onclick, 120); } }, a.label);
+  w.replaceChildren(h('div', { class:'as-bd', onclick: close }), h('div', { class:'as' },
+    h('div', { class:'as-g' }, title ? h('div', { class:'as-title' }, title) : null, ...actions.filter(Boolean).map(btn)),
+    h('div', { class:'as-g' }, h('button', { type:'button', class:'as-b bold', onclick: close }, 'Cancelar'))));
+  w.hidden = false; requestAnimationFrame(() => w.classList.add('show'));
+}
+
+// ---------- marcador de la noche ----------
+const todayKey = () => { const t = new Date(); return (t.getFullYear() === 2026 && t.getMonth() === 11 && t.getDate() >= 4 && t.getDate() <= 6) ? '0' + t.getDate() : '04'; };
+const dayLabel = d => (DAYS.find(x => x[0] === d) || [d, d])[1];
+const travellerName = id => (TRAVELLERS.find(([n]) => slug(n) === id) || [id])[0];
+async function api(body){
+  const r = await fetch(API, { method:'POST', headers:{ 'content-type':'application/json' }, body: JSON.stringify({ group: S.group, ...body }) });
+  if (!r.ok) throw new Error('HTTP ' + r.status); return r.json();
+}
+function sheetNav(title, left, right){ return h('div', { class:'snav' }, left ? h('button', { class:'l', type:'button', onclick: left[1] }, left[0]) : h('span'), h('div', { class:'c' }, title), right ? h('button', { class:'r', type:'button', onclick: right[1] }, right[0]) : h('span')); }
+async function openNight(){
+  if (!S.sync || S.sync.kind !== 'netlify') return toast('El marcador necesita la web de Netlify');
+  const body = h('div', { style:'display:flex;flex-direction:column;gap:16px' }, h('p', { class:'foot' }, 'Cargando…'));
+  openSheet(sheetNav('Marcador de la noche', null, ['Cerrar', closeSheet]), body);
+  try { const res = await api({ action:'matches' }); S.matches = Object.values(res.matches || {}).sort((a, b) => b.t - a.t); drawNight(body); }
+  catch (e) { console.warn(e); body.replaceChildren(h('p', { class:'foot' }, 'No se pudo cargar el marcador. Revisa la conexión.')); }
+}
+function drawNight(body){
+  const ms = S.matches || [];
+  const rows = TRAVELLERS.map(([n]) => { const id = slug(n); const l = ms.filter(m => m.by === id); return { n, id, l, pts: l.reduce((a, m) => a + (LEVELS[m.level] || LEVELS.otro)[1], 0) }; }).sort((a, b) => b.pts - a.pts || b.l.length - a.l.length);
+  const board = h('div', { class:'list' }, ...rows.map((r, i) => h('div', { class:'lrow' },
+    h('span', { class:'rank-n' }, i + 1), (() => { const f = face(r.id, r.n); f.classList.add('pav'); return f; })(),
+    h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, r.n + (r.id === S.me.id ? ' (tú)' : '')),
+      h('span', { class:'s', style:'display:block' }, r.l.length ? r.l.length + (r.l.length === 1 ? ' match · ' : ' matches · ') + DAYS.map(([d, l]) => l.split(' ')[0] + ' ' + r.l.filter(m => m.day === d).length).join(' · ') : 'Sin matches')),
+      h('span', { class:'big' }, r.pts, h('small', {}, r.pts === 1 ? 'pt' : 'pts'))))));
+  const hist = ms.length ? h('div', { class:'list' }, ...ms.map(matchRow)) : h('p', { class:'foot' }, 'Todavía nadie ha marcado. Lo que pase en Catania se apunta aquí.');
+  body.replaceChildren(board, h('p', { class:'foot', style:'margin-top:-8px' }, Object.values(LEVELS).map(([l, pts]) => l + ' ' + pts).join(' · ')),
+    h('button', { class:'btn-primary', type:'button', html: ICON.plus + '<span>Apuntar match</span>', onclick: openNewMatch }),
+    h('p', { class:'sec-h' }, 'Historial'), hist);
+}
+const photoUrl = m => `/api/photo?g=${S.group}&id=${encodeURIComponent(m.id)}`;
+function matchRow(m){
+  const L = LEVELS[m.level] || LEVELS.otro;
+  let lead = m.photo ? h('img', { class:'thumb', src: photoUrl(m), alt: m.name, loading:'lazy' }) : h('span', { class:'thumb', html: ICON.heart });
+  if (m.photo) lead.addEventListener('error', () => lead.replaceWith(h('span', { class:'thumb', html: ICON.heart })));
+  const el = h('button', { class:'lrow', type:'button' }, lead,
+    h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, m.name),
+      h('span', { class:'s', style:'display:block' }, [m.ig ? '@' + m.ig : null, travellerName(m.by), dayLabel(m.day)].filter(Boolean).join(' · ')),
+      m.note ? h('span', { class:'s2' }, m.note) : null),
+      h('span', { class:'lvl', style:'--lc:' + L[2] }, L[0])));
+  el.addEventListener('click', () => actionSheet(m.name, [
+    m.photo && { label:'Ver foto', onclick: () => { const lb = h('div', { class:'lightbox', onclick: () => lb.remove() }, h('img', { src: photoUrl(m), alt: m.name })); document.body.append(lb); } },
+    m.ig && { label:'Abrir Instagram', href:'https://www.instagram.com/' + encodeURIComponent(m.ig) + '/' },
+    m.by === S.me.id && { label:'Eliminar', destructive:true, onclick: async () => { try { await api({ action:'delMatch', id: m.id, by: S.me.id }); toast('Eliminado'); } catch (e) { toast('No se pudo eliminar'); } openNight(); } }]));
+  return el;
+}
+async function compressPhoto(file){
+  const bmp = await createImageBitmap(file).catch(() => null);
+  const src = bmp || await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); });
+  const k = Math.min(1, 1000 / Math.max(src.width, src.height));
+  const c = document.createElement('canvas'); c.width = Math.round(src.width * k); c.height = Math.round(src.height * k);
+  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+  let q = 0.8, url = c.toDataURL('image/jpeg', q);
+  while (url.length > 1_400_000 && q > 0.35){ q -= 0.15; url = c.toDataURL('image/jpeg', q); }
+  return url;
+}
+function openNewMatch(){
+  let level = 'beso', file = null;
+  const name = h('input', { class:'in', placeholder:'Nombre', maxlength:'40', id:'nmName' });
+  const ig = h('input', { class:'in', placeholder:'Instagram', maxlength:'40', autocapitalize:'none', autocorrect:'off', id:'nmIg' });
+  const seg = h('div', { class:'seg' }, ...Object.entries(LEVELS).map(([k, [l]]) => h('button', { type:'button', 'aria-pressed': k === level ? 'true' : 'false', onclick: e => { level = k; for (const b of seg.children) b.setAttribute('aria-pressed', b === e.currentTarget ? 'true' : 'false'); } }, l)));
+  const day = h('select', { class:'ctl', id:'nmDay' }, ...DAYS.map(([d, l]) => h('option', { value: d, selected: d === todayKey() }, l)));
+  const note = h('textarea', { class:'in', placeholder:'Dónde, cómo, qué pasó…', maxlength:'200', id:'nmNote' });
+  const preview = h('img', { class:'preview', alt:'Vista previa', hidden: true });
+  const fileIn = h('input', { type:'file', accept:'image/*', id:'nmPhoto', style:'position:absolute;inset:0;opacity:0;width:100%;cursor:pointer' });
+  const photoT = h('span', { class:'t', style:'display:block;color:var(--tint);font-weight:500' }, 'Añadir foto');
+  fileIn.addEventListener('change', () => { file = fileIn.files[0] || null; preview.hidden = !file; if (file){ preview.src = URL.createObjectURL(file); photoT.textContent = 'Cambiar foto'; } });
+  const save = async (e) => {
+    const btn = e.currentTarget; if (btn.disabled) return;
+    if (!name.value.trim()) return toast('Ponle un nombre');
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      const match = { by: S.me.id, name: name.value.trim(), ig: ig.value.trim(), level, day: day.value, note: note.value.trim() };
+      if (file) match.photo = await compressPhoto(file);
+      await api({ action:'addMatch', match }); toast('Match apuntado'); openNight();
+    } catch (err) { console.warn(err); toast('No se pudo guardar. Inténtalo otra vez.'); btn.disabled = false; btn.textContent = 'Guardar'; }
+  };
+  openSheet(sheetNav('Nuevo match', ['Cancelar', openNight], ['Guardar', save]),
+    h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, name)), h('div', { class:'lrow' }, h('div', { class:'body' }, ig))),
+    h('p', { class:'sec-h' }, 'Hasta dónde llegó'), seg,
+    h('div', { class:'list' }, h('label', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'t grow' }, 'Noche'), day))),
+    h('div', { class:'list' }, h('label', { class:'lrow', style:'position:relative' }, h('span', { class:'dot', style:'width:30px;height:30px;border-radius:7px;background:var(--fill);display:grid;place-items:center', html: ICON.camera }),
+      h('span', { class:'body' }, h('span', { class:'grow' }, photoT, h('span', { class:'s', style:'display:block' }, 'Se guarda comprimida'))), fileIn)),
+    preview,
+    h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, note))));
 }
 
 // ---------- geolocation ----------
