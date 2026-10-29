@@ -1,0 +1,13 @@
+# Netlify publica la carpeta entera y despliega el servidor del mapa en vivo.
+# No hay paso de compilación: Netlify instala las dependencias de package.json y empaqueta la función.
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[headers]]
+  for = "/sicilia-en-vivo/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

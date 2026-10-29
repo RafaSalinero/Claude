@@ -2,9 +2,10 @@
 
 Página web con el mapa real de Sicilia oriental, tu posición y la de los otros dos en tiempo real, los sitios del viaje (Catania y excursiones en coche) y pines que añadís sobre la marcha. Se abre desde el móvil con un enlace y se puede añadir a la pantalla de inicio. No pasa por ninguna tienda.
 
-Está publicada con GitHub Pages en:
+Hay dos copias de la web:
 
-**https://rafasalinero.github.io/Claude/sicilia-en-vivo/**
+- **Netlify (la buena):** tiene el modo grupo, os veis entre vosotros. La URL la da Netlify al conectar el repositorio, ver el paso 1.
+- **GitHub Pages:** https://rafasalinero.github.io/Claude/sicilia-en-vivo/ funciona en modo individual: mapa, sitios y tu posición, pero sin ver a los demás.
 
 Funciona fuera del visor de claude.ai porque ese visor bloquea la ubicación del móvil y los mapas en vivo. La app del plan (artefacto de claude.ai) enlaza a esta página desde la pestaña Mapa.
 
@@ -13,42 +14,38 @@ Funciona fuera del visor de claude.ai porque ese visor bloquea la ubicación del
 | Archivo | Qué es |
 |---|---|
 | `index.html` | La página completa (mapa, posiciones, pines). |
-| `config.js` | Credenciales de tu proyecto Firebase. Hay que editarlo una vez. |
 | `places.js` | Los sitios del viaje: Catania y excursiones. Edítalo si cambias sitios. |
-| `database.rules.json` | Reglas de seguridad para la Realtime Database. |
+| `../netlify/functions/sync.mjs` | El pequeño servidor que guarda posiciones y pines del grupo en Netlify. |
+| `../netlify.toml`, `../package.json` | Configuración de Netlify y su única dependencia. |
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `logo-96.png` | Icono de los tres pumas y datos para añadir a la pantalla de inicio. |
+| `config.js`, `database.rules.json` | Solo para la alternativa con Firebase. No hacen falta con Netlify. |
 
-## Paso 1: GitHub Pages (ya hecho)
+## Paso 1: conectar el repositorio a Netlify (5 minutos, una sola vez)
 
-La web se publica sola desde la rama `gh-pages`. Cada vez que cambias algo en `main`, una acción de GitHub copia `main` en `gh-pages` y en uno o dos minutos la web se actualiza. Edita siempre en `main`.
+1. Entra en https://app.netlify.com con tu cuenta.
+2. Pulsa **Add new site** (o **Add new project**) y luego **Import an existing project**.
+3. Elige **GitHub**, autoriza a Netlify si lo pide y selecciona el repositorio **RafaSalinero/Claude**.
+4. Deja todo como viene: rama `main`, sin comando de build. Netlify lee el resto de `netlify.toml`. Pulsa **Deploy**.
+5. Cuando termine, en uno o dos minutos, abre `https://NOMBRE-DEL-SITIO.netlify.app/sicilia-en-vivo/`. Puedes poner un nombre más fácil en Site configuration > Change site name, por ejemplo `sicilia-pumas`.
+6. Pásale el enlace a Claude, o pégalo tú en la app del plan: Ajustes > campo del mapa en vivo.
 
-Si algún día el enlace diera 404: https://github.com/RafaSalinero/Claude/settings/pages, Source "Deploy from a branch", rama `gh-pages`, carpeta `/ (root)`.
+A partir de ahí, cada cambio que se suba a `main` se publica solo en Netlify y en GitHub Pages.
 
-## Paso 2: Firebase (10 minutos, gratis)
+Consumo: cada móvil hace una petición cada 6 segundos mientras comparte y cada 12 si solo mira, y se para cuando la web está en segundo plano. Para tres personas durante el viaje son unas decenas de miles de peticiones, muy por debajo del plan gratuito de Netlify.
 
-Sin esto la web funciona en modo individual: ves el mapa, los sitios y tu posición, pero no os veis entre vosotros.
+Privacidad: las posiciones se guardan bajo una clave derivada del PIN del grupo, así que sin el PIN no se pueden leer desde la web. Se borran al apagar el interruptor o cerrar la página, y en cualquier caso a las 6 horas. Elegid un PIN que no sea 1234.
 
-1. Entra en https://console.firebase.google.com con tu cuenta de Google y crea un proyecto (por ejemplo `sicilia-dic`). Puedes desactivar Analytics.
-2. En el menú lateral, Compilación > Realtime Database > Crear base de datos. Elige la región `europe-west1` y empieza en **modo bloqueado**.
-3. En la pestaña Reglas, borra lo que haya y pega el contenido de `database.rules.json`. Publica.
-4. Configuración del proyecto (rueda dentada) > Tus apps > icono `</>` (web). Ponle un nombre y registra. Copia los valores de `firebaseConfig`.
-5. Edita `config.js` directamente en GitHub (abre el archivo, icono del lápiz), pega `apiKey`, `authDomain`, `projectId`, `appId` y la `databaseURL` que aparece en la cabecera de la Realtime Database (termina en `firebasedatabase.app`). Guarda con "Commit changes". En un minuto la web está actualizada.
+## Paso 2: en el móvil
 
-O pásale esos valores a Claude y lo actualiza él.
-
-Qué protege esto: nadie fuera del grupo puede leer nada salvo que conozca el PIN, porque los datos cuelgan de una clave derivada del PIN. Elegid un PIN que no sea 1234. Las posiciones se borran solas al cerrar la página. Las claves de `config.js` son públicas por diseño en Firebase; la seguridad la dan las reglas y el PIN.
-
-## Paso 3: en el móvil
-
-1. Cada uno abre el enlace, escribe su nombre y el PIN del grupo.
-2. Pulsa el botón verde (avión de papel) y acepta el permiso de ubicación. Mientras está en verde, los otros te ven; al apagarlo o cerrar la página, desapareces.
+1. Cada uno abre el enlace de Netlify, toca su nombre (Salinero, Braulio o Pomares) y escribe el mismo PIN del grupo. Cada uno tiene su color fijo en el mapa.
+2. Activa el interruptor "Compartir mi ubicación" y acepta el permiso de ubicación. Mientras está activado, los otros te ven; al apagarlo o cerrar la página, desapareces.
 3. Safari en iPhone: compartir > "Añadir a pantalla de inicio" para tenerla como app con el icono de los pumas. Chrome en Android: menú > "Añadir a pantalla de inicio".
 
 Importante en iPhone: la posición solo se envía mientras la página está abierta en primer plano. Si bloqueas el móvil, deja de actualizarse hasta que vuelvas a abrirla. Es una limitación de iOS para webs, no de la app.
 
 ## Cómo se usa
 
-- **Ficha inferior**: "¿A dónde vamos?" abre el buscador de sitios, ordenados por cercanía. El interruptor "Compartir mi ubicación" hace que los demás te vean; al apagarlo o cerrar la página desapareces. "Añadir pin del grupo" y luego toca el mapa para guardar un sitio para los tres.
+- **Ficha inferior**: "¿A dónde vamos?" abre el buscador de sitios, ordenados por cercanía. El interruptor "Compartir mi ubicación" hace que los demás te vean. "Añadir pin del grupo" y luego toca el mapa para guardar un sitio para los tres.
 - **Al tocar un sitio**, la ficha se convierte en su tarjeta: botón negro "Ir en coche" si está a más de 3 km o "Ir andando" si está cerca, ambos con la ruta en Google Maps, y "Ver en Maps".
 - **Al tocar a un amigo**, en el mapa o en sus iniciales arriba a la derecha, ves hace cuánto se actualizó y un botón para ir hasta él.
 - **Botones redondos**: 3D inclina el mapa y levanta los edificios; el de personas encuadra a todos; la flecha te centra.
@@ -57,7 +54,11 @@ Importante en iPhone: la posición solo se envía mientras la página está abie
 
 ## Si algo falla
 
-- "Falta configurar Firebase": `config.js` sigue con los valores de ejemplo.
-- "Sin conexión con el grupo": las reglas no se publicaron o la `databaseURL` es incorrecta.
+- No aparece el campo del PIN: estás en la copia de GitHub Pages. Abre la de Netlify.
+- "Sin conexión con el grupo, reintentando…": no hay cobertura o Netlify no responde. La web reintenta sola.
 - No aparece tu punto azul: el navegador no tiene permiso de ubicación para ese sitio. En iPhone, Ajustes > Safari > Ubicación.
 - El mapa no carga: comprueba que hay conexión; las teselas vienen de tiles.openfreemap.org sin clave.
+
+## Alternativa: Firebase
+
+Si algún día no se usa Netlify, la web también puede sincronizar con una Realtime Database de Firebase. Rellena `config.js` con la configuración web del proyecto y pega `database.rules.json` en sus reglas. La web usa Netlify si lo encuentra y, si no, Firebase si `config.js` está relleno.

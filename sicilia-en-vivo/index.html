@@ -14,8 +14,6 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <script src="config.js"></script>
 <script src="places.js"></script>
 <style>
@@ -145,7 +143,12 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 .searchfield{display:flex;align-items:center;gap:6px;background:var(--fill);border-radius:10px;padding:0 8px;min-height:36px;color:var(--label2)}
 .searchfield svg{width:16px;height:16px;flex:0 0 auto}
 .searchfield input{flex:1;border:0;background:transparent;outline:none;font-size:17px;padding:7px 0;color:var(--label);min-width:0}
-.foot{font-size:13px;color:var(--label2);letter-spacing:-.08px;padding:0 16px;line-height:18px}
+.foot{font-size:13px;color:var(--label2);letter-spacing:-.08px;padding:0 16px;line-height:18px;margin:0}
+.pav{width:32px;height:32px;border-radius:50%;color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px;flex:0 0 auto}
+.ck{color:var(--tint);visibility:hidden;display:grid}
+.ck svg{width:18px;height:18px}
+.lrow[aria-checked="true"] .ck{visibility:visible}
+.lrow[aria-checked="true"] .t{font-weight:600}
 
 /* gate */
 .gate{position:fixed;inset:0;z-index:30;background:var(--bg);overflow:auto;display:flex;justify-content:center;padding:calc(48px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
@@ -191,9 +194,12 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
       <h1>Sicilia en vivo</h1>
       <p class="lead">El mapa del grupo, con dónde está cada uno.</p>
     </div>
-    <div class="list">
-      <div class="lrow"><div class="body"><input class="in" id="gName" required maxlength="18" placeholder="Tu nombre" autocomplete="nickname"></div></div>
-      <div class="lrow" id="pinField"><div class="body"><input class="in" id="gPin" required minlength="4" maxlength="12" placeholder="PIN del grupo" autocomplete="off" inputmode="text"></div></div>
+    <div>
+      <p class="foot" style="text-transform:uppercase;padding-bottom:7px">¿Quién eres?</p>
+      <div class="list" id="who" role="radiogroup" aria-label="Quién eres"></div>
+    </div>
+    <div class="list" id="pinField">
+      <div class="lrow"><div class="body"><input class="in" id="gPin" required minlength="4" maxlength="12" placeholder="PIN del grupo" autocomplete="off" inputmode="text"></div></div>
     </div>
     <p class="foot" id="gateFoot">Usad los tres el mismo PIN. Tu posición solo se comparte mientras tengas el interruptor activado y se borra al cerrar la página.</p>
     <button class="btn-primary" type="submit">Entrar</button>
@@ -235,7 +241,10 @@ function h(tag, attrs, ...kids){
 }
 function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2600); }
 const store = { get(k){ try { return localStorage.getItem(k); } catch { return null; } }, set(k, v){ try { localStorage.setItem(k, v); } catch {} } };
-const colorFor = id => `hsl(${[...id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7)} 62% 46%)`;
+const TRAVELLERS = [['Salinero', '#ff9500'], ['Braulio', '#28a745'], ['Pomares', '#0a7aff']];
+const slug = n => 'u-' + n.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '');
+const FIXED = Object.fromEntries(TRAVELLERS.map(([n, c]) => [slug(n), c]));
+const colorFor = id => FIXED[id] || `hsl(${[...id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7)} 62% 46%)`;
 const kmFrom = (a, b) => { const R = 6371, dLat = (b.lat - a.lat) * Math.PI / 180, dLng = (b.lng - a.lng) * Math.PI / 180; const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(x)); };
 const fmtKm = d => d < 1 ? Math.round(d * 100) * 10 + ' m' : (d < 10 ? d.toFixed(1).replace('.', ',') + ' km' : Math.round(d) + ' km');
 async function sha(s){ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].slice(0, 12).map(x => x.toString(16).padStart(2, '0')).join(''); }
@@ -319,7 +328,7 @@ function renderCard(){
       h('a', { class:'btn-primary', href: d.href, target:'_blank', rel:'noopener', html: (d.far ? ICON.car : ICON.walk) + '<span>' + (d.far ? 'Ir en coche' : 'Ir andando') + '</span>' }),
       h('div', { class:'btn-row' },
         h('a', { class:'btn-sec', href:`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`, target:'_blank', rel:'noopener', html: ICON.map + '<span>Ver en Maps</span>' }),
-        p.cat === 'extra' && S.db ? h('button', { class:'btn-sec red', type:'button', html: ICON.trash + '<span>Borrar pin</span>', onclick: () => { S.db.ref(`groups/${S.group}/pins/${p.id}`).remove(); select(null); toast('Pin borrado'); } })
+        p.cat === 'extra' && S.sync ? h('button', { class:'btn-sec red', type:'button', html: ICON.trash + '<span>Borrar pin</span>', onclick: () => { S.sync.delPin(p.id).then(() => toast('Pin borrado'), () => toast('No se pudo borrar')); delete S.extraPins[p.id]; renderPlaces(); select(null); } })
           : h('button', { class:'btn-sec', type:'button', html: ICON.arrow + '<span>Centrar</span>', onclick: () => map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), 15.5) }) }))));
     return;
   }
@@ -338,13 +347,14 @@ function renderCard(){
     h('div', { class:'rows' },
       h('div', { class:'crow' }, h('span', { class:'dot' + (S.sharing ? ' on' : ''), html: ICON.arrow }),
         h('span', { class:'grow' }, h('span', { class:'t' }, 'Compartir mi ubicación'), h('span', { class:'s', id:'shareSub' }, shareStatus())),
-        switchEl(S.sharing, () => { if (!S.db) return toast('Para veros entre vosotros falta configurar Firebase'); setSharing(!S.sharing); }, 'Compartir mi ubicación')),
-      h('button', { class:'crow', type:'button', onclick: () => { if (!S.db) return toast('Los pines del grupo necesitan Firebase'); S.addMode = true; toast('Toca el mapa donde va el pin'); } },
+        switchEl(S.sharing, () => { if (!S.sync) return toast('Para veros entre vosotros hay que abrir la web desde Netlify (ver README)'); setSharing(!S.sharing); }, 'Compartir mi ubicación')),
+      h('button', { class:'crow', type:'button', onclick: () => { if (!S.sync) return toast('Los pines del grupo necesitan el modo grupo (ver README)'); S.addMode = true; toast('Toca el mapa donde va el pin'); } },
         h('span', { class:'dot', html: ICON.pinAdd }), h('span', { class:'grow' }, h('span', { class:'t' }, 'Añadir pin del grupo'), h('span', { class:'s' }, 'El bar donde estáis, el parking…')), h('span', { class:'chev', style:'color:var(--label3)', html: ICON.chev })))));
 }
 function escapeText(s){ return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
 function shareStatus(){
-  if (!S.db) return 'Modo individual: falta configurar Firebase';
+  if (!S.sync) return 'Modo individual: abre la web desde Netlify para veros'; 
+  if (S.offline) return 'Sin conexión con el grupo, reintentando…';
   if (!S.sharing) return 'Los demás no te ven';
   const n = Object.values(S.peers).filter(p => p.id !== S.me.id && !isStale(p, 15 * 60e3)).length;
   return 'Te ven ' + (n ? (n === 1 ? '1 persona' : n + ' personas') : 'los del grupo al conectarse') + (S.lastPos ? ' · precisión ' + Math.round(S.lastPos.acc) + ' m' : '');
@@ -373,7 +383,7 @@ function openSearch(){
 function openPinForm(lngLat){
   const name = h('input', { class:'in', placeholder:'Nombre', maxlength:'40', id:'pinName' });
   const note = h('input', { class:'in', placeholder:'Nota (opcional)', maxlength:'120', id:'pinNote' });
-  const save = () => { const n = name.value.trim(); if (!n) return toast('Ponle un nombre'); const ref = S.db.ref(`groups/${S.group}/pins`).push(); ref.set({ id: ref.key, name: n, note: note.value.trim(), lat: lngLat.lat, lng: lngLat.lng, by: S.me.name, t: firebase.database.ServerValue.TIMESTAMP }); closeSheet(); toast('Pin guardado para el grupo'); };
+  const save = () => { const n = name.value.trim(); if (!n) return toast('Ponle un nombre'); S.sync.addPin({ name: n, note: note.value.trim(), lat: lngLat.lat, lng: lngLat.lng, by: S.me.name }).then(() => toast('Pin guardado para el grupo'), () => toast('No se pudo guardar el pin')); closeSheet(); };
   openSheet(h('div', { class:'snav' }, h('button', { class:'l', type:'button', onclick: closeSheet }, 'Cancelar'), h('div', { class:'c' }, 'Nuevo pin'), h('button', { class:'r', type:'button', onclick: save }, 'Guardar')),
     h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, name)), h('div', { class:'lrow' }, h('div', { class:'body' }, note))),
     h('p', { class:'foot' }, 'Lo verán los tres en el mapa. Se puede borrar desde su ficha.'));
@@ -392,12 +402,12 @@ function onPos(pos){
   if (!S.meMarker){ S.meMarker = new maplibregl.Marker({ element: h('div', { class:'me-dot', 'aria-label':'Tu posición' }) }).setLngLat([lng, lat]).addTo(map); } else S.meMarker.setLngLat([lng, lat]);
   if (first && S.flyOnFirst) map.flyTo({ center:[lng, lat], zoom: Math.max(map.getZoom(), 15.5) });
   const sub = $('#shareSub'); if (sub) sub.textContent = shareStatus();
-  if (S.sharing && S.group){ const now = Date.now(); if (now - S.lastSent > 4000){ S.lastSent = now; S.db.ref(`groups/${S.group}/people/${S.me.id}`).set({ name: S.me.name, lat, lng, acc: Math.round(acc), t: firebase.database.ServerValue.TIMESTAMP }); } }
+  if (S.sync) S.sync.sendPos({ lat, lng, acc: Math.round(acc) });
 }
 function setSharing(on){
   S.sharing = on; $('#liveDot').classList.toggle('on', on); store.set('cl-sharing', on ? '1' : '0');
-  if (on){ startLocating(); if (S.lastPos){ S.lastSent = 0; onPos({ coords:{ latitude:S.lastPos.lat, longitude:S.lastPos.lng, accuracy:S.lastPos.acc } }); } toast('Compartiendo tu ubicación'); }
-  else if (S.group) S.db.ref(`groups/${S.group}/people/${S.me.id}`).remove();
+  if (S.sync) S.sync.setSharing(on);
+  if (on){ startLocating(); if (S.lastPos) onPos({ coords:{ latitude:S.lastPos.lat, longitude:S.lastPos.lng, accuracy:S.lastPos.acc } }); toast('Compartiendo tu ubicación'); }
   renderCard();
 }
 
@@ -422,28 +432,87 @@ function renderPeers(){
 }
 setInterval(renderPeers, 20000);
 
+// ---------- group sync: Netlify function first, Firebase as fallback ----------
+const API = '/api/sync';
+function loadScript(src){ return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error('No se pudo cargar ' + src)); document.head.append(el); }); }
+const backendReady = (async () => {
+  try { const r = await fetch(API + '?ping=1', { cache:'no-store' }); if (r.ok && (r.headers.get('content-type') || '').includes('json')) return 'netlify'; } catch {}
+  return cfgOk() ? 'firebase' : null;
+})();
+function netlifySync(group, onPeople, onPins){
+  let timer = null, myPos = null, sharing = false, busy = false, fails = 0, lastSend = 0;
+  const post = (body, beacon) => {
+    const data = JSON.stringify({ group, ...body });
+    if (beacon && navigator.sendBeacon) { navigator.sendBeacon(API, new Blob([data], { type:'application/json' })); return Promise.resolve(); }
+    return fetch(API, { method:'POST', headers:{ 'content-type':'application/json' }, body: data, keepalive: true }).then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)));
+  };
+  const tick = async () => {
+    if (busy || document.hidden) return; busy = true;
+    try {
+      const me = sharing && myPos ? { id: S.me.id, name: S.me.name, ...myPos } : null;
+      const res = await post({ action:'sync', me }); if (me) lastSend = Date.now();
+      const skew = (res.now || Date.now()) - Date.now();
+      const people = {}; for (const [id, p] of Object.entries(res.people || {})) people[id] = { ...p, t: p.t - skew };
+      fails = 0; if (S.offline){ S.offline = false; renderCard(); }
+      onPeople(people); onPins(res.pins || {});
+    } catch (e) { console.warn('sync', e); if (++fails >= 3 && !S.offline){ S.offline = true; renderCard(); } }
+    finally { busy = false; }
+  };
+  const schedule = () => { clearInterval(timer); timer = setInterval(tick, sharing ? 6000 : 12000); };
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+  addEventListener('pagehide', () => { if (sharing) post({ action:'leave', id: S.me.id }, true); });
+  schedule(); tick();
+  return { kind:'netlify',
+    sendPos(pos){ myPos = pos; if (sharing && Date.now() - lastSend > 5000) tick(); },
+    setSharing(on){ sharing = on; schedule(); if (on) { lastSend = 0; tick(); } else post({ action:'leave', id: S.me.id }).then(tick, () => {}); },
+    addPin(pin){ return post({ action:'addPin', pin }).then(tick); },
+    delPin(id){ return post({ action:'delPin', id }).then(tick); } };
+}
+async function firebaseSync(group, onPeople, onPins){
+  await loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
+  await loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js');
+  if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+  const db = firebase.database(); const base = `groups/${group}`; let sharing = false, last = 0;
+  db.ref(`${base}/people/${S.me.id}`).onDisconnect().remove();
+  db.ref(`${base}/people`).on('value', snap => onPeople(snap.val() || {}), err => { console.error(err); toast('Sin conexión con el grupo: revisa las reglas de Firebase'); });
+  db.ref(`${base}/pins`).on('value', snap => onPins(snap.val() || {}));
+  return { kind:'firebase',
+    sendPos(pos){ if (!sharing) return; const now = Date.now(); if (now - last < 4000) return; last = now; db.ref(`${base}/people/${S.me.id}`).set({ name: S.me.name, ...pos, t: firebase.database.ServerValue.TIMESTAMP }); },
+    setSharing(on){ sharing = on; last = 0; if (!on) db.ref(`${base}/people/${S.me.id}`).remove(); },
+    addPin(pin){ const ref = db.ref(`${base}/pins`).push(); return ref.set({ ...pin, id: ref.key, t: firebase.database.ServerValue.TIMESTAMP }); },
+    delPin(id){ return db.ref(`${base}/pins/${id}`).remove(); } };
+}
+
 // ---------- entry ----------
 function enterCommon(name){
-  S.me.name = name; S.me.id = store.get('cl-uid') || ('u' + Math.random().toString(36).slice(2, 10)); store.set('cl-uid', S.me.id); store.set('cl-name', name);
+  S.me.name = name; S.me.id = slug(name); store.set('cl-name', name);
   $('#gate').hidden = true; renderPeers(); renderCard();
 }
-async function enter(name, pin){
+async function enter(name, pin, kind){
   enterCommon(name); store.set('cl-pin', pin);
   S.group = await sha('catania:' + pin);
-  if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-  S.db = firebase.database();
-  S.db.ref(`groups/${S.group}/people/${S.me.id}`).onDisconnect().remove();
-  S.db.ref(`groups/${S.group}/people`).on('value', snap => { S.peers = snap.val() || {}; for (const [id, p] of Object.entries(S.peers)) p.id = id; renderPeers(); }, err => { console.error(err); toast('Sin conexión con el grupo: revisa las reglas de Firebase'); });
-  S.db.ref(`groups/${S.group}/pins`).on('value', snap => { S.extraPins = snap.val() || {}; renderPlaces(); });
+  const onPeople = v => { S.peers = v; for (const [id, p] of Object.entries(S.peers)) p.id = id; renderPeers(); };
+  const onPins = v => { const next = JSON.stringify(v); if (next === S.pinsSig) return; S.pinsSig = next; S.extraPins = v; renderPlaces(); };
+  S.sync = kind === 'netlify' ? netlifySync(S.group, onPeople, onPins) : await firebaseSync(S.group, onPeople, onPins);
   renderCard();
   if (store.get('cl-sharing') === '1') setSharing(true); else startLocating();
 }
 function enterLocal(name){ enterCommon(name); startLocating(); }
 renderCard();
 const gate = $('#gateForm');
-if (!cfgOk()){ $('#pinField').hidden = true; $('#gPin').required = false; $('#gateFoot').textContent = 'Todavía no está configurado el modo grupo: verás el mapa y tu posición, pero aún no os veréis entre vosotros.'; }
-$('#gName').value = store.get('cl-name') || ''; $('#gPin').value = store.get('cl-pin') || '';
-gate.addEventListener('submit', e => { e.preventDefault(); const n = $('#gName').value.trim(); if (!cfgOk()) return enterLocal(n); enter(n, $('#gPin').value.trim()).catch(err => { console.error(err); toast('No se pudo conectar: ' + (err.message || err)); }); });
+let picked = store.get('cl-name');
+const who = $('#who');
+const drawWho = () => who.replaceChildren(...TRAVELLERS.map(([n, c]) => h('button', { class:'lrow', type:'button', role:'radio', 'aria-checked': n === picked ? 'true' : 'false', onclick: () => { picked = n; drawWho(); } },
+  h('span', { class:'pav', style:'background:' + c }, n[0]), h('span', { class:'body' }, h('span', { class:'t grow' }, n), h('span', { class:'ck', html:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' })))));
+drawWho();
+$('#gPin').value = store.get('cl-pin') || '';
+backendReady.then(kind => { if (!kind){ $('#pinField').hidden = true; $('#gPin').required = false; $('#gateFoot').textContent = 'Esta copia de la web no tiene el modo grupo: verás el mapa y tu posición, pero no os veréis entre vosotros. Abrid la de Netlify.'; } });
+gate.addEventListener('submit', async e => {
+  e.preventDefault(); const n = picked; if (!n || !TRAVELLERS.some(([x]) => x === n)) return toast('Elige quién eres'); const kind = await backendReady;
+  if (!kind) return enterLocal(n);
+  const pin = $('#gPin').value.trim(); if (pin.length < 4) return toast('El PIN necesita al menos 4 caracteres');
+  enter(n, pin, kind).catch(err => { console.error(err); toast('No se pudo conectar: ' + (err.message || err)); });
+});
 })();
 </script>
 </body>

@@ -1,0 +1,8 @@
+{
+  "name": "claude-pages",
+  "private": true,
+  "description": "Webs hechas con Claude. sicilia-en-vivo usa una función de Netlify para compartir posiciones.",
+  "dependencies": {
+    "@netlify/blobs": "11.1.4"
+  }
+}
