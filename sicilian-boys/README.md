@@ -1,10 +1,10 @@
-# Sicilia en vivo
+# Sicilian Boys
 
 Página web con el mapa real de Sicilia oriental, la posición de Salinero, Braulio y Pomares en tiempo real, los sitios del viaje (Catania y excursiones en coche) y pines que añadís sobre la marcha. Se abre desde el móvil con un enlace y se puede añadir a la pantalla de inicio. No pasa por ninguna tienda.
 
-**Enlace para el grupo: https://sicilia-en-vivo.netlify.app/sicilia-en-vivo/**
+**Enlace para el grupo: https://sicilian-boys.netlify.app/**
 
-Está publicada en Netlify, proyecto `sicilia-en-vivo`, con un pequeño servidor que guarda las posiciones. La copia antigua de GitHub Pages redirige a esta.
+Está publicada en Netlify, proyecto `sicilian-boys`, con un pequeño servidor que guarda las posiciones. Los enlaces antiguos (sicilia-en-vivo y GitHub Pages) redirigen a este.
 
 Funciona fuera del visor de claude.ai porque ese visor bloquea la ubicación del móvil y los mapas en vivo. La app del plan (artefacto de claude.ai) enlaza a esta página desde la pestaña Mapa.
 
@@ -17,11 +17,14 @@ Funciona fuera del visor de claude.ai porque ese visor bloquea la ubicación del
 | `../netlify/functions/sync.mjs` | El pequeño servidor que guarda posiciones y pines del grupo en Netlify. |
 | `../netlify.toml`, `../package.json` | Configuración de Netlify y su única dependencia. |
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `logo-96.png` | Icono de los tres pumas y datos para añadir a la pantalla de inicio. |
+| `fotos/` | Fotos de Salinero, Braulio y Pomares. Se activan en la lista `TRAVELLERS` de `index.html`; sin foto se ve la inicial. |
 | `config.js`, `database.rules.json` | Solo para la alternativa con Firebase. No hacen falta con Netlify. |
 
 ## Paso 1: Netlify (ya hecho)
 
-El proyecto `sicilia-en-vivo` de Netlify se creó y desplegó desde este repositorio con el conector de Netlify de Claude. No está enlazado a GitHub, así que un cambio en `main` no se publica solo en Netlify: pídele a Claude que lo despliegue, o enlaza el repositorio en Netlify (Project configuration > Build & deploy > Link repository) para que cada push se publique solo.
+Para quitar la etiqueta "Powered by Netlify" (gratis): en Netlify, proyecto `sicilian-boys` > Project configuration > General > Powered by Netlify badge > apagar y guardar. No hace falta volver a desplegar.
+
+El proyecto `sicilian-boys` de Netlify se creó y desplegó desde este repositorio con el conector de Netlify de Claude. No está enlazado a GitHub, así que un cambio en `main` no se publica solo en Netlify: pídele a Claude que lo despliegue, o enlaza el repositorio en Netlify (Project configuration > Build & deploy > Link repository) para que cada push se publique solo.
 
 Consumo: cada móvil hace una petición cada 6 segundos mientras comparte y cada 12 si solo mira, y se para cuando la web está en segundo plano. Para tres personas durante el viaje son unas decenas de miles de peticiones, muy por debajo del plan gratuito de Netlify.
 
@@ -29,7 +32,7 @@ Privacidad: no hay PIN, así que cualquiera que tenga el enlace puede ver vuestr
 
 ## Paso 2: en el móvil
 
-1. Cada uno abre el enlace de Netlify y toca su nombre: Salinero, Braulio o Pomares. Cada uno tiene su color fijo en el mapa. El móvil lo recuerda y las siguientes veces entra directo; para cambiar de persona, toca el logo de arriba a la izquierda.
+1. Cada uno abre el enlace, toca su nombre (Salinero, Braulio o Pomares) y pulsa Bellaquear. Cada uno tiene su color fijo en el mapa. El móvil lo recuerda y las siguientes veces entra directo; para cambiar de persona, toca el logo de arriba a la izquierda.
 2. Activa el interruptor "Compartir mi ubicación" y acepta el permiso de ubicación. Mientras está activado, los otros te ven; al apagarlo o cerrar la página, desapareces.
 3. Safari en iPhone: compartir > "Añadir a pantalla de inicio" para tenerla como app con el icono de los pumas. Chrome en Android: menú > "Añadir a pantalla de inicio".
 

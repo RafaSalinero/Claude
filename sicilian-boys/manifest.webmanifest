@@ -1,6 +1,6 @@
 {
-  "name": "Sicilia en vivo",
-  "short_name": "Sicilia",
+  "name": "Sicilian Boys",
+  "short_name": "Sicilian Boys",
   "description": "Mapa del grupo con la posición de cada uno y los sitios del viaje.",
   "start_url": "./index.html",
   "display": "standalone",

@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Sicilian Boys</title>
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Sicilian Boys">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="config.js"></script>
+<script src="places.js"></script>
+<style>
+/* Uber-style map screen with iOS controls: full-bleed grey map, black pins, white floating controls, a bottom card that turns into the place card. */
+:root{
+  --bg:#f2f2f7; --cell:#ffffff; --fill:rgba(118,118,128,.12); --fill2:rgba(120,120,128,.16);
+  --label:#000; --label2:rgba(60,60,67,.6); --label3:rgba(60,60,67,.3); --sep:rgba(60,60,67,.29);
+  --tint:#000; --tint-fg:#fff; --green:#34c759; --red:#ff3b30; --blue:#007aff;
+  --shadow:0 2px 10px rgba(0,0,0,.14); --shadow-lg:0 -4px 30px rgba(0,0,0,.12);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue","Segoe UI",Roboto,system-ui,sans-serif;
+  --font-d:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue","Segoe UI",Roboto,system-ui,sans-serif;
+  --hud-bg:rgba(0,0,0,.86); --hud-fg:#fff;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --bg:#000; --cell:#1c1c1e; --fill:rgba(118,118,128,.24); --fill2:rgba(120,120,128,.36);
+  --label:#fff; --label2:rgba(235,235,245,.6); --label3:rgba(235,235,245,.3); --sep:rgba(84,84,88,.65);
+  --tint:#fff; --tint-fg:#000; --green:#30d158; --red:#ff453a; --blue:#0a84ff;
+  --shadow:0 2px 10px rgba(0,0,0,.6); --shadow-lg:0 -4px 30px rgba(0,0,0,.6); --hud-bg:rgba(255,255,255,.94); --hud-fg:#000; color-scheme:dark } }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--label);font-family:var(--font);font-size:17px;letter-spacing:-.41px;line-height:1.29;overflow:hidden;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit;letter-spacing:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+[hidden]{display:none!important}
+.grow{flex:1;min-width:0}
+#map{position:absolute;inset:0}
+.maplibregl-ctrl-attrib{font-size:10px;opacity:.7}
+.maplibregl-ctrl-bottom-right{bottom:var(--card-h,0px)!important;transition:bottom .25s}
+
+/* top overlays */
+.top{position:absolute;left:0;right:0;top:0;z-index:5;padding:calc(10px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.top > *{pointer-events:auto}
+.toprow{display:flex;align-items:center;gap:8px;pointer-events:none}
+.toprow > *{pointer-events:auto}
+.brand{display:flex;align-items:center;gap:8px;height:44px;padding:0 14px 0 6px;border-radius:22px;background:var(--cell);box-shadow:var(--shadow);font-weight:600;font-size:16px}
+.brand img{width:32px;height:32px;border-radius:50%;display:block}
+.live{width:8px;height:8px;border-radius:50%;background:var(--label3)}
+.live.on{background:var(--green)}
+.spacer{flex:1}
+.people{display:flex;align-items:center;height:44px;padding:0 6px;border-radius:22px;background:var(--cell);box-shadow:var(--shadow)}
+.people button{width:32px;height:32px;border-radius:50%;color:#fff;font-weight:700;font-size:14px;display:grid;place-items:center;border:2px solid var(--cell);margin-left:-8px}
+.people button:first-child{margin-left:0}
+.people button.stale{opacity:.45}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px;margin:-2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;padding:7px 14px;border-radius:999px;background:var(--cell);box-shadow:var(--shadow);font-size:15px;font-weight:600;letter-spacing:-.24px}
+.chip[aria-pressed="true"]{background:var(--tint);color:var(--tint-fg)}
+
+/* floating buttons */
+.fabs{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(var(--card-h,180px) + 14px);z-index:5;display:flex;flex-direction:column;gap:10px;transition:bottom .25s}
+.fab{width:44px;height:44px;border-radius:50%;background:var(--cell);box-shadow:var(--shadow);display:grid;place-items:center;font-size:14px;font-weight:700}
+.fab svg{width:20px;height:20px}
+.fab[aria-pressed="true"]{background:var(--tint);color:var(--tint-fg)}
+
+/* bottom card */
+.card{position:absolute;left:0;right:0;bottom:0;z-index:6;background:var(--cell);border-radius:16px 16px 0 0;box-shadow:var(--shadow-lg);padding:6px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.grab{width:36px;height:5px;border-radius:3px;background:var(--label3);margin:0 auto 2px}
+body.has-badge .card{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))}
+.search{display:flex;align-items:center;gap:10px;width:100%;min-height:50px;padding:0 14px;border-radius:12px;background:var(--fill);font-size:18px;font-weight:600;letter-spacing:-.43px;text-align:left}
+.search svg{width:20px;height:20px;flex:0 0 auto}
+.rows{display:flex;flex-direction:column}
+.crow{display:flex;align-items:center;gap:12px;min-height:56px;width:100%;text-align:left}
+.crow + .crow{border-top:.5px solid var(--sep)}
+.crow .dot{width:38px;height:38px;border-radius:50%;background:var(--fill);display:grid;place-items:center;flex:0 0 auto}
+.crow .dot svg{width:18px;height:18px}
+.crow .dot.on{background:var(--green);color:#fff}
+.crow .t{font-size:16px;font-weight:600;letter-spacing:-.32px;display:block}
+.crow .s{font-size:13px;color:var(--label2);letter-spacing:-.08px;display:block;margin-top:1px}
+.sw{width:51px;height:31px;border-radius:16px;background:var(--fill2);position:relative;flex:0 0 auto;transition:background .2s}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.15),0 3px 1px rgba(0,0,0,.06);transition:transform .2s}
+.sw[aria-checked="true"]{background:var(--green)}
+.sw[aria-checked="true"]::after{transform:translateX(20px)}
+.ph{display:flex;align-items:flex-start;gap:12px}
+.ph h2{font-family:var(--font-d);font-size:24px;font-weight:700;letter-spacing:.07px;line-height:29px;margin:0}
+.ph .sub{font-size:15px;color:var(--label2);letter-spacing:-.24px;margin-top:2px}
+.ph .note{font-size:15px;letter-spacing:-.24px;margin-top:8px;color:var(--label)}
+.circle{width:30px;height:30px;border-radius:50%;background:var(--fill);display:grid;place-items:center;color:var(--label2);flex:0 0 auto}
+.circle svg{width:16px;height:16px}
+.btn-primary{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;border-radius:12px;background:var(--tint);color:var(--tint-fg);font-size:17px;font-weight:600}
+.btn-primary svg{width:20px;height:20px}
+.btn-primary:active{opacity:.8}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn-sec{display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;border-radius:12px;background:var(--fill);font-size:15px;font-weight:600;letter-spacing:-.24px}
+.btn-sec svg{width:18px;height:18px}
+.btn-sec.red{color:var(--red)}
+
+/* markers */
+.mk{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.mk .head{width:28px;height:28px;border-radius:50%;background:#000;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);display:grid;place-items:center;color:#fff;transition:transform .15s}
+.mk .head svg{width:13px;height:13px}
+.mk.extra .head{background:#fff;border-color:#000;color:#000}
+.mk.sel .head{transform:scale(1.3)}
+.mk .lbl{font-size:12px;font-weight:600;line-height:15px;letter-spacing:-.08px;background:#fff;color:#000;padding:3px 7px;border-radius:7px;box-shadow:0 1px 4px rgba(0,0,0,.22);white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;display:none}
+body.labels .mk .lbl,.mk.sel .lbl{display:block}
+.me-dot{width:20px;height:20px;border-radius:50%;background:#007aff;border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.35);position:relative}
+.me-dot::after{content:"";position:absolute;inset:-16px;border-radius:50%;background:#007aff;opacity:.16;animation:pulse 2.2s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.35);opacity:.32}100%{transform:scale(1.3);opacity:0}}
+.peer{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.peer .av{width:38px;height:38px;border-radius:50%;background:var(--uc);color:#fff;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35);display:grid;place-items:center;font-weight:700;font-size:16px}
+.peer .nm{font-size:12px;font-weight:600;background:#fff;color:#000;padding:2px 7px;border-radius:7px;box-shadow:0 1px 4px rgba(0,0,0,.25);white-space:nowrap}
+.peer.stale{opacity:.55}
+
+/* sheets */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:20;opacity:0;transition:opacity .25s}
+.backdrop.show{opacity:1}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--bg);border-radius:12px 12px 0 0;max-height:calc(100% - 44px);overflow:auto;transform:translateY(100%);transition:transform .32s cubic-bezier(.32,.72,0,1);max-width:640px;margin:0 auto;padding:6px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:16px}
+.sheet.show{transform:none}
+.snav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:44px}
+.snav .l{justify-self:start;color:var(--tint);font-size:17px}
+.snav .c{font-weight:600;font-size:17px}
+.snav .r{justify-self:end;color:var(--tint);font-size:17px;font-weight:600}
+.list{background:var(--cell);border-radius:12px;overflow:hidden}
+.lrow{display:flex;align-items:center;gap:12px;padding-left:16px;width:100%;text-align:left;min-height:44px}
+.lrow .body{flex:1;min-width:0;display:flex;align-items:center;gap:10px;min-height:44px;padding:10px 16px 10px 0;border-bottom:.5px solid var(--sep);align-self:stretch}
+.list > .lrow:last-child .body{border-bottom:0}
+.lrow .t{font-size:17px;line-height:22px}
+.lrow .s{font-size:15px;color:var(--label2);letter-spacing:-.24px;line-height:20px}
+.lrow .chev{color:var(--label3);display:grid}
+.lrow .chev svg{width:8px;height:13px}
+.ico{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;background:#000;color:#fff}
+.ico.extra{background:#fff;color:#000;box-shadow:inset 0 0 0 1.5px #000}
+@media (prefers-color-scheme: dark){ .ico{background:#fff;color:#000} .ico.extra{background:#000;color:#fff;box-shadow:inset 0 0 0 1.5px #fff} }
+.ico svg{width:15px;height:15px}
+.in{flex:1;min-width:0;border:0;background:transparent;outline:none;font-size:17px;padding:11px 0;color:var(--label)}
+.in::placeholder{color:var(--label3)}
+.searchfield{display:flex;align-items:center;gap:6px;background:var(--fill);border-radius:10px;padding:0 8px;min-height:36px;color:var(--label2)}
+.searchfield svg{width:16px;height:16px;flex:0 0 auto}
+.searchfield input{flex:1;border:0;background:transparent;outline:none;font-size:17px;padding:7px 0;color:var(--label);min-width:0}
+.foot{font-size:13px;color:var(--label2);letter-spacing:-.08px;padding:0 16px;line-height:18px;margin:0}
+.pav{width:32px;height:32px;border-radius:50%;color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px;flex:0 0 auto}
+.face{position:relative;overflow:hidden}
+#who .pav{width:46px;height:46px;font-size:18px}
+#who .lrow{min-height:62px}
+.face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
+.ck{color:var(--tint);visibility:hidden;display:grid}
+.ck svg{width:18px;height:18px}
+.lrow[aria-checked="true"] .ck{visibility:visible}
+.lrow[aria-checked="true"] .t{font-weight:600}
+
+/* gate */
+.gate{position:fixed;inset:0;z-index:30;background:var(--bg);overflow:auto;display:flex;justify-content:center;padding:calc(48px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.gate form{width:100%;max-width:400px;display:flex;flex-direction:column;gap:18px}
+.gate .logo{width:100px;height:100px;border-radius:23px;display:block;margin:0 auto;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.gate h1{font-family:var(--font-d);font-size:34px;font-weight:700;letter-spacing:.37px;line-height:41px;margin:6px 0 0;text-align:center}
+.toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top,0px));transform:translate(-50%,-8px);background:var(--hud-bg);color:var(--hud-fg);font-size:15px;font-weight:600;letter-spacing:-.24px;padding:11px 18px;border-radius:14px;z-index:60;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;max-width:calc(100vw - 48px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} .me-dot::after{animation:none} }
+</style>
+</head>
+<body>
+<div id="map" role="application" aria-label="Mapa de Sicilian Boys"></div>
+
+<div class="top">
+  <div class="toprow">
+    <button class="brand" id="brand" type="button" aria-label="Cambiar de persona"><img src="logo-96.png" alt="" width="32" height="32"><span>Sicilian Boys</span><span class="live" id="liveDot"></span></button>
+    <span class="spacer"></span>
+    <div class="people" id="people" aria-label="Quién está conectado"></div>
+  </div>
+  <div class="chips" id="filters"></div>
+</div>
+
+<div class="fabs">
+  <button class="fab" id="btn3d" aria-pressed="false" aria-label="Vista 3D">3D</button>
+  <button class="fab" id="btnAll" aria-label="Ver a todos"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 19c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5z"/><circle cx="17" cy="8.5" r="2.8"/><path d="M16.5 13.6c3 .2 5 2.2 5 5.4h-4.3c0-2.1-.3-3.9-.7-5.4z"/></svg></button>
+  <button class="fab" id="btnMe" aria-label="Centrar en mí"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5L3.6 10.4c-.7.3-.6 1.3.1 1.5l6.6 1.8 1.8 6.6c.2.7 1.2.8 1.5.1l6.9-16.9z"/></svg></button>
+</div>
+
+<div class="card" id="card">
+  <div class="grab"></div>
+  <div id="cardBody"></div>
+</div>
+
+<div class="backdrop" id="backdrop" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" hidden></div>
+
+<div class="gate" id="gate">
+  <form id="gateForm">
+    <img class="logo" src="icon-512.png" alt="Tres pumas con gafas de sol" width="100" height="100">
+    <h1>Sicilian Boys</h1>
+    <div>
+      <p class="foot" style="text-transform:uppercase;padding-bottom:7px">¿Quién eres?</p>
+      <div class="list" id="who" role="radiogroup" aria-label="Quién eres"></div>
+    </div>
+    <p class="foot" id="gateFoot" hidden></p>
+    <button class="btn-primary" type="submit">Bellaquear</button>
+  </form>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+'use strict';
+const NETLIFY_URL = 'https://sicilian-boys.netlify.app/';
+if (/github\.io$/.test(location.hostname)) { location.replace(NETLIFY_URL); return; }
+const CATANIA = { lat:37.5045, lng:15.0862 };
+const CATS = { ver:'Ver', comer:'Comer', noche:'Noche', ruta:'Excursiones', extra:'Pines del grupo' };
+const CAT_LONG = { ver:'Qué ver', comer:'Dónde comer', noche:'Noche', ruta:'Excursión en coche', extra:'Pin del grupo' };
+const ICON = {
+  eye:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 21V10l8-6 8 6v11h-5.5v-6h-5v6z"/></svg>',
+  food:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h1.5v6.2c0 1-.6 1.9-1.5 2.3V22H5.5V10.5C4.6 10.1 4 9.2 4 8.2V2h1.5v6h.75V2h.75v6H7zM18.5 2C16 2 14.5 4.5 14.5 8v5h2.5v9h1.5z"/></svg>',
+  moon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
+  car:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.6 6.2A2 2 0 0 1 7.5 5h9a2 2 0 0 1 1.9 1.2L20 10.5c.6.3 1 .9 1 1.6V17a1 1 0 0 1-1 1h-1v1.2a1.3 1.3 0 0 1-2.6 0V18H7.6v1.2a1.3 1.3 0 0 1-2.6 0V18H4a1 1 0 0 1-1-1v-4.9c0-.7.4-1.3 1-1.6zM7.3 7l-1.3 3.5h12L16.7 7zM6.5 15.3a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6zm11 0a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6z"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.8l2.8 6 6.5.7-4.9 4.4 1.4 6.4L12 17l-5.8 3.3 1.4-6.4-4.9-4.4 6.5-.7z"/></svg>',
+  walk:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="13.5" cy="4" r="2"/><path d="M10.6 8.2l-3 1.5-1.1 3.5 1.7.6.9-2.6 1.3-.6-1.6 7.6-3.3 3.6 1.4 1.2 3.7-4 .9-3 2.1 2v5h1.8v-6l-2.3-2.4.7-3.3c.8 1.2 2.1 2 3.6 2.3v-1.8c-1.3-.3-2.4-1.1-3-2.3l-.8-1.4c-.5-.8-1.5-1.2-2.4-.9z"/></svg>',
+  map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4.5l-5.5 2v13l5.5-2 6 2 5.5-2v-13l-5.5 2z"/><path d="M9 4.5v13M15 6.5v13"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M17 7L7 17M7 7l10 10"/></svg>',
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.5-4.5"/></svg>',
+  arrow:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5L3.6 10.4c-.7.3-.6 1.3.1 1.5l6.6 1.8 1.8 6.6c.2.7 1.2.8 1.5.1l6.9-16.9z"/></svg>',
+  pinAdd:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22s-7-6.1-7-12a7 7 0 0 1 14 0c0 5.9-7 12-7 12zm-1-15v2.5H8.5v2H11V14h2v-2.5h2.5v-2H13V7z"/></svg>',
+  chev:'<svg viewBox="0 0 8 13"><path d="M1.5 1.5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3h6l1 2h4v2H4V5h4zM6 9h12l-1 12H7z"/></svg>'
+};
+const PIN_ICON = { ver: ICON.eye, comer: ICON.food, noche: ICON.moon, ruta: ICON.car, extra: ICON.star };
+const $ = s => document.querySelector(s);
+function h(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  if (attrs) for (const [k, v] of Object.entries(attrs)){
+    if (v == null || v === false) continue;
+    if (k === 'class') e.className = v; else if (k === 'html') e.innerHTML = v; else if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else if (k === 'style') e.style.cssText = v; else e.setAttribute(k, v === true ? '' : v);
+  }
+  for (const k of kids.flat()){ if (k == null || k === false || k === '') continue; e.append(k.nodeType ? k : document.createTextNode(String(k))); }
+  return e;
+}
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2600); }
+const store = { get(k){ try { return localStorage.getItem(k); } catch { return null; } }, set(k, v){ try { localStorage.setItem(k, v); } catch {} } };
+// Iconos de cada uno en fotos/; con null se muestra la inicial sobre su color.
+const TRAVELLERS = [['Salinero', '#ff9500', 'salinero.jpg'], ['Braulio', '#28a745', 'braulio.jpg'], ['Pomares', '#0a7aff', 'pomares.jpg']];
+const slug = n => 'u-' + n.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '');
+const FIXED = Object.fromEntries(TRAVELLERS.map(([n, c]) => [slug(n), c]));
+const PHOTO = Object.fromEntries(TRAVELLERS.filter(t => t[2]).map(([n, , f]) => [slug(n), 'fotos/' + f]));
+// Avatar: foto si existe, si no la inicial sobre su color.
+function face(id, name, tag){ const el = h(tag || 'span', { class:'face', style:'background:' + colorFor(id) }, (name || '?')[0].toUpperCase()); const src = PHOTO[id]; if (src){ const img = h('img', { src, alt:'' }); img.addEventListener('error', () => img.remove()); el.append(img); } return el; }
+const colorFor = id => FIXED[id] || `hsl(${[...id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7)} 62% 46%)`;
+const kmFrom = (a, b) => { const R = 6371, dLat = (b.lat - a.lat) * Math.PI / 180, dLng = (b.lng - a.lng) * Math.PI / 180; const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(x)); };
+const fmtKm = d => d < 1 ? Math.round(d * 100) * 10 + ' m' : (d < 10 ? d.toFixed(1).replace('.', ',') + ' km' : Math.round(d) + ' km');
+async function sha(s){ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].slice(0, 12).map(x => x.toString(16).padStart(2, '0')).join(''); }
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+
+// ---------- state ----------
+const S = { me:{ id:null, name:'' }, group:null, db:null, sharing:false, watchId:null, lastSent:0, lastPos:null,
+  peers:{}, peerMarkers:{}, meMarker:null, placeMarkers:[], extraPins:{}, filter:'all', is3d:false, addMode:false, selected:null };
+const cfgOk = () => window.FIREBASE_CONFIG && typeof FIREBASE_CONFIG.apiKey === 'string' && !/^PEGA|^TU_|^YOUR_/i.test(FIREBASE_CONFIG.apiKey) && FIREBASE_CONFIG.databaseURL;
+const origin = () => S.lastPos || CATANIA;
+
+// ---------- map ----------
+const map = new maplibregl.Map({ container:'map', style:'https://tiles.openfreemap.org/styles/' + (dark ? 'dark' : 'positron'), center:[CATANIA.lng, CATANIA.lat], zoom:14.2, attributionControl:{ compact:true }, maxPitch:70 });
+map.on('load', () => {
+  try {
+    map.addLayer({ id:'b3d', type:'fill-extrusion', source:'openmaptiles', 'source-layer':'building', minzoom:14, layout:{ visibility:'none' },
+      paint:{ 'fill-extrusion-color': dark ? '#2c2c2e' : '#dedee3', 'fill-extrusion-height':['coalesce',['get','render_height'],8], 'fill-extrusion-base':['coalesce',['get','render_min_height'],0], 'fill-extrusion-opacity':.9 } });
+  } catch (e) { console.warn('3d layer', e); }
+  renderPlaces();
+});
+map.on('zoom', () => document.body.classList.toggle('labels', map.getZoom() >= 15));
+map.on('click', e => {
+  if (S.addMode){ S.addMode = false; openPinForm(e.lngLat); return; }
+  if (e.originalEvent && e.originalEvent.target && e.originalEvent.target.closest && e.originalEvent.target.closest('.mk,.peer')) return;
+  if (S.selected) select(null);
+});
+
+function makeMarker(p){
+  const el = h('div', { class:'mk' + (p.cat === 'extra' ? ' extra' : ''), role:'button', 'aria-label': p.name }, h('span', { class:'head', html: PIN_ICON[p.cat] || ICON.star }), h('span', { class:'lbl' }, p.name));
+  el.addEventListener('click', e => { e.stopPropagation(); select({ type:'place', p }); reveal(p.lng, p.lat); });
+  const m = new maplibregl.Marker({ element: el, anchor:'top', offset:[0, -14] }).setLngLat([p.lng, p.lat]).addTo(map);
+  m._p = p; return m;
+}
+function allPlaces(){ return [...(window.PLACES || []), ...Object.values(S.extraPins).map(p => ({ ...p, cat:'extra' }))].filter(p => typeof p.lat === 'number'); }
+function renderPlaces(){
+  for (const m of S.placeMarkers) m.remove(); S.placeMarkers = [];
+  for (const p of allPlaces()){ if (S.filter !== 'all' && p.cat !== S.filter) continue; S.placeMarkers.push(makeMarker(p)); }
+  markSelected();
+}
+function markSelected(){ for (const m of S.placeMarkers) m.getElement().classList.toggle('sel', !!(S.selected && S.selected.type === 'place' && S.selected.p.id === m._p.id)); }
+function fitPlaces(){
+  const pts = S.placeMarkers.map(m => m.getLngLat()).map(l => [l.lng, l.lat]);
+  if (!pts.length) return toast('No hay sitios en esta categoría');
+  if (pts.length === 1) return map.flyTo({ center: pts[0], zoom: 15 });
+  const b = pts.reduce((bb, p) => bb.extend(p), new maplibregl.LngLatBounds(pts[0], pts[0]));
+  map.fitBounds(b, { padding:{ top: 130, bottom: cardH() + 40, left: 40, right: 70 }, maxZoom: 16, duration: 800 });
+}
+const filt = $('#filters');
+for (const [k, lab] of [['all','Todo'], ...Object.entries(CATS)]) filt.append(h('button', { class:'chip', type:'button', 'aria-pressed': k === 'all' ? 'true' : 'false', onclick: e => { S.filter = k; for (const x of filt.children) x.setAttribute('aria-pressed', x === e.currentTarget ? 'true' : 'false'); renderPlaces(); fitPlaces(); } }, lab));
+
+$('#btn3d').addEventListener('click', () => {
+  S.is3d = !S.is3d; $('#btn3d').setAttribute('aria-pressed', S.is3d ? 'true' : 'false');
+  if (map.getLayer('b3d')) map.setLayoutProperty('b3d', 'visibility', S.is3d ? 'visible' : 'none');
+  map.easeTo({ pitch: S.is3d ? 60 : 0, bearing: S.is3d ? -18 : 0, zoom: S.is3d ? Math.max(map.getZoom(), 16) : map.getZoom(), duration: 700 });
+});
+$('#btnMe').addEventListener('click', () => { if (S.lastPos) map.flyTo({ center:[S.lastPos.lng, S.lastPos.lat], zoom: Math.max(map.getZoom(), 16) }); else { toast('Buscando tu posición…'); startLocating(true); } });
+$('#btnAll').addEventListener('click', () => {
+  const pts = Object.values(S.peers).filter(p => p.id !== S.me.id && p.lat && !isStale(p, 15 * 60e3)).map(p => [p.lng, p.lat]);
+  if (S.lastPos) pts.push([S.lastPos.lng, S.lastPos.lat]);
+  if (!pts.length) return toast('Nadie está compartiendo su posición');
+  if (pts.length === 1) return map.flyTo({ center: pts[0], zoom: 16 });
+  const b = pts.reduce((bb, p) => bb.extend(p), new maplibregl.LngLatBounds(pts[0], pts[0]));
+  map.fitBounds(b, { padding:{ top: 130, bottom: cardH() + 40, left: 60, right: 80 }, maxZoom: 17, duration: 700 });
+});
+
+// ---------- bottom card ----------
+// Netlify's free plan injects a badge bottom-right; leave room under the card so it covers nothing.
+const badgeCheck = () => { document.body.classList.toggle('has-badge', !!document.getElementById('nl-badge-frame')); if (typeof syncCardH === 'function') requestAnimationFrame(syncCardH); };
+new MutationObserver(badgeCheck).observe(document.body, { childList:true }); badgeCheck();
+const cardH = () => $('#card').offsetHeight;
+function syncCardH(){ document.documentElement.style.setProperty('--card-h', cardH() + 'px'); }
+new ResizeObserver(syncCardH).observe($('#card'), { box:'border-box' });
+function switchEl(on, onToggle, label){ return h('button', { class:'sw', type:'button', role:'switch', 'aria-checked': on ? 'true' : 'false', 'aria-label': label, onclick: e => { e.stopPropagation(); onToggle(); } }); }
+function select(sel){ S.selected = sel; markSelected(); renderCard(); }
+function reveal(lng, lat){ requestAnimationFrame(() => map.easeTo({ center:[lng, lat], padding:{ top:120, bottom: cardH() + 30, left:0, right:0 }, duration:450 })); }
+function directions(p){ const far = kmFrom(origin(), p) > 3; return { far, href: `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=${far ? 'driving' : 'walking'}` }; }
+function renderCard(){
+  const body = $('#cardBody'); const sel = S.selected;
+  if (sel && sel.type === 'place'){
+    const p = sel.p; const d = directions(p);
+    body.replaceChildren(h('div', { style:'display:flex;flex-direction:column;gap:12px' },
+      h('div', { class:'ph' }, h('div', { class:'grow' }, h('h2', {}, p.name), h('div', { class:'sub' }, [CAT_LONG[p.cat], fmtKm(kmFrom(origin(), p)) + (S.lastPos ? ' de ti' : ' de Catania')].join(' · ')), p.note ? h('div', { class:'note' }, p.note) : null, p.by ? h('div', { class:'sub' }, 'Añadido por ' + p.by) : null),
+        h('button', { class:'circle', type:'button', 'aria-label':'Cerrar', html: ICON.x, onclick: () => select(null) })),
+      h('a', { class:'btn-primary', href: d.href, target:'_blank', rel:'noopener', html: (d.far ? ICON.car : ICON.walk) + '<span>' + (d.far ? 'Ir en coche' : 'Ir andando') + '</span>' }),
+      h('div', { class:'btn-row' },
+        h('a', { class:'btn-sec', href:`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`, target:'_blank', rel:'noopener', html: ICON.map + '<span>Ver en Maps</span>' }),
+        p.cat === 'extra' && S.sync ? h('button', { class:'btn-sec red', type:'button', html: ICON.trash + '<span>Borrar pin</span>', onclick: () => { S.sync.delPin(p.id).then(() => toast('Pin borrado'), () => toast('No se pudo borrar')); delete S.extraPins[p.id]; renderPlaces(); select(null); } })
+          : h('button', { class:'btn-sec', type:'button', html: ICON.arrow + '<span>Centrar</span>', onclick: () => map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), 15.5) }) }))));
+    return;
+  }
+  if (sel && sel.type === 'peer'){
+    const p = S.peers[sel.id]; if (!p){ S.selected = null; return renderCard(); }
+    const d = directions(p);
+    body.replaceChildren(h('div', { style:'display:flex;flex-direction:column;gap:12px' },
+      h('div', { class:'ph' }, h('span', { class:'peer', style:'--uc:' + colorFor(p.id) }, (() => { const f = face(p.id, p.name); f.classList.add('av'); return f; })()),
+        h('div', { class:'grow' }, h('h2', {}, p.name), h('div', { class:'sub' }, 'Hace ' + ago(p.t) + ' · ' + (S.lastPos ? fmtKm(kmFrom(S.lastPos, p)) + ' de ti' : 'precisión ' + (p.acc || '?') + ' m'))),
+        h('button', { class:'circle', type:'button', 'aria-label':'Cerrar', html: ICON.x, onclick: () => select(null) })),
+      h('a', { class:'btn-primary', href: d.href, target:'_blank', rel:'noopener', html: (d.far ? ICON.car : ICON.walk) + '<span>Ir hasta ' + escapeText(p.name) + '</span>' })));
+    return;
+  }
+  body.replaceChildren(h('div', { style:'display:flex;flex-direction:column;gap:10px' },
+    h('button', { class:'search', type:'button', html: ICON.search + '<span>¿A dónde vamos?</span>', onclick: openSearch }),
+    h('div', { class:'rows' },
+      h('div', { class:'crow' }, h('span', { class:'dot' + (S.sharing ? ' on' : ''), html: ICON.arrow }),
+        h('span', { class:'grow' }, h('span', { class:'t' }, 'Compartir mi ubicación'), h('span', { class:'s', id:'shareSub' }, shareStatus())),
+        switchEl(S.sharing, () => { if (!S.sync) return toast('Para veros entre vosotros hay que abrir la web desde Netlify (ver README)'); setSharing(!S.sharing); }, 'Compartir mi ubicación')),
+      h('button', { class:'crow', type:'button', onclick: () => { if (!S.sync) return toast('Los pines del grupo necesitan el modo grupo (ver README)'); S.addMode = true; toast('Toca el mapa donde va el pin'); } },
+        h('span', { class:'dot', html: ICON.pinAdd }), h('span', { class:'grow' }, h('span', { class:'t' }, 'Añadir pin del grupo'), h('span', { class:'s' }, 'El bar donde estáis, el parking…')), h('span', { class:'chev', style:'color:var(--label3)', html: ICON.chev })))));
+}
+function escapeText(s){ return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
+function shareStatus(){
+  if (!S.sync) return 'Modo individual: abre la web desde Netlify para veros'; 
+  if (S.offline) return 'Sin conexión con el grupo, reintentando…';
+  if (!S.sharing) return 'Los demás no te ven';
+  const n = Object.values(S.peers).filter(p => p.id !== S.me.id && !isStale(p, 15 * 60e3)).length;
+  return 'Te ven ' + (n ? (n === 1 ? '1 persona' : n + ' personas') : 'los del grupo al conectarse') + (S.lastPos ? ' · precisión ' + Math.round(S.lastPos.acc) + ' m' : '');
+}
+
+// ---------- sheets ----------
+function openSheet(...kids){ const b = $('#backdrop'), s = $('#sheet'); s.replaceChildren(...kids.flat().filter(Boolean)); b.hidden = false; s.hidden = false; requestAnimationFrame(() => { b.classList.add('show'); s.classList.add('show'); }); }
+function closeSheet(){ const b = $('#backdrop'), s = $('#sheet'); b.classList.remove('show'); s.classList.remove('show'); setTimeout(() => { b.hidden = true; s.hidden = true; }, 320); }
+$('#backdrop').addEventListener('click', closeSheet);
+function openSearch(){
+  const q = h('input', { type:'search', placeholder:'Buscar sitios', autocomplete:'off', id:'q' });
+  const box = h('div', { class:'list' });
+  const draw = () => {
+    const term = q.value.trim().toLowerCase();
+    const ps = allPlaces().filter(p => !term || (p.name + ' ' + (p.addr || '') + ' ' + (CATS[p.cat] || '')).toLowerCase().includes(term)).sort((a, b) => kmFrom(origin(), a) - kmFrom(origin(), b));
+    box.replaceChildren(...(ps.length ? ps.map(p => h('button', { class:'lrow', type:'button', onclick: () => { closeSheet(); select({ type:'place', p }); map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), kmFrom(origin(), p) > 20 ? 12 : 15.5), padding:{ bottom: 260 } }); } },
+      h('span', { class:'ico' + (p.cat === 'extra' ? ' extra' : ''), html: PIN_ICON[p.cat] || ICON.star }),
+      h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, p.name), h('span', { class:'s', style:'display:block' }, [CATS[p.cat], fmtKm(kmFrom(origin(), p))].join(' · '))), h('span', { class:'chev', html: ICON.chev }))))
+      : [h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'s' }, 'Sin resultados')))]));
+  };
+  q.addEventListener('input', draw);
+  openSheet(h('div', { class:'snav' }, h('span'), h('div', { class:'c' }, '¿A dónde vamos?'), h('button', { class:'r', type:'button', onclick: closeSheet }, 'Cerrar')),
+    h('label', { class:'searchfield', html: ICON.search }, q), box);
+  draw();
+}
+function openPinForm(lngLat){
+  const name = h('input', { class:'in', placeholder:'Nombre', maxlength:'40', id:'pinName' });
+  const note = h('input', { class:'in', placeholder:'Nota (opcional)', maxlength:'120', id:'pinNote' });
+  const save = () => { const n = name.value.trim(); if (!n) return toast('Ponle un nombre'); S.sync.addPin({ name: n, note: note.value.trim(), lat: lngLat.lat, lng: lngLat.lng, by: S.me.name }).then(() => toast('Pin guardado para el grupo'), () => toast('No se pudo guardar el pin')); closeSheet(); };
+  openSheet(h('div', { class:'snav' }, h('button', { class:'l', type:'button', onclick: closeSheet }, 'Cancelar'), h('div', { class:'c' }, 'Nuevo pin'), h('button', { class:'r', type:'button', onclick: save }, 'Guardar')),
+    h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, name)), h('div', { class:'lrow' }, h('div', { class:'body' }, note))),
+    h('p', { class:'foot' }, 'Lo verán los tres en el mapa. Se puede borrar desde su ficha.'));
+  setTimeout(() => name.focus(), 350);
+}
+
+// ---------- geolocation ----------
+function startLocating(fly){
+  if (!('geolocation' in navigator)) return toast('Este navegador no da acceso a la ubicación');
+  if (S.watchId != null) return;
+  S.flyOnFirst = fly !== false;
+  S.watchId = navigator.geolocation.watchPosition(onPos, err => { console.warn(err); S.watchId = null; toast(err.code === 1 ? 'Permiso de ubicación denegado. Actívalo en los ajustes del navegador.' : 'No se pudo obtener tu posición. ¿GPS activado?'); if (S.sharing) setSharing(false); }, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
+}
+function onPos(pos){
+  const { latitude:lat, longitude:lng, accuracy:acc } = pos.coords; const first = !S.lastPos; S.lastPos = { lat, lng, acc, t: Date.now() };
+  if (!S.meMarker){ S.meMarker = new maplibregl.Marker({ element: h('div', { class:'me-dot', 'aria-label':'Tu posición' }) }).setLngLat([lng, lat]).addTo(map); } else S.meMarker.setLngLat([lng, lat]);
+  if (first && S.flyOnFirst) map.flyTo({ center:[lng, lat], zoom: Math.max(map.getZoom(), 15.5) });
+  const sub = $('#shareSub'); if (sub) sub.textContent = shareStatus();
+  if (S.sync) S.sync.sendPos({ lat, lng, acc: Math.round(acc) });
+}
+function setSharing(on){
+  S.sharing = on; $('#liveDot').classList.toggle('on', on); store.set('cl-sharing', on ? '1' : '0');
+  if (S.sync) S.sync.setSharing(on);
+  if (on){ startLocating(); if (S.lastPos) onPos({ coords:{ latitude:S.lastPos.lat, longitude:S.lastPos.lng, accuracy:S.lastPos.acc } }); toast('Compartiendo tu ubicación'); }
+  renderCard();
+}
+
+// ---------- peers ----------
+const isStale = (p, ms) => !p.t || (Date.now() - p.t) > ms;
+function ago(t){ const s = Math.max(0, Math.round((Date.now() - (t || 0)) / 1000)); if (s < 60) return s + ' s'; if (s < 3600) return Math.round(s / 60) + ' min'; return Math.round(s / 3600) + ' h'; }
+function renderPeers(){
+  const pe = $('#people'); pe.replaceChildren();
+  { const b = face(S.me.id || 'me', S.me.name, 'button'); b.title = S.me.name + ' (tú)'; b.setAttribute('aria-label', 'Tú'); b.addEventListener('click', () => $('#btnMe').click()); pe.append(b); }
+  for (const p of Object.values(S.peers)){
+    if (p.id === S.me.id) continue;
+    if (isStale(p, 15 * 60e3)){ if (S.peerMarkers[p.id]){ S.peerMarkers[p.id].remove(); delete S.peerMarkers[p.id]; } continue; }
+    const stale = isStale(p, 2 * 60e3);
+    { const b = face(p.id, p.name, 'button'); if (stale) b.classList.add('stale'); b.title = p.name; b.setAttribute('aria-label', p.name); b.addEventListener('click', () => { map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), 16) }); select({ type:'peer', id: p.id }); }); pe.append(b); }
+    let m = S.peerMarkers[p.id];
+    if (!m){ const av = face(p.id, p.name); av.classList.add('av'); const el = h('div', { class:'peer', style:'--uc:' + colorFor(p.id) }, av, h('span', { class:'nm' })); el.addEventListener('click', e => { e.stopPropagation(); select({ type:'peer', id: p.id }); const q = S.peers[p.id]; if (q) reveal(q.lng, q.lat); }); m = new maplibregl.Marker({ element: el, anchor:'top', offset:[0, -19] }).setLngLat([p.lng, p.lat]).addTo(map); S.peerMarkers[p.id] = m; }
+    m.setLngLat([p.lng, p.lat]); const el = m.getElement(); el.classList.toggle('stale', stale); el.querySelector('.nm').textContent = p.name + (stale ? ' · ' + ago(p.t) : '');
+  }
+  for (const id of Object.keys(S.peerMarkers)) if (!S.peers[id]){ S.peerMarkers[id].remove(); delete S.peerMarkers[id]; }
+  const sub = $('#shareSub'); if (sub) sub.textContent = shareStatus();
+  if (S.selected && S.selected.type === 'peer') renderCard();
+}
+setInterval(renderPeers, 20000);
+
+// ---------- group sync: Netlify function first, Firebase as fallback ----------
+const API = '/api/sync';
+function loadScript(src){ return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error('No se pudo cargar ' + src)); document.head.append(el); }); }
+const backendReady = (async () => {
+  try { const r = await fetch(API + '?ping=1', { cache:'no-store' }); if (r.ok && (r.headers.get('content-type') || '').includes('json')) return 'netlify'; } catch {}
+  return cfgOk() ? 'firebase' : null;
+})();
+function netlifySync(group, onPeople, onPins){
+  let timer = null, myPos = null, sharing = false, busy = false, fails = 0, lastSend = 0;
+  const post = (body, beacon) => {
+    const data = JSON.stringify({ group, ...body });
+    if (beacon && navigator.sendBeacon) { navigator.sendBeacon(API, new Blob([data], { type:'application/json' })); return Promise.resolve(); }
+    return fetch(API, { method:'POST', headers:{ 'content-type':'application/json' }, body: data, keepalive: true }).then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)));
+  };
+  const tick = async () => {
+    if (busy || document.hidden) return; busy = true;
+    try {
+      const me = sharing && myPos ? { id: S.me.id, name: S.me.name, ...myPos } : null;
+      const res = await post({ action:'sync', me }); if (me) lastSend = Date.now();
+      const skew = (res.now || Date.now()) - Date.now();
+      const people = {}; for (const [id, p] of Object.entries(res.people || {})) people[id] = { ...p, t: p.t - skew };
+      fails = 0; if (S.offline){ S.offline = false; renderCard(); }
+      onPeople(people); onPins(res.pins || {});
+    } catch (e) { console.warn('sync', e); if (++fails >= 3 && !S.offline){ S.offline = true; renderCard(); } }
+    finally { busy = false; }
+  };
+  const schedule = () => { clearInterval(timer); timer = setInterval(tick, sharing ? 6000 : 12000); };
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+  addEventListener('pagehide', () => { if (sharing) post({ action:'leave', id: S.me.id }, true); });
+  schedule(); tick();
+  return { kind:'netlify',
+    sendPos(pos){ myPos = pos; if (sharing && Date.now() - lastSend > 5000) tick(); },
+    setSharing(on){ sharing = on; schedule(); if (on) { lastSend = 0; tick(); } else post({ action:'leave', id: S.me.id }).then(tick, () => {}); },
+    addPin(pin){ return post({ action:'addPin', pin }).then(tick); },
+    delPin(id){ return post({ action:'delPin', id }).then(tick); } };
+}
+async function firebaseSync(group, onPeople, onPins){
+  await loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
+  await loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js');
+  if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+  const db = firebase.database(); const base = `groups/${group}`; let sharing = false, last = 0;
+  db.ref(`${base}/people/${S.me.id}`).onDisconnect().remove();
+  db.ref(`${base}/people`).on('value', snap => onPeople(snap.val() || {}), err => { console.error(err); toast('Sin conexión con el grupo: revisa las reglas de Firebase'); });
+  db.ref(`${base}/pins`).on('value', snap => onPins(snap.val() || {}));
+  return { kind:'firebase',
+    sendPos(pos){ if (!sharing) return; const now = Date.now(); if (now - last < 4000) return; last = now; db.ref(`${base}/people/${S.me.id}`).set({ name: S.me.name, ...pos, t: firebase.database.ServerValue.TIMESTAMP }); },
+    setSharing(on){ sharing = on; last = 0; if (!on) db.ref(`${base}/people/${S.me.id}`).remove(); },
+    addPin(pin){ const ref = db.ref(`${base}/pins`).push(); return ref.set({ ...pin, id: ref.key, t: firebase.database.ServerValue.TIMESTAMP }); },
+    delPin(id){ return db.ref(`${base}/pins/${id}`).remove(); } };
+}
+
+// ---------- entry ----------
+function enterCommon(name){
+  S.me.name = name; S.me.id = slug(name); store.set('cl-name', name);
+  $('#gate').hidden = true; renderPeers(); renderCard();
+}
+const GROUP_SEED = 'catania:salinero-braulio-pomares-2026';
+async function enter(name, kind){
+  enterCommon(name);
+  S.group = await sha(GROUP_SEED);
+  const onPeople = v => { S.peers = v; for (const [id, p] of Object.entries(S.peers)) p.id = id; renderPeers(); };
+  const onPins = v => { const next = JSON.stringify(v); if (next === S.pinsSig) return; S.pinsSig = next; S.extraPins = v; renderPlaces(); };
+  S.sync = kind === 'netlify' ? netlifySync(S.group, onPeople, onPins) : await firebaseSync(S.group, onPeople, onPins);
+  renderCard();
+  if (store.get('cl-sharing') === '1') setSharing(true); else startLocating();
+}
+function enterLocal(name){ enterCommon(name); startLocating(); }
+renderCard();
+const gate = $('#gateForm');
+let picked = store.get('cl-name');
+const who = $('#who');
+const drawWho = () => who.replaceChildren(...TRAVELLERS.map(([n, c]) => h('button', { class:'lrow', type:'button', role:'radio', 'aria-checked': n === picked ? 'true' : 'false', onclick: () => { picked = n; drawWho(); } },
+  (() => { const f = face(slug(n), n); f.classList.add('pav'); return f; })(), h('span', { class:'body' }, h('span', { class:'t grow' }, n), h('span', { class:'ck', html:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' })))));
+drawWho();
+const valid = n => TRAVELLERS.some(([x]) => x === n);
+async function start(n){
+  const kind = await backendReady;
+  if (!kind) return enterLocal(n);
+  enter(n, kind).catch(err => { console.error(err); toast('No se pudo conectar: ' + (err.message || err)); });
+}
+backendReady.then(kind => { if (!kind){ const f = $('#gateFoot'); f.textContent = 'Esta copia de la web no tiene el modo grupo: verás el mapa y tu posición, pero no os veréis entre vosotros.'; f.hidden = false; } });
+gate.addEventListener('submit', e => { e.preventDefault(); if (!valid(picked)) return toast('Elige quién eres'); start(picked); });
+if (valid(picked)) { $('#gate').hidden = true; start(picked); }
+$('#brand').addEventListener('click', () => {
+  let choice = S.me.name;
+  const list = h('div', { class:'list' });
+  const draw = () => list.replaceChildren(...TRAVELLERS.map(([n, c]) => h('button', { class:'lrow', type:'button', role:'radio', 'aria-checked': n === choice ? 'true' : 'false', onclick: () => { choice = n; draw(); } },
+    (() => { const f = face(slug(n), n); f.classList.add('pav'); return f; })(), h('span', { class:'body' }, h('span', { class:'t grow' }, n), h('span', { class:'ck', html:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' })))));
+  draw();
+  openSheet(h('div', { class:'snav' }, h('button', { class:'l', type:'button', onclick: closeSheet }, 'Cancelar'), h('div', { class:'c' }, '¿Quién eres?'),
+    h('button', { class:'r', type:'button', onclick: () => { if (choice === S.me.name) return closeSheet(); if (S.sharing) setSharing(false); store.set('cl-name', choice); setTimeout(() => location.reload(), 150); } }, 'Listo')), list,
+    h('p', { class:'foot' }, 'Cambia solo si este móvil es de otra persona del grupo.'));
+});
+})();
+</script>
+</body>
+</html>

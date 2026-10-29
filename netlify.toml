@@ -1,13 +1,13 @@
-# Netlify publica la carpeta entera y despliega el servidor del mapa en vivo.
+# Netlify publica la carpeta sicilian-boys en la raíz del dominio y despliega el servidor del mapa en vivo.
 # No hay paso de compilación: Netlify instala las dependencias de package.json y empaqueta la función.
 [build]
-  publish = "."
+  publish = "sicilian-boys"
   functions = "netlify/functions"
 
 [functions]
   node_bundler = "esbuild"
 
 [[headers]]
-  for = "/sicilia-en-vivo/*"
+  for = "/*"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
