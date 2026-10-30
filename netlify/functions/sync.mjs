@@ -2,6 +2,7 @@
 // Una sola ruta, /api/sync. Cada teléfono hace una petición cada pocos segundos:
 // envía su posición (si comparte) y recibe la de los demás y los pines.
 import { getStore } from '@netlify/blobs';
+import SEED from '../lib/seed-places.mjs';
 
 const GROUP = /^[a-f0-9]{24}$/;          // hash del PIN, calculado en el teléfono
 const ID = /^[A-Za-z0-9_-]{1,40}$/;
@@ -9,6 +10,21 @@ const STALE_MS = 6 * 3600e3;             // posiciones de hace más de 6 h se bo
 const LEVELS = ['charla', 'beso', 'lio', 'otro'];
 const DAYS = ['04', '05', '06'];
 const MAX_PHOTO = 1_500_000;             // bytes de la foto ya comprimida en el móvil
+const PLACE_CATS = ['ver', 'comer', 'noche', 'ruta', 'otro'];
+const CRIT = ['musica', 'ambiente', 'gente', 'precio', 'cola'];
+
+// Sitios del grupo: uno por clave en `${g}/pl/<id>`. `${g}/plv` guarda la versión de la lista,
+// que el móvil recibe en cada sincronización para saber cuándo volver a pedirla.
+async function placesVersion(store, g) {
+  const v = await store.get(`${g}/plv`, { type: 'json' });
+  if (v) return v.v;
+  // Primera vez: se copian los sitios iniciales y los pines antiguos (como "otro").
+  await Promise.all(SEED.map(p => store.setJSON(`${g}/pl/${p.id}`, { ...p, by: '', t: 0 })));
+  const old = await readPrefix(store, `${g}/pin/`, 0);
+  await Promise.all(Object.entries(old).map(([id, p]) => store.setJSON(`${g}/pl/${id}`, { id, cat: 'otro', name: p.name, note: p.note || '', addr: '', lat: p.lat, lng: p.lng, by: p.by || '', t: p.t || 0 })));
+  return bumpPlaces(store, g);
+}
+async function bumpPlaces(store, g) { const v = Date.now(); await store.setJSON(`${g}/plv`, { v }); return v; }
 
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
 const num = v => typeof v === 'number' && Number.isFinite(v);
@@ -86,14 +102,44 @@ export async function handle(req, store) {
     await Promise.all([store.delete(`${g}/m/${b.id}`), store.delete(`${g}/mp/${b.id}`)]);
     return json({ ok: true });
   }
+  // Sitios editables por el grupo.
+  if (b.action === 'places') { const plv = await placesVersion(store, g); return json({ now, plv, places: await readPrefix(store, `${g}/pl/`, 0) }); }
+  if (b.action === 'savePlace') {
+    const p = b.place || {};
+    const name = str(p.name, 60);
+    if (!name || !PLACE_CATS.includes(p.cat) || !num(p.lat) || !num(p.lng) || Math.abs(p.lat) > 90 || Math.abs(p.lng) > 180) return json({ error: 'place' }, 400);
+    if (p.id && !ID.test(p.id)) return json({ error: 'id' }, 400);
+    const id = p.id || ('p' + now.toString(36) + Math.random().toString(36).slice(2, 5));
+    await placesVersion(store, g);
+    await store.setJSON(`${g}/pl/${id}`, { id, cat: p.cat, name, addr: str(p.addr, 120), note: str(p.note, 240), lat: p.lat, lng: p.lng, by: str(b.by, 18), t: now });
+    const plv = await bumpPlaces(store, g);
+    return json({ ok: true, id, plv });
+  }
+  if (b.action === 'delPlace') {
+    if (!ID.test(b.id || '')) return json({ error: 'id' }, 400);
+    const { blobs } = await store.list({ prefix: `${g}/r/${b.id}/` });
+    await Promise.all([store.delete(`${g}/pl/${b.id}`), ...blobs.map(x => store.delete(x.key))]);
+    const plv = await bumpPlaces(store, g);
+    return json({ ok: true, plv });
+  }
+  // Puntuaciones de la noche: una por persona y local en `${g}/r/<lugar>/<persona>`.
+  if (b.action === 'ratings') return json({ now, ratings: await readPrefix(store, `${g}/r/`, 0) });
+  if (b.action === 'rate') {
+    if (!ID.test(b.place || '') || !ID.test(b.by || '')) return json({ error: 'id' }, 400);
+    const sc = {};
+    for (const k of CRIT) { const v = b.scores && b.scores[k]; if (Number.isInteger(v) && v >= 1 && v <= 5) sc[k] = v; }
+    if (!Object.keys(sc).length) return json({ error: 'scores' }, 400);
+    await store.setJSON(`${g}/r/${b.place}/${b.by}`, { ...sc, t: now });
+    return json({ ok: true });
+  }
   if (b.action !== 'sync') return json({ error: 'action' }, 400);
 
   const me = b.me;
   if (me && ID.test(me.id || '') && num(me.lat) && num(me.lng)) {
     await store.setJSON(`${g}/p/${me.id}`, { name: str(me.name, 18) || '?', lat: me.lat, lng: me.lng, acc: num(me.acc) ? Math.round(me.acc) : null, t: now });
   }
-  const [people, pins] = await Promise.all([readPrefix(store, `${g}/p/`, now), readPrefix(store, `${g}/pin/`, 0)]);
-  return json({ now, people, pins });
+  const [people, pins, plv] = await Promise.all([readPrefix(store, `${g}/p/`, now), b.v >= 2 ? {} : readPrefix(store, `${g}/pin/`, 0), placesVersion(store, g)]);
+  return json({ now, people, pins, plv });
 }
 
 export default async (req) => handle(req, getStore({ name: 'sicilia-en-vivo', consistency: 'strong' }));

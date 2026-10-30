@@ -109,7 +109,13 @@ body.has-badge .card{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))
 .btn-sec{display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;border-radius:12px;background:var(--fill);font-size:15px;font-weight:600;letter-spacing:-.24px}
 .btn-sec svg{width:18px;height:18px}
 .btn-sec.red{color:var(--red)}
-.tiles3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tiles3{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tile.noche{background:#5e5ce6;color:#fff}
+.locbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.seg.sm button{min-width:34px;padding:4px 0}
+.ratechip{display:inline-flex;align-items:center;gap:3px;font-weight:600}
+.ratechip svg{width:13px;height:13px;color:#ff9f0a}
+.results .lrow .t{font-size:16px}
 .tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:62px;border-radius:12px;background:var(--fill);font-size:13px;font-weight:600;letter-spacing:-.08px}
 .tile svg{width:22px;height:22px}
 .tile.home{background:var(--tint);color:var(--tint-fg)}
@@ -268,8 +274,10 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 const NETLIFY_URL = 'https://sicilian-boys.netlify.app/';
 if (/github\.io$/.test(location.hostname)) { location.replace(NETLIFY_URL); return; }
 const CATANIA = { lat:37.5045, lng:15.0862 };
-const CATS = { ver:'Ver', comer:'Comer', noche:'Noche', ruta:'Excursiones', extra:'Pines del grupo' };
-const CAT_LONG = { ver:'Qué ver', comer:'Dónde comer', noche:'Noche', ruta:'Excursión en coche', extra:'Pin del grupo', casa:'Nuestro alojamiento' };
+const CATS = { ver:'Ver', comer:'Comer', noche:'Noche', ruta:'Excursiones', otro:'Otros' };
+const CAT_FORM = [['ver','Ver'],['comer','Comer'],['noche','Noche'],['ruta','Excursión'],['otro','Otro']];
+const CRIT = [['musica','Música'],['ambiente','Ambiente'],['gente','Gente'],['precio','Precio copas'],['cola','Cola y entrada']];
+const CAT_LONG = { ver:'Qué ver', comer:'Dónde comer', noche:'Noche', ruta:'Excursión en coche', otro:'Sitio del grupo', extra:'Sitio del grupo', casa:'Nuestro alojamiento' };
 // Alojamiento del grupo. Coordenadas del centro de la plaza (OpenStreetMap); el portal 4 está en ella.
 const HOME = { id:'casa', cat:'casa', name:'Dimora Lucia Majorana', addr:'Piazza Angelo Majorana 4, Catania', lat:37.50528, lng:15.09368, note:'Piazza Angelo Majorana 4' };
 const DAYS = [['04', 'Jue 4'], ['05', 'Vie 5'], ['06', 'Sáb 6']];
@@ -288,12 +296,14 @@ const ICON = {
   pinAdd:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22s-7-6.1-7-12a7 7 0 0 1 14 0c0 5.9-7 12-7 12zm-1-15v2.5H8.5v2H11V14h2v-2.5h2.5v-2H13V7z"/></svg>',
   chev:'<svg viewBox="0 0 8 13"><path d="M1.5 1.5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   trash:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3h6l1 2h4v2H4V5h4zM6 9h12l-1 12H7z"/></svg>',
+  more:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
   home:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2l9 7.4-1.3 1.5-1.2-1V20h-5v-6h-3v6h-5v-8.9l-1.2 1L2.9 10.6z"/></svg>',
   heart:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.5s-8.5-5.2-8.5-11a4.8 4.8 0 0 1 8.5-3 4.8 4.8 0 0 1 8.5 3c0 5.8-8.5 11-8.5 11z"/></svg>',
   camera:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 4h6l1.5 2H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.5zm3 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>',
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'
 };
-const PIN_ICON = { ver: ICON.eye, comer: ICON.food, noche: ICON.moon, ruta: ICON.car, extra: ICON.star, casa: ICON.home };
+const PIN_ICON = { ver: ICON.eye, comer: ICON.food, noche: ICON.moon, ruta: ICON.car, otro: ICON.star, extra: ICON.star, casa: ICON.home };
+const isOther = p => p.cat === 'otro' || p.cat === 'extra';
 const $ = s => document.querySelector(s);
 function h(tag, attrs, ...kids){
   const e = document.createElement(tag);
@@ -336,7 +346,7 @@ document.documentElement.classList.toggle('dark', dark);
 
 // ---------- state ----------
 const S = { me:{ id:null, name:'' }, group:null, db:null, sharing:false, watchId:null, lastSent:0, lastPos:null,
-  peers:{}, peerMarkers:{}, meMarker:null, placeMarkers:[], extraPins:{}, filter:'all', is3d:false, addMode:false, selected:null };
+  peers:{}, peerMarkers:{}, meMarker:null, placeMarkers:[], extraPins:{}, places:{}, placesLoaded:false, plv:null, ratings:{}, filter:'all', is3d:false, addMode:false, selected:null };
 const cfgOk = () => window.FIREBASE_CONFIG && typeof FIREBASE_CONFIG.apiKey === 'string' && !/^PEGA|^TU_|^YOUR_/i.test(FIREBASE_CONFIG.apiKey) && FIREBASE_CONFIG.databaseURL;
 const origin = () => S.lastPos || CATANIA;
 
@@ -362,13 +372,13 @@ setInterval(checkTheme, 60000);
 prefersDark.addEventListener?.('change', checkTheme);
 map.on('zoom', () => document.body.classList.toggle('labels', map.getZoom() >= 15));
 map.on('click', e => {
-  if (S.addMode){ S.addMode = false; openPinForm(e.lngLat); return; }
+  if (S.addMode === 'place' && S.draft){ S.addMode = false; S.draft.lat = e.lngLat.lat; S.draft.lng = e.lngLat.lng; S.draft.where = 'Punto elegido en el mapa'; openPlaceForm(S.draft); return; }
   if (e.originalEvent && e.originalEvent.target && e.originalEvent.target.closest && e.originalEvent.target.closest('.mk,.peer')) return;
   if (S.selected) select(null);
 });
 
 function makeMarker(p){
-  const el = h('div', { class:'mk' + (p.cat === 'extra' ? ' extra' : ''), role:'button', 'aria-label': p.name }, h('span', { class:'head', html: PIN_ICON[p.cat] || ICON.star }), h('span', { class:'lbl' }, p.name));
+  const el = h('div', { class:'mk' + (isOther(p) ? ' extra' : ''), role:'button', 'aria-label': p.name }, h('span', { class:'head', html: PIN_ICON[p.cat] || ICON.star }), h('span', { class:'lbl' }, p.name));
   el.addEventListener('click', e => { e.stopPropagation(); select({ type:'place', p }); reveal(p.lng, p.lat); });
   const m = new maplibregl.Marker({ element: el, anchor:'top', offset:[0, -14] }).setLngLat([p.lng, p.lat]).addTo(map);
   m._p = p; return m;
@@ -380,7 +390,17 @@ function addHomeMarker(){
   new maplibregl.Marker({ element: el, anchor:'top', offset:[0, -20] }).setLngLat([HOME.lng, HOME.lat]).addTo(map);
 }
 function goHome(){ select({ type:'place', p: HOME }); reveal(HOME.lng, HOME.lat); }
-function allPlaces(){ return [...(window.PLACES || []), ...Object.values(S.extraPins).map(p => ({ ...p, cat:'extra' }))].filter(p => typeof p.lat === 'number'); }
+const netlifyOn = () => !!(S.sync && S.sync.kind === 'netlify');
+function allPlaces(){
+  const list = (netlifyOn() && S.placesLoaded) ? Object.values(S.places) : [...(window.PLACES || []), ...Object.values(S.extraPins).map(p => ({ ...p, cat:'otro' }))];
+  return list.filter(p => typeof p.lat === 'number' && typeof p.lng === 'number');
+}
+async function loadPlaces(){
+  const res = await api({ action:'places' });
+  S.places = res.places || {}; S.plv = res.plv; S.placesLoaded = true;
+  if (S.selected && S.selected.type === 'place' && S.selected.p.id !== 'casa'){ const fresh = S.places[S.selected.p.id]; if (fresh) S.selected.p = fresh; else S.selected = null; renderCard(); }
+  renderPlaces();
+}
 function renderPlaces(){
   for (const m of S.placeMarkers) m.remove(); S.placeMarkers = [];
   for (const p of allPlaces()){ if (S.filter !== 'all' && p.cat !== S.filter) continue; S.placeMarkers.push(makeMarker(p)); }
@@ -465,12 +485,13 @@ function renderCard(){
   if (sel && sel.type === 'place'){
     const p = sel.p; const d = directions(p);
     body.replaceChildren(h('div', { style:'display:flex;flex-direction:column;gap:12px' },
-      h('div', { class:'ph' }, h('div', { class:'grow' }, h('h2', {}, p.name), h('div', { class:'sub' }, [CAT_LONG[p.cat], p.cat === 'casa' && atHome(S.lastPos) ? 'estás en casa' : fmtKm(kmFrom(origin(), p)) + (S.lastPos ? ' de ti' : ' de Catania')].join(' · ')), p.cat === 'casa' ? h('div', { class:'sub' }, (S.atHome && S.atHome.length) ? 'En casa ahora: ' + S.atHome.join(', ') : 'Ahora mismo no hay nadie en casa') : null, p.note ? h('div', { class:'note' }, p.note) : null, p.by ? h('div', { class:'sub' }, 'Añadido por ' + p.by) : null),
+      h('div', { class:'ph' }, h('div', { class:'grow' }, h('h2', {}, p.name), h('div', { class:'sub' }, [CAT_LONG[p.cat], p.cat === 'noche' && nightScore(p.id) ? '★ ' + fmt1(nightScore(p.id).avg) + ' (' + nightScore(p.id).n + ')' : null, p.cat === 'casa' && atHome(S.lastPos) ? 'estás en casa' : fmtKm(kmFrom(origin(), p)) + (S.lastPos ? ' de ti' : ' de Catania')].filter(Boolean).join(' · ')), p.addr && p.cat !== 'casa' ? h('div', { class:'sub' }, p.addr) : null, p.cat === 'casa' ? h('div', { class:'sub' }, (S.atHome && S.atHome.length) ? 'En casa ahora: ' + S.atHome.join(', ') : 'Ahora mismo no hay nadie en casa') : null, p.note ? h('div', { class:'note' }, p.note) : null, p.by ? h('div', { class:'sub' }, 'Añadido por ' + p.by) : null),
+        p.cat !== 'casa' && netlifyOn() ? h('button', { class:'circle', type:'button', 'aria-label':'Editar o borrar', html: ICON.more, onclick: () => placeActions(p) }) : null,
         h('button', { class:'circle', type:'button', 'aria-label':'Cerrar', html: ICON.x, onclick: () => select(null) })),
       h('a', { class:'btn-primary', href: d.href, target:'_blank', rel:'noopener', html: (d.far ? ICON.car : ICON.walk) + '<span>' + (p.cat === 'casa' ? (d.far ? 'Volver a casa en coche' : 'Volver a casa andando') : (d.far ? 'Ir en coche' : 'Ir andando')) + '</span>' }),
       h('div', { class:'btn-row' },
         h('a', { class:'btn-sec', href:`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`, target:'_blank', rel:'noopener', html: ICON.map + '<span>Ver en Maps</span>' }),
-        p.cat === 'extra' && S.sync ? h('button', { class:'btn-sec red', type:'button', html: ICON.trash + '<span>Borrar pin</span>', onclick: () => { S.sync.delPin(p.id).then(() => toast('Pin borrado'), () => toast('No se pudo borrar')); delete S.extraPins[p.id]; renderPlaces(); select(null); } })
+        p.cat === 'noche' && netlifyOn() ? h('button', { class:'btn-sec', type:'button', html: ICON.star + '<span>Puntuar</span>', onclick: () => openRate(p) })
           : h('button', { class:'btn-sec', type:'button', html: ICON.arrow + '<span>Centrar</span>', onclick: () => map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), 15.5) }) }))));
     return;
   }
@@ -493,8 +514,9 @@ function renderCard(){
     ),
     h('div', { class:'tiles3' },
       h('button', { class:'tile home', type:'button', onclick: goHome, html: ICON.home + '<span>Casa</span>' }, h('span', { class:'n', id:'homeTileN' }, (S.atHome && S.atHome.length) ? S.atHome.length + ' en casa' : '')),
+      h('button', { class:'tile noche', type:'button', html: ICON.moon + '<span>Noche</span>', onclick: openNoche }),
       h('button', { class:'tile match', type:'button', html: ICON.heart + '<span>Match</span>', onclick: openNight }),
-      h('button', { class:'tile', type:'button', html: ICON.pinAdd + '<span>Añadir pin</span>', onclick: () => { if (!S.sync) return toast('Los pines del grupo necesitan el modo grupo'); S.addMode = true; toast('Toca el mapa donde va el pin'); } }))));
+      h('button', { class:'tile', type:'button', html: ICON.pinAdd + '<span>Añadir</span>', onclick: () => openPlaceForm(null) }))));
 }
 function escapeText(s){ return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
 function shareStatus(){
@@ -516,7 +538,7 @@ function openSearch(){
     const term = q.value.trim().toLowerCase();
     const ps = [HOME, ...allPlaces()].filter(p => !term || (p.name + ' ' + (p.addr || '') + ' ' + (CATS[p.cat] || '')).toLowerCase().includes(term)).sort((a, b) => kmFrom(origin(), a) - kmFrom(origin(), b));
     box.replaceChildren(...(ps.length ? ps.map(p => h('button', { class:'lrow', type:'button', onclick: () => { closeSheet(); select({ type:'place', p }); map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), kmFrom(origin(), p) > 20 ? 12 : 15.5), padding:{ bottom: 260 } }); } },
-      h('span', { class:'ico' + (p.cat === 'extra' ? ' extra' : ''), html: PIN_ICON[p.cat] || ICON.star }),
+      h('span', { class:'ico' + (isOther(p) ? ' extra' : ''), html: PIN_ICON[p.cat] || ICON.star }),
       h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, p.name), h('span', { class:'s', style:'display:block' }, [CATS[p.cat], fmtKm(kmFrom(origin(), p))].join(' · '))), h('span', { class:'chev', html: ICON.chev }))))
       : [h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'s' }, 'Sin resultados')))]));
   };
@@ -525,20 +547,123 @@ function openSearch(){
     h('label', { class:'searchfield', html: ICON.search }, q), box);
   draw();
 }
-function openPinForm(lngLat){
-  const name = h('input', { class:'in', placeholder:'Nombre', maxlength:'40', id:'pinName' });
-  const note = h('input', { class:'in', placeholder:'Nota (opcional)', maxlength:'120', id:'pinNote' });
-  const save = () => { const n = name.value.trim(); if (!n) return toast('Ponle un nombre'); S.sync.addPin({ name: n, note: note.value.trim(), lat: lngLat.lat, lng: lngLat.lng, by: S.me.name }).then(() => toast('Pin guardado para el grupo'), () => toast('No se pudo guardar el pin')); closeSheet(); };
-  openSheet(h('div', { class:'snav' }, h('button', { class:'l', type:'button', onclick: closeSheet }, 'Cancelar'), h('div', { class:'c' }, 'Nuevo pin'), h('button', { class:'r', type:'button', onclick: save }, 'Guardar')),
-    h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, name)), h('div', { class:'lrow' }, h('div', { class:'body' }, note))),
-    h('p', { class:'foot' }, 'Lo verán los tres en el mapa. Se puede borrar desde su ficha.'));
-  setTimeout(() => name.focus(), 350);
+// ---------- añadir y editar sitios ----------
+function placeActions(p){
+  actionSheet(p.name, [
+    { label:'Editar sitio', onclick: () => openPlaceForm({ id: p.id, cat: isOther(p) ? 'otro' : p.cat, name: p.name, addr: p.addr || '', note: p.note || '', lat: p.lat, lng: p.lng, where:'Ubicación actual del sitio' }) },
+    { label:'Borrar sitio', destructive: true, onclick: () => actionSheet('Se borrará «' + p.name + '» para los tres, con sus puntuaciones.', [{ label:'Borrar', destructive: true, onclick: async () => {
+      try { await api({ action:'delPlace', id: p.id }); toast('Sitio borrado'); select(null); await loadPlaces(); } catch (e) { toast('No se pudo borrar'); } } }]) }]);
+}
+async function geoSearch(q){
+  const u = 'https://nominatim.openstreetmap.org/search?format=json&limit=6&accept-language=es&countrycodes=it&viewbox=14.3,38.4,15.8,36.6&bounded=1&q=' + encodeURIComponent(q);
+  const r = await fetch(u); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json();
+}
+function openPlaceForm(draft){
+  if (!netlifyOn()) return toast('Añadir sitios necesita la web de Netlify');
+  const d = S.draft = draft || { cat: 'ver' };
+  const name = h('input', { class:'in', placeholder:'Nombre del sitio', maxlength:'60', id:'plName', value: d.name || '' });
+  name.addEventListener('input', () => { d.name = name.value; });
+  const note = h('textarea', { class:'in', placeholder:'Nota: horario, qué pedir, truco…', maxlength:'240', id:'plNote' }); note.value = d.note || '';
+  note.addEventListener('input', () => { d.note = note.value; });
+  const addr = h('input', { class:'in', placeholder:'Dirección (opcional)', maxlength:'120', id:'plAddr', value: d.addr || '' });
+  addr.addEventListener('input', () => { d.addr = addr.value; });
+  const seg = h('div', { class:'seg' }, ...CAT_FORM.map(([k, l]) => h('button', { type:'button', 'aria-pressed': k === d.cat ? 'true' : 'false', onclick: e => { d.cat = k; for (const b of seg.children) b.setAttribute('aria-pressed', b === e.currentTarget ? 'true' : 'false'); } }, l)));
+  const hasLoc = typeof d.lat === 'number';
+  const locRow = h('div', { class:'lrow' }, h('span', { class:'ico' + (hasLoc ? '' : ' extra'), html: ICON.pinAdd }), h('span', { class:'body' }, h('span', { class:'grow' },
+    h('span', { class:'t', style:'display:block' }, hasLoc ? (d.where || 'Ubicación elegida') : 'Sin ubicación todavía'),
+    h('span', { class:'s', style:'display:block' }, hasLoc ? fmtKm(kmFrom(origin(), d)) + (S.lastPos ? ' de ti' : ' de Catania') : 'Elige una de estas tres opciones'))));
+  const results = h('div', { class:'list results', hidden: true });
+  const q = h('input', { type:'search', placeholder:'Calle, local o lugar', autocomplete:'off', id:'plQ' });
+  const searchBox = h('div', { hidden: true, style:'display:flex;flex-direction:column;gap:8px' }, h('label', { class:'searchfield', html: ICON.search }, q), results);
+  let timer = null;
+  q.addEventListener('input', () => { clearTimeout(timer); const v = q.value.trim(); if (v.length < 3){ results.hidden = true; return; } timer = setTimeout(async () => {
+    try { const rs = await geoSearch(v); results.hidden = false;
+      results.replaceChildren(...(rs.length ? rs.map(r => h('button', { class:'lrow', type:'button', onclick: () => { d.lat = +r.lat; d.lng = +r.lon; const parts = r.display_name.split(',').map(x => x.trim()); d.where = parts.slice(0, 2).join(', '); if (!d.addr) d.addr = parts.slice(0, 3).join(', '); if (!d.name) d.name = r.name || parts[0]; openPlaceForm(d); } },
+        h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, r.name || r.display_name.split(',')[0]), h('span', { class:'s', style:'display:block' }, r.display_name.split(',').slice(1, 4).join(','))))))
+        : [h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'s' }, 'Sin resultados. Prueba a elegirlo en el mapa.')))]));
+    } catch (e) { results.hidden = false; results.replaceChildren(h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'s' }, 'No se pudo buscar. Elige el punto en el mapa.')))); } }, 450); });
+  const locBtns = h('div', { class:'locbtns' },
+    h('button', { class:'btn-sec', type:'button', html: ICON.arrow + '<span>Aquí</span>', onclick: () => { if (!S.lastPos){ toast('Aún no tengo tu posición'); startLocating(false); return; } d.lat = S.lastPos.lat; d.lng = S.lastPos.lng; d.where = 'Donde estás ahora'; openPlaceForm(d); } }),
+    h('button', { class:'btn-sec', type:'button', html: ICON.map + '<span>Mapa</span>', onclick: () => { closeSheet(); select(null); S.addMode = 'place'; toast('Toca el mapa donde está el sitio'); } }),
+    h('button', { class:'btn-sec', type:'button', html: ICON.search + '<span>Buscar</span>', onclick: () => { searchBox.hidden = false; q.focus(); } }));
+  const save = async e => {
+    const btn = e.currentTarget; if (btn.disabled) return;
+    if (!(d.name || '').trim()) return toast('Ponle un nombre');
+    if (typeof d.lat !== 'number') return toast('Elige dónde está: aquí, en el mapa o buscando');
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      const res = await api({ action:'savePlace', by: S.me.name, place:{ id: d.id, cat: d.cat, name: d.name.trim(), addr: (d.addr || '').trim(), note: (d.note || '').trim(), lat: d.lat, lng: d.lng } });
+      S.draft = null; closeSheet(); toast(d.id ? 'Sitio actualizado' : 'Sitio añadido para los tres');
+      await loadPlaces(); const np = S.places[res.id]; if (np){ select({ type:'place', p: np }); reveal(np.lng, np.lat); }
+    } catch (err) { console.warn(err); toast('No se pudo guardar. Inténtalo otra vez.'); btn.disabled = false; btn.textContent = 'Guardar'; }
+  };
+  openSheet(sheetNav(d.id ? 'Editar sitio' : 'Nuevo sitio', ['Cancelar', () => { S.draft = null; closeSheet(); }], ['Guardar', save]),
+    h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, name))),
+    h('p', { class:'sec-h' }, 'Categoría'), seg,
+    h('p', { class:'sec-h' }, 'Dónde está'), h('div', { class:'list' }, locRow), locBtns, searchBox,
+    h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, addr)), h('div', { class:'lrow' }, h('div', { class:'body' }, note))),
+    h('p', { class:'foot' }, 'Lo verán los tres en el mapa, en el buscador y en las listas. Cualquiera puede editarlo o borrarlo desde su ficha.'));
+}
+
+// ---------- noche: puntuar locales ----------
+async function loadRatings(){
+  const res = await api({ action:'ratings' }); const out = {};
+  for (const [k, v] of Object.entries(res.ratings || {})){ const [pid, by] = k.split('/'); (out[pid] ||= {})[by] = v; }
+  S.ratings = out;
+}
+function nightScore(pid){
+  const rs = Object.values(S.ratings[pid] || {}); if (!rs.length) return null;
+  const crit = {}; for (const [k] of CRIT){ const vals = rs.map(r => r[k]).filter(v => typeof v === 'number'); if (vals.length) crit[k] = vals.reduce((a, b) => a + b, 0) / vals.length; }
+  const cs = Object.values(crit); if (!cs.length) return null;
+  return { avg: cs.reduce((a, b) => a + b, 0) / cs.length, n: rs.length, crit };
+}
+const fmt1 = n => n.toFixed(1).replace('.', ',');
+async function openNoche(){
+  if (!netlifyOn()) return toast('La noche necesita la web de Netlify');
+  const body = h('div', { style:'display:flex;flex-direction:column;gap:16px' }, h('p', { class:'foot' }, 'Cargando…'));
+  openSheet(sheetNav('Noche', null, ['Cerrar', closeSheet]), body);
+  try { await Promise.all([loadRatings(), S.placesLoaded ? null : loadPlaces()]); drawNoche(body); }
+  catch (e) { console.warn(e); body.replaceChildren(h('p', { class:'foot' }, 'No se pudo cargar. Revisa la conexión.')); }
+}
+function drawNoche(body){
+  const ps = allPlaces().filter(p => p.cat === 'noche').map(p => ({ p, sc: nightScore(p.id) }));
+  const rated = ps.filter(x => x.sc).sort((a, b) => b.sc.avg - a.sc.avg), unrated = ps.filter(x => !x.sc).sort((a, b) => a.p.name.localeCompare(b.p.name));
+  const row = (x, i) => { const best = x.sc ? CRIT.filter(([k]) => x.sc.crit[k] != null).sort((a, b) => x.sc.crit[b[0]] - x.sc.crit[a[0]]).slice(0, 2).map(([k, l]) => l + ' ' + fmt1(x.sc.crit[k])).join(' · ') : 'Sin puntuar';
+    return h('button', { class:'lrow', type:'button', onclick: () => openRate(x.p) }, i != null ? h('span', { class:'rank-n' }, i + 1) : null, h('span', { class:'ico', html: ICON.moon }),
+      h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, x.p.name), h('span', { class:'s', style:'display:block' }, best + (x.sc ? ' · ' + x.sc.n + (x.sc.n === 1 ? ' voto' : ' votos') : ''))),
+        x.sc ? h('span', { class:'big' }, fmt1(x.sc.avg)) : null, h('span', { class:'chev', style:'color:var(--label3)', html: ICON.chev }))); };
+  body.replaceChildren(
+    h('p', { class:'sec-h' }, 'Ranking'), rated.length ? h('div', { class:'list' }, ...rated.map((x, i) => row(x, i))) : h('p', { class:'foot' }, 'Todavía no habéis puntuado ningún local. Toca uno para puntuarlo.'),
+    unrated.length ? h('p', { class:'sec-h' }, 'Sin puntuar') : null, unrated.length ? h('div', { class:'list' }, ...unrated.map(x => row(x, null))) : null,
+    h('button', { class:'btn-primary', type:'button', html: ICON.plus + '<span>Añadir local</span>', onclick: () => openPlaceForm({ cat:'noche' }) }),
+    h('p', { class:'foot' }, 'Cada uno puntúa del 1 al 5 la música, el ambiente, la gente, el precio de las copas y la cola. La nota es la media del grupo.'));
+}
+function openRate(p){
+  if (!netlifyOn()) return toast('Puntuar necesita la web de Netlify');
+  const mine = { ...((S.ratings[p.id] || {})[S.me.id] || {}) };
+  const rows = CRIT.map(([k, l]) => { const sg = h('div', { class:'seg sm' }, ...[1, 2, 3, 4, 5].map(v => h('button', { type:'button', 'aria-pressed': mine[k] === v ? 'true' : 'false', onclick: e => { mine[k] = v; for (const b of sg.children) b.setAttribute('aria-pressed', b === e.currentTarget ? 'true' : 'false'); } }, v)));
+    return h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'t grow' }, l), sg)); });
+  const sc = nightScore(p.id); const voters = Object.keys(S.ratings[p.id] || {}).map(travellerName);
+  const save = async e => {
+    const btn = e.currentTarget; if (btn.disabled) return;
+    if (!Object.keys(mine).filter(k => CRIT.some(([c]) => c === k)).length) return toast('Puntúa al menos un criterio');
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try { await api({ action:'rate', place: p.id, by: S.me.id, scores: mine }); toast('Puntuación guardada'); openNoche(); }
+    catch (err) { toast('No se pudo guardar'); btn.disabled = false; btn.textContent = 'Guardar'; }
+  };
+  const d = directions(p);
+  openSheet(sheetNav(p.name, ['Noche', openNoche], ['Guardar', save]),
+    h('p', { class:'sec-h' }, 'Tu puntuación'), h('div', { class:'list' }, ...rows),
+    h('p', { class:'foot' }, sc ? 'Media del grupo ' + fmt1(sc.avg) + ' de 5 · votos de ' + voters.join(', ') : 'Nadie lo ha puntuado todavía.'),
+    h('div', { class:'btn-row' }, h('a', { class:'btn-sec', href: d.href, target:'_blank', rel:'noopener', html: (d.far ? ICON.car : ICON.walk) + '<span>Cómo llegar</span>' }),
+      h('button', { class:'btn-sec', type:'button', html: ICON.map + '<span>Ver en el mapa</span>', onclick: () => { closeSheet(); select({ type:'place', p }); reveal(p.lng, p.lat); } })));
 }
 
 // ---------- action sheet ----------
 function actionSheet(title, actions){
   const w = $('#actions');
-  const close = () => { w.classList.remove('show'); setTimeout(() => { w.hidden = true; w.replaceChildren(); }, 260); };
+  const id = (w._id = (w._id || 0) + 1);
+  const close = () => { w.classList.remove('show'); setTimeout(() => { if (w._id !== id) return; w.hidden = true; w.replaceChildren(); }, 260); };
   const btn = a => a.href ? h('a', { class:'as-b', href: a.href, target:'_blank', rel:'noopener', onclick: close }, a.label)
                         : h('button', { type:'button', class:'as-b' + (a.destructive ? ' red' : ''), onclick: () => { close(); setTimeout(a.onclick, 120); } }, a.label);
   w.replaceChildren(h('div', { class:'as-bd', onclick: close }), h('div', { class:'as' },
@@ -711,11 +836,12 @@ function netlifySync(group, onPeople, onPins){
     if (busy || document.hidden) return; busy = true;
     try {
       const me = sharing && myPos ? { id: S.me.id, name: S.me.name, ...myPos } : null;
-      const res = await post({ action:'sync', me }); if (me) lastSend = Date.now();
+      const res = await post({ action:'sync', me, v: 2 }); if (me) lastSend = Date.now();
+      if (res.plv && res.plv !== S.plv){ S.plv = res.plv; loadPlaces().catch(e => console.warn('places', e)); }
       const skew = (res.now || Date.now()) - Date.now();
       const people = {}; for (const [id, p] of Object.entries(res.people || {})) people[id] = { ...p, t: p.t - skew };
       fails = 0; if (S.offline){ S.offline = false; renderCard(); }
-      onPeople(people); onPins(res.pins || {});
+      onPeople(people);
     } catch (e) { console.warn('sync', e); if (++fails >= 3 && !S.offline){ S.offline = true; renderCard(); } }
     finally { busy = false; }
   };
@@ -726,8 +852,7 @@ function netlifySync(group, onPeople, onPins){
   return { kind:'netlify',
     sendPos(pos){ myPos = pos; if (sharing && Date.now() - lastSend > 5000) tick(); },
     setSharing(on){ sharing = on; schedule(); if (on) { lastSend = 0; tick(); } else post({ action:'leave', id: S.me.id }).then(tick, () => {}); },
-    addPin(pin){ return post({ action:'addPin', pin }).then(tick); },
-    delPin(id){ return post({ action:'delPin', id }).then(tick); } };
+  };
 }
 async function firebaseSync(group, onPeople, onPins){
   await loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
