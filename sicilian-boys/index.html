@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Sicilian Boys">
 <link rel="manifest" href="manifest.webmanifest">
+<script>try { var t = localStorage.getItem('sb-theme'); if (t === 'light' || t === 'dark') document.documentElement.classList.add(t); } catch (e) {}</script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
@@ -28,7 +29,7 @@
   --font-d:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue","Segoe UI",Roboto,system-ui,sans-serif;
   --hud-bg:rgba(0,0,0,.86); --hud-fg:#fff; --seg-on:#ffffff; --as-bg:rgba(250,250,250,.94);
 }
-@media (prefers-color-scheme: dark){ :root{
+@media (prefers-color-scheme: dark){ :root:not(.light){
   --bg:#000; --cell:#1c1c1e; --fill:rgba(118,118,128,.24); --fill2:rgba(120,120,128,.36);
   --label:#fff; --label2:rgba(235,235,245,.6); --label3:rgba(235,235,245,.3); --sep:rgba(84,84,88,.65);
   --tint:#fff; --tint-fg:#000; --green:#30d158; --red:#ff453a; --blue:#0a84ff;
@@ -106,6 +107,11 @@ body.has-badge .card{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))
 .btn-primary svg{width:20px;height:20px}
 .btn-primary:active{opacity:.8}
 .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+body.picking .card,body.picking .fabs{display:none}
+.pickpin{position:absolute;left:50%;top:50%;z-index:7;width:36px;height:48px;margin:-48px 0 0 -18px;pointer-events:none;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
+.pickbar{position:absolute;left:0;right:0;bottom:0;z-index:7;background:var(--cell);border-radius:16px 16px 0 0;box-shadow:var(--shadow-lg);padding:14px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.pickbar .t{margin:0;text-align:center;font-size:15px;font-weight:600}
+.pickbar .btn-row{grid-template-columns:1fr 2fr}
 .btn-sec{display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;border-radius:12px;background:var(--fill);font-size:15px;font-weight:600;letter-spacing:-.24px}
 .btn-sec svg{width:18px;height:18px}
 .btn-sec.red{color:var(--red)}
@@ -151,6 +157,9 @@ textarea.in{resize:none;min-height:84px;line-height:22px}
 .as-b + .as-b{border-top:.5px solid var(--sep)}
 .as-b.red{color:var(--red)}
 .as-b.bold{font-weight:600}
+.as-b{position:relative}
+.as-b .as-ck{position:absolute;right:20px;top:50%;width:20px;height:20px;margin-top:-10px;color:var(--blue)}
+.as-b .as-ck svg{display:block;width:20px;height:20px}
 
 /* markers */
 .mk{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
@@ -188,7 +197,7 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 .lrow .chev svg{width:8px;height:13px}
 .ico{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;background:#000;color:#fff}
 .ico.extra{background:#fff;color:#000;box-shadow:inset 0 0 0 1.5px #000}
-@media (prefers-color-scheme: dark){ .ico{background:#fff;color:#000} .ico.extra{background:#000;color:#fff;box-shadow:inset 0 0 0 1.5px #fff} }
+@media (prefers-color-scheme: dark){ :root:not(.light) .ico{background:#fff;color:#000} :root:not(.light) .ico.extra{background:#000;color:#fff;box-shadow:inset 0 0 0 1.5px #fff} }
 :root.dark .ico{background:#fff;color:#000} :root.dark .ico.extra{background:#000;color:#fff;box-shadow:inset 0 0 0 1.5px #fff}
 .ico svg{width:15px;height:15px}
 .in{flex:1;min-width:0;border:0;background:transparent;outline:none;font-size:17px;padding:11px 0;color:var(--label)}
@@ -199,7 +208,7 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 .foot{font-size:13px;color:var(--label2);letter-spacing:-.08px;padding:0 16px;line-height:18px;margin:0}
 .empty{text-align:center;padding:18px 16px;margin:0}
 .empty img{display:block;width:124px;height:124px;object-fit:contain;margin:0 auto 8px}
-@media (prefers-color-scheme: dark){ .tile img,.empty img{filter:drop-shadow(0 0 1px rgba(255,255,255,.4))} }
+@media (prefers-color-scheme: dark){ :root:not(.light) .tile img,:root:not(.light) .empty img{filter:drop-shadow(0 0 1px rgba(255,255,255,.4))} }
 :root.dark .tile img,:root.dark .empty img{filter:drop-shadow(0 0 1px rgba(255,255,255,.4))}
 .empty .t{font-size:15px;font-weight:600;color:var(--label2);margin:0}
 .empty .s{font-size:13px;color:var(--label3);margin:3px 0 0}
@@ -245,6 +254,7 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 </div>
 
 <div class="fabs">
+  <button class="fab" id="btnTheme" aria-label="Apariencia"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.7a8.3 8.3 0 0 1 0 16.6z" fill="currentColor"/></svg></button>
   <button class="fab" id="btn3d" aria-pressed="false" aria-label="Vista 3D">3D</button>
   <button class="fab" id="btnAll" aria-label="Ver a todos"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 19c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5z"/><circle cx="17" cy="8.5" r="2.8"/><path d="M16.5 13.6c3 .2 5 2.2 5 5.4h-4.3c0-2.1-.3-3.9-.7-5.4z"/></svg></button>
   <button class="fab" id="btnMe" aria-label="Centrar en mí"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5L3.6 10.4c-.7.3-.6 1.3.1 1.5l6.6 1.8 1.8 6.6c.2.7 1.2.8 1.5.1l6.9-16.9z"/></svg></button>
@@ -253,6 +263,11 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 <div class="card" id="card">
   <div class="grab"></div>
   <div id="cardBody"></div>
+</div>
+<div class="pickpin" id="pickPin" hidden><svg viewBox="0 0 36 48"><path d="M18 46.5s15-15.2 15-27.5A15 15 0 0 0 3 19c0 12.3 15 27.5 15 27.5z" fill="#ff3b30" stroke="#fff" stroke-width="2.5"/><circle cx="18" cy="18.5" r="5.5" fill="#fff"/></svg></div>
+<div class="pickbar" id="pickBar" hidden>
+  <p class="t">Mueve el mapa hasta el sitio</p>
+  <div class="btn-row"><button class="btn-sec" id="pickCancel" type="button">Cancelar</button><button class="btn-primary" id="pickOk" type="button">Usar esta ubicación</button></div>
 </div>
 
 <div class="backdrop" id="backdrop" hidden></div>
@@ -351,12 +366,20 @@ function sunTimes(date, lat, lng){
 }
 const prefersDark = matchMedia('(prefers-color-scheme: dark)');
 const isNight = () => { const now = new Date(), t = sunTimes(now, 37.5053, 15.0937); return now < t.sunrise || now >= t.sunset; };
-let dark = prefersDark.matches || isNight();
-document.documentElement.classList.toggle('dark', dark);
+// Apariencia: 'auto' sigue al móvil y pasa a oscuro al atardecer; 'light' y 'dark' la fijan. Se recuerda en cada móvil.
+let themeMode = 'auto';
+try { themeMode = localStorage.getItem('sb-theme') || 'auto'; } catch (e) { /* sin almacenamiento: automático */ }
+const wantDark = () => themeMode === 'dark' || (themeMode === 'auto' && (prefersDark.matches || isNight()));
+let dark = wantDark();
+function paintTheme(){
+  const r = document.documentElement; r.classList.toggle('dark', dark); r.classList.toggle('light', !dark);
+  for (const m of document.querySelectorAll('meta[name="theme-color"]')) m.content = dark ? '#000000' : '#ffffff';
+}
+paintTheme();
 
 // ---------- state ----------
 const S = { me:{ id:null, name:'' }, group:null, db:null, sharing:false, watchId:null, lastSent:0, lastPos:null,
-  peers:{}, peerMarkers:{}, meMarker:null, placeMarkers:[], extraPins:{}, places:{}, placesLoaded:false, plv:null, ratings:{}, filter:'all', is3d:false, addMode:false, selected:null };
+  peers:{}, peerMarkers:{}, meMarker:null, placeMarkers:[], extraPins:{}, places:{}, placesLoaded:false, plv:null, ratings:{}, filter:'all', is3d:false, picking:false, selected:null };
 const cfgOk = () => window.FIREBASE_CONFIG && typeof FIREBASE_CONFIG.apiKey === 'string' && !/^PEGA|^TU_|^YOUR_/i.test(FIREBASE_CONFIG.apiKey) && FIREBASE_CONFIG.databaseURL;
 const origin = () => S.lastPos || CATANIA;
 
@@ -373,16 +396,24 @@ map.on('style.load', styleExtras);
 map.on('load', () => { addHomeMarker(); renderPlaces(); });
 // Cambia a oscuro al atardecer y a claro al amanecer (o si cambia el tema del móvil).
 function checkTheme(){
-  const want = prefersDark.matches || isNight();
+  const want = wantDark();
   if (want === dark) return;
-  dark = want; document.documentElement.classList.toggle('dark', dark);
+  dark = want; paintTheme();
   map.setStyle('https://tiles.openfreemap.org/styles/' + (dark ? 'dark' : 'positron'));
 }
+function setTheme(mode){
+  themeMode = mode;
+  try { localStorage.setItem('sb-theme', mode); } catch (e) { /* solo dura esta visita */ }
+  checkTheme();
+  if (mode === 'auto') toast('Automático: oscuro al atardecer');
+}
+$('#btnTheme').addEventListener('click', () => actionSheet('Apariencia', [['auto', 'Automático'], ['light', 'Claro'], ['dark', 'Oscuro']]
+  .map(([k, label]) => ({ label, checked: themeMode === k, onclick: () => setTheme(k) }))));
 setInterval(checkTheme, 60000);
 prefersDark.addEventListener?.('change', checkTheme);
 map.on('zoom', () => document.body.classList.toggle('labels', map.getZoom() >= 15));
 map.on('click', e => {
-  if (S.addMode === 'place' && S.draft){ S.addMode = false; S.draft.lat = e.lngLat.lat; S.draft.lng = e.lngLat.lng; S.draft.gid = ''; S.draft.where = 'Elegida en el mapa'; openPlaceForm(S.draft); return; }
+  if (S.picking){ map.easeTo({ center: e.lngLat, padding: NO_PAD, duration: 300 }); return; }
   if (e.originalEvent && e.originalEvent.target && e.originalEvent.target.closest && e.originalEvent.target.closest('.mk,.peer')) return;
   if (S.selected) select(null);
 });
@@ -487,7 +518,7 @@ const cardH = () => $('#card').offsetHeight;
 function syncCardH(){ document.documentElement.style.setProperty('--card-h', cardH() + 'px'); }
 new ResizeObserver(syncCardH).observe($('#card'), { box:'border-box' });
 function switchEl(on, onToggle, label){ return h('button', { class:'sw', type:'button', role:'switch', 'aria-checked': on ? 'true' : 'false', 'aria-label': label, onclick: e => { e.stopPropagation(); onToggle(); } }); }
-function select(sel){ S.selected = sel; markSelected(); setTempMarker(sel && sel.type === 'place' && sel.p.temp ? sel.p : null); renderCard(); }
+function select(sel){ if (S.picking) return; S.selected = sel; markSelected(); setTempMarker(sel && sel.type === 'place' && sel.p.temp ? sel.p : null); renderCard(); }
 function setTempMarker(p){ if (S.tempMarker){ S.tempMarker.remove(); S.tempMarker = null; } if (!p) return; S.tempMarker = makeMarker(p); S.tempMarker.getElement().classList.add('temp', 'sel'); }
 function reveal(lng, lat){ requestAnimationFrame(() => map.easeTo({ center:[lng, lat], padding:{ top:120, bottom: cardH() + 30, left:0, right:0 }, duration:450 })); }
 const mapsHref = p => 'https://www.google.com/maps/search/?api=1&query=' + (p.gid ? encodeURIComponent(p.name) + '&query_place_id=' + p.gid : p.lat + ',' + p.lng);
@@ -631,7 +662,7 @@ function openPlaceForm(draft){
     } catch (e) { results.hidden = false; results.replaceChildren(h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'s' }, 'No se pudo buscar. Revisa la conexión.')))); } }, 450); });
   const locBtns = h('div', { class:'locbtns' },
     h('button', { class:'btn-sec', type:'button', html: ICON.arrow + '<span>Aquí</span>', onclick: () => { if (!S.lastPos){ toast('Ubicación no disponible'); startLocating(false); return; } d.lat = S.lastPos.lat; d.lng = S.lastPos.lng; d.gid = ''; d.where = 'Tu ubicación actual'; openPlaceForm(d); } }),
-    h('button', { class:'btn-sec', type:'button', html: ICON.map + '<span>Mapa</span>', onclick: () => { closeSheet(); select(null); S.addMode = 'place'; toast('Toca el mapa para elegir la ubicación'); } }),
+    h('button', { class:'btn-sec', type:'button', html: ICON.map + '<span>Mapa</span>', onclick: startPick }),
     h('button', { class:'btn-sec', type:'button', html: ICON.search + '<span>Buscar</span>', onclick: () => { searchBox.hidden = false; q.focus(); } }));
   const save = async e => {
     const btn = e.currentTarget; if (btn.disabled) return;
@@ -651,6 +682,24 @@ function openPlaceForm(draft){
     h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, addr)), h('div', { class:'lrow' }, h('div', { class:'body' }, note))),
     h('p', { class:'foot' }, 'Visible para todo el grupo.'));
 }
+
+// ---------- elegir la ubicación moviendo el mapa bajo un pin fijo ----------
+const NO_PAD = { top:0, bottom:0, left:0, right:0 };
+function startPick(){
+  const d = S.draft; closeSheet(); select(null); if (S.follow) setFollow(false, false);
+  const c = typeof d.lat === 'number' ? d : (S.lastPos && kmFrom(CATANIA, S.lastPos) < 250 ? S.lastPos : CATANIA);
+  S.picking = true; document.body.classList.add('picking'); $('#pickPin').hidden = false; $('#pickBar').hidden = false;
+  map.flyTo({ center:[c.lng, c.lat], zoom: Math.max(map.getZoom(), 16), padding: NO_PAD, duration: 600 });
+}
+function endPick(ok){
+  if (!S.picking) return;
+  S.picking = false; document.body.classList.remove('picking'); $('#pickPin').hidden = true; $('#pickBar').hidden = true;
+  const d = S.draft; if (!d) return;
+  if (ok){ const el = map.getContainer(), c = map.unproject([el.clientWidth / 2, el.clientHeight / 2]); d.lat = c.lat; d.lng = c.lng; d.gid = ''; d.where = 'Elegida en el mapa'; }
+  openPlaceForm(d);
+}
+$('#pickOk').addEventListener('click', () => endPick(true));
+$('#pickCancel').addEventListener('click', () => endPick(false));
 
 // ---------- noche: puntuar locales ----------
 async function loadRatings(){
@@ -712,7 +761,8 @@ function actionSheet(title, actions){
   const id = (w._id = (w._id || 0) + 1);
   const close = () => { w.classList.remove('show'); setTimeout(() => { if (w._id !== id) return; w.hidden = true; w.replaceChildren(); }, 260); };
   const btn = a => a.href ? h('a', { class:'as-b', href: a.href, target:'_blank', rel:'noopener', onclick: close }, a.label)
-                        : h('button', { type:'button', class:'as-b' + (a.destructive ? ' red' : ''), onclick: () => { close(); setTimeout(a.onclick, 120); } }, a.label);
+                        : h('button', { type:'button', class:'as-b' + (a.destructive ? ' red' : ''), 'aria-checked': a.checked == null ? null : String(a.checked), onclick: () => { close(); setTimeout(a.onclick, 120); } }, a.label,
+                            a.checked ? h('span', { class:'as-ck', html:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' }) : null);
   w.replaceChildren(h('div', { class:'as-bd', onclick: close }), h('div', { class:'as' },
     h('div', { class:'as-g' }, title ? h('div', { class:'as-title' }, title) : null, ...actions.filter(Boolean).map(btn)),
     h('div', { class:'as-g' }, h('button', { type:'button', class:'as-b bold', onclick: close }, 'Cancelar'))));
@@ -868,8 +918,17 @@ setInterval(renderPeers, 20000);
 // ---------- group sync: Netlify function first, Firebase as fallback ----------
 const API = '/api/sync';
 function loadScript(src){ return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error('No se pudo cargar ' + src)); document.head.append(el); }); }
+// En su propio dominio el servidor siempre existe: si el primer aviso falla (sin cobertura al abrir la app),
+// se entra igual en modo grupo y la sincronización reintenta. En otras copias se prueba tres veces.
 const backendReady = (async () => {
-  try { const r = await fetch(API + '?ping=1', { cache:'no-store' }); if (r.ok && (r.headers.get('content-type') || '').includes('json')) return 'netlify'; } catch {}
+  for (let i = 0; i < 3; i++){
+    try {
+      const r = await fetch(API + '?ping=1', { cache:'no-store', signal: AbortSignal.timeout ? AbortSignal.timeout(6000) : undefined });
+      if (r.ok && (r.headers.get('content-type') || '').includes('json')) return 'netlify';
+    } catch { /* sin respuesta */ }
+    if (/\.netlify\.app$/.test(location.hostname)) return 'netlify';
+    await new Promise(res => setTimeout(res, 1500 * (i + 1)));
+  }
   return cfgOk() ? 'firebase' : null;
 })();
 function netlifySync(group, onPeople, onPins){

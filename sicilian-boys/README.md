@@ -44,14 +44,14 @@ Importante en iPhone: la posición solo se envía mientras la página está abie
 
 ## Cómo se usa
 
-- **Sitios editables**: los sitios ya no son una lista fija. Viven en el servidor (empezaron con los 34 del plan) y cualquiera de los tres puede añadir, editar o eliminar. "Añadir" pide nombre, categoría (Ver, Comer, Noche, Excursión u Otro), ubicación (tu posición, un punto tocado en el mapa o el buscador) y una nota. Para editar o eliminar, abre el sitio y toca el botón de los tres puntos. Los cambios les llegan a los demás en unos segundos.
+- **Sitios editables**: los sitios ya no son una lista fija. Viven en el servidor (empezaron con los 34 del plan) y cualquiera de los tres puede añadir, editar o eliminar. "Añadir" pide nombre, categoría (Ver, Comer, Noche, Excursión u Otro), ubicación y una nota. La ubicación se elige con "Aquí" (tu posición), "Mapa" (se mueve el mapa bajo un pin rojo fijo y se toca "Usar esta ubicación"; se abre en Catania si estás lejos de Sicilia) o "Buscar" (nombre, dirección o enlace de Google Maps). Para editar o eliminar, abre el sitio y toca el botón de los tres puntos. Los cambios les llegan a los demás en unos segundos.
 - **Noche**: el botón morado "Noche" muestra el ranking de locales y los que faltan por puntuar. Cada uno puntúa del 1 al 5 música, ambiente, gente, precio de las copas y cola; la nota es la media del grupo. "Añadir local" crea un sitio de noche nuevo.
 - **Casa**: el alojamiento, Dimora Lucia Majorana (Piazza Angelo Majorana 4), está marcado con un pin negro grande. El botón "Casa" de la ficha inferior lo centra y da la ruta de vuelta, andando o en coche según la distancia.
 - **Match**: el botón rosa "Match" abre el ranking de la noche de Salinero, Braulio y Pomares (Lío 1, Manuela 3, Sexo 5 puntos) y el historial. "Apuntar match" guarda nombre, Instagram, resultado, noche, foto y nota. Solo quien lo apuntó puede eliminarlo. Ojo: sin PIN, cualquiera con el enlace podría verlo.
 - **Quién está en casa**: quien esté a menos de 50 m del alojamiento lleva una casita en su icono, el pin de casa muestra cuántos hay y el botón Casa lo dice.
 - **Distancia a cada amigo**: junto a su icono en el mapa, por ejemplo "Braulio · 300 m".
 - **Seguirte al andar**: la flecha azul mantiene el mapa centrado en ti y lo gira según hacia dónde miras (en iPhone pide permiso de movimiento la primera vez). Si mueves el mapa con el dedo, deja de seguirte.
-- **Mapa oscuro de noche**: a partir del atardecer en Catania (unas 16:40 en diciembre) la app pasa sola a oscuro aunque el móvil esté en claro, y vuelve a claro al amanecer.
+- **Apariencia**: el botón redondo de medio círculo, encima de 3D, permite elegir Automático, Claro u Oscuro. Cada móvil recuerda su elección. En Automático la app sigue el tema del móvil y además pasa a oscuro a partir del atardecer en Catania (unas 16:40 en diciembre) y vuelve a claro al amanecer.
 - **Buscador** ("Buscar sitios" en la ficha inferior): muestra primero los sitios del grupo y debajo resultados del mapa. Al tocar un resultado sale con un pin rojo y el botón "Añadir al grupo", que abre el formulario ya relleno (nombre, dirección, ubicación y categoría si se puede deducir).
   - Sin configurar nada busca en OpenStreetMap, que tiene monumentos, calles y muchos bares, pero no todos los locales.
   - Para un sitio que no aparezca (por ejemplo, Afro Bar): "Buscar en Google Maps", en Google Maps tocar Compartir > Copiar enlace y pegarlo en el buscador. Vale cualquier enlace de Google Maps o Apple Maps, y también coordenadas tipo `37.5027, 15.0873`.
@@ -74,6 +74,8 @@ Sin clave, el buscador usa OpenStreetMap, que no tiene todos los locales (por ej
 | `GOOGLE_MAPS_KEY` | Google Places API (New). Proyecto en [Google Cloud](https://console.cloud.google.com/), activar Places API (New) y crear clave restringida. | 5.000 búsquedas al mes | Sí |
 
 ## Si algo falla
+
+- Si "Añadir", Noche o Match dicen "Disponible solo en sicilian-boys.netlify.app", la app se ha abierto desde otra dirección: abre https://sicilian-boys.netlify.app/ (y vuelve a añadirla a la pantalla de inicio si el icono es antiguo). Sin cobertura al abrirla ya no pasa: entra en modo grupo y reintenta sola.
 
 - La ficha dice "Modo individual": estás en una copia de la web sin servidor. Abre el enlace de Netlify.
 - "Sin conexión con el grupo, reintentando…": no hay cobertura o Netlify no responde. La web reintenta sola.
