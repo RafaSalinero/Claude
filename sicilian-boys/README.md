@@ -16,9 +16,10 @@ Funciona fuera del visor de claude.ai porque ese visor bloquea la ubicación del
 | `places.js` | Lista de sitios de respaldo, solo para la copia sin servidor. |
 | `../netlify/lib/seed-places.mjs` | Los 34 sitios iniciales que el servidor copió al empezar. Los sitios reales se editan desde la app. |
 | `../netlify/functions/sync.mjs` | El pequeño servidor que guarda posiciones, sitios, puntuaciones y matches del grupo en Netlify. |
-| `../netlify/lib/maps.mjs` | El buscador: Google Maps si hay clave, si no OpenStreetMap; y lectura de enlaces de Maps. |
+| `../netlify/lib/maps.mjs` | El buscador: Google, Foursquare o TomTom si hay clave, si no OpenStreetMap; y lectura de enlaces de Maps. |
 | `../netlify.toml`, `../package.json` | Configuración de Netlify y su única dependencia. |
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `logo-96.png` | Icono de los tres pumas y datos para añadir a la pantalla de inicio. |
+| `pumas/` | Ilustraciones de los pumas: botones Casa, Noche, Match y Añadir, y pantallas vacías. |
 | `map-style.js` | Colores del mapa estilo Uber, con calles legibles en claro y en oscuro. |
 | `fotos/` | Fotos de Salinero, Braulio y Pomares. Se activan en la lista `TRAVELLERS` de `index.html`; sin foto se ve la inicial. |
 | `config.js`, `database.rules.json` | Solo para la alternativa con Firebase. No hacen falta con Netlify. |
@@ -54,7 +55,7 @@ Importante en iPhone: la posición solo se envía mientras la página está abie
 - **Buscador** ("Buscar sitios" en la ficha inferior): muestra primero los sitios del grupo y debajo resultados del mapa. Al tocar un resultado sale con un pin rojo y el botón "Añadir al grupo", que abre el formulario ya relleno (nombre, dirección, ubicación y categoría si se puede deducir).
   - Sin configurar nada busca en OpenStreetMap, que tiene monumentos, calles y muchos bares, pero no todos los locales.
   - Para un sitio que no aparezca (por ejemplo, Afro Bar): "Buscar en Google Maps", en Google Maps tocar Compartir > Copiar enlace y pegarlo en el buscador. Vale cualquier enlace de Google Maps o Apple Maps, y también coordenadas tipo `37.5027, 15.0873`.
-  - Con una clave de Google (ver abajo) el buscador encuentra lo mismo que Google Maps.
+  - Con una clave de TomTom, Foursquare o Google (ver abajo) busca locales dentro de la app, sin pegar enlaces.
 - **Ficha inferior**: el interruptor "Compartir mi ubicación" El interruptor "Compartir mi ubicación" hace que los demás te vean. "Añadir" crea un sitio nuevo para los tres.
 - **Al tocar un sitio**, la ficha se convierte en su tarjeta: botón negro "Ir en coche" si está a más de 3 km o "Ir a pie" si está cerca, ambos con la ruta en Google Maps, y "Ver en Maps".
 - **Al tocar a un amigo**, en el mapa o en sus iniciales arriba a la derecha, ves hace cuánto se actualizó y un botón para ir hasta él.
@@ -62,13 +63,15 @@ Importante en iPhone: la posición solo se envía mientras la página está abie
 - **Filtros arriba**: Ver, Comer, Noche, Excursiones y Otros. Al tocar uno, el mapa encuadra esos sitios.
 - El mapa usa el tema claro u oscuro del móvil.
 
-## Buscador con Google Maps (opcional)
+## Buscador: claves opcionales
 
-1. En [Google Cloud Console](https://console.cloud.google.com/), crear un proyecto, activar **Places API (New)** y crear una clave en Credenciales. Google pide una cuenta de facturación, pero la búsqueda de texto tiene 5.000 búsquedas gratis al mes, de sobra para tres personas.
-2. Restringir la clave a "Places API (New)" y, en Cuotas, limitarla (por ejemplo, 150 al día) para no pagar nunca nada.
-3. En Netlify: Project configuration > Environment variables > `GOOGLE_MAPS_KEY` con la clave, ámbito Functions. Volver a publicar.
+Sin clave, el buscador usa OpenStreetMap, que no tiene todos los locales (por ejemplo, Afrobar). Con una clave busca en un proveedor comercial dentro de la propia app. Las claves se ponen en Netlify (Project configuration > Environment variables, ámbito Functions) y solo las usa el servidor (`netlify/lib/maps.mjs`). Si hay varias, se prueban en este orden: Google, Foursquare, TomTom. Si una falla, se agota o no encuentra nada, se pasa a la siguiente y al final a OpenStreetMap.
 
-La clave solo la usa el servidor (`netlify/lib/maps.mjs`); no llega al móvil. Si Google falla o se agota la cuota, el buscador vuelve solo a OpenStreetMap.
+| Variable | Proveedor | Gratis | Tarjeta |
+|---|---|---|---|
+| `TOMTOM_KEY` | TomTom Search API. Alta en [developer.tomtom.com](https://developer.tomtom.com/), la clave aparece en el panel. | 2.500 búsquedas al mes | No |
+| `FOURSQUARE_KEY` | Foursquare Places, muy completo en bares y discotecas. Alta en [foursquare.com/developers](https://foursquare.com/developers/), proyecto nuevo > Service API Key. | 500 búsquedas al mes | No |
+| `GOOGLE_MAPS_KEY` | Google Places API (New). Proyecto en [Google Cloud](https://console.cloud.google.com/), activar Places API (New) y crear clave restringida. | 5.000 búsquedas al mes | Sí |
 
 ## Si algo falla
 

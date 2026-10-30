@@ -1,19 +1,22 @@
 // Buscador de sitios de la app.
-// Con la variable GOOGLE_MAPS_KEY en Netlify busca en Google Maps (Places API, Text Search);
-// sin ella, en OpenStreetMap (Photon). También entiende enlaces de Google Maps y Apple Maps.
+// Usa el primer proveedor con clave en Netlify: GOOGLE_MAPS_KEY (Google Places), FOURSQUARE_KEY
+// o TOMTOM_KEY. Si falla o no encuentra nada, prueba el siguiente y al final OpenStreetMap (Photon),
+// que no necesita clave. También entiende enlaces de Google Maps y Apple Maps.
 const UA = 'SicilianBoys/1.0 (sicilian-boys.netlify.app)';
 const COORD = /^\s*(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/;
 // Solo se siguen redirecciones dentro de estos dominios.
 const HOSTS = /^(maps\.app\.goo\.gl|goo\.gl|g\.co|(www\.|maps\.)?google\.[a-z]{2,3}(\.[a-z]{2})?|consent\.google\.[a-z]{2,3}|maps\.apple\.com|maps\.apple)$/;
 
 const CAT_RULES = [
-  ['noche', /^(bar|pub|night_?club|biergarten|wine_bar|cocktail_bar|karaoke|lounge_bar|dance_hall)$/],
-  ['comer', /^(restaurant|\w+_restaurant|cafe|coffee_shop|bakery|pastry|confectionery|food|fast_food|meal_takeaway|ice_cream(_shop)?|bar_and_grill|pizzeria|deli)$/],
-  ['ver', /^(tourist_attraction|attraction|museum|art_gallery|viewpoint|church|cathedral|place_of_worship|monument|memorial|castle|ruins|archaeological_site|historic\w*|park|national_park|beach|natural_feature|volcano|peak)$/],
+  ['noche', /^(\w+_bar|bar|pub|\w*night_?club|nightlife|biergarten|karaoke|lounge|disco\w*|dance_hall|beach_club|music_venue)$/],
+  ['comer', /^(restaurant|\w+_restaurant|cafe|coffee_shop|bakery|pastry|confectionery|food|fast_food|meal_takeaway|ice_cream(_shop)?|bar_and_grill|pizzeria|trattoria|osteria|bistro|gelateria|deli)$/],
+  ['ver', /^(\w*tourist_attraction|attraction|museum|art_gallery|viewpoint|scenic_\w+|landmark\w*|church|cathedral|basilica|place_of_worship|monument\w*|memorial|castle|ruins|archaeological_site|historic\w*|plaza|square|park|national_park|beach|natural_feature|volcano|peak)$/],
 ];
-// Categoría de la app a partir de los tipos de Google u OpenStreetMap, por orden de prioridad.
+// Tipos de cada proveedor en minúsculas y con guiones bajos: "Cocktail Bar" -> cocktail_bar, "Café" -> cafe.
+const norm = t => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().replace(/[\s/-]+/g, '_');
+// Categoría de la app a partir de los tipos del proveedor, por orden de prioridad.
 export function catOf(types) {
-  for (const t of types) for (const [cat, re] of CAT_RULES) if (t && re.test(t)) return cat;
+  for (const t of types.map(norm)) for (const [cat, re] of CAT_RULES) if (t && re.test(t)) return cat;
   return 'otro';
 }
 
@@ -34,6 +37,32 @@ async function google(key, q, lat, lng) {
   }));
 }
 
+async function foursquare(key, q, lat, lng) {
+  const u = `https://places-api.foursquare.com/places/search?query=${encodeURIComponent(q)}&ll=${lat},${lng}&radius=100000&limit=8&fields=fsq_place_id,name,latitude,longitude,location,categories`;
+  const r = await fetch(u, { headers: { authorization: 'Bearer ' + key, 'x-places-api-version': '2025-06-17', accept: 'application/json' }, signal: AbortSignal.timeout(8000) });
+  if (!r.ok) throw new Error('foursquare ' + r.status + ' ' + (await r.text()).slice(0, 200));
+  const d = await r.json();
+  return (d.results || []).filter(p => typeof p.latitude === 'number' && typeof p.longitude === 'number').map(p => {
+    const l = p.location || {};
+    return { name: p.name || '', addr: tidyAddr(l.formatted_address || [l.address, l.locality].filter(Boolean).join(', ')), lat: p.latitude, lng: p.longitude, cat: catOf((p.categories || []).map(c => c.name)) };
+  }).filter(p => p.name);
+}
+
+async function tomtom(key, q, lat, lng) {
+  const u = `https://api.tomtom.com/search/2/search/${encodeURIComponent(q)}.json?key=${encodeURIComponent(key)}&lat=${lat}&lon=${lng}&limit=8&language=es-ES&countrySet=IT`;
+  const r = await fetch(u, { signal: AbortSignal.timeout(8000) });
+  if (!r.ok) throw new Error('tomtom ' + r.status + ' ' + (await r.text()).slice(0, 200));
+  const d = await r.json();
+  return (d.results || []).filter(x => x.position).map(x => {
+    const a = x.address || {}, poi = x.poi;
+    const street = [a.streetName, a.streetNumber].filter(Boolean).join(' ');
+    return {
+      name: poi ? poi.name || '' : street || a.freeformAddress || '', addr: tidyAddr(poi ? a.freeformAddress : a.municipality),
+      lat: x.position.lat, lng: x.position.lon, cat: poi ? catOf([...(poi.categories || []), ...(poi.classifications || []).map(c => c.code)]) : 'otro',
+    };
+  }).filter(p => p.name && km(lat, lng, p.lat, p.lng) < 250);
+}
+
 async function osm(q, lat, lng) {
   const r = await fetch(`https://photon.komoot.io/api/?limit=12&lat=${lat}&lon=${lng}&q=${encodeURIComponent(q)}`, { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(8000) });
   if (!r.ok) throw new Error('photon ' + r.status);
@@ -49,11 +78,14 @@ async function osm(q, lat, lng) {
   }).slice(0, 8);
 }
 
+const PROVIDERS = [['google', 'GOOGLE_MAPS_KEY', google], ['foursquare', 'FOURSQUARE_KEY', foursquare], ['tomtom', 'TOMTOM_KEY', tomtom]];
+
 export async function searchPlaces(q, lat, lng) {
-  const key = process.env.GOOGLE_MAPS_KEY;
-  if (key) {
-    try { return { src: 'google', results: await google(key, q, lat, lng) }; }
-    catch (e) { console.warn(e.message); }
+  for (const [src, env, find] of PROVIDERS) {
+    const key = process.env[env];
+    if (!key) continue;
+    try { const results = await find(key, q, lat, lng); if (results.length) return { src, results }; }
+    catch (e) { console.warn(e.message); }   // cuota agotada o clave mal: se pasa al siguiente
   }
   return { src: 'osm', results: await osm(q, lat, lng) };
 }

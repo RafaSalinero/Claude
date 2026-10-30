@@ -110,16 +110,14 @@ body.has-badge .card{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))
 .btn-sec svg{width:18px;height:18px}
 .btn-sec.red{color:var(--red)}
 .tiles3{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.tile.noche{background:#5e5ce6;color:#fff}
 .locbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .seg.sm button{min-width:34px;padding:4px 0}
 .ratechip{display:inline-flex;align-items:center;gap:3px;font-weight:600}
 .ratechip svg{width:13px;height:13px;color:#ff9f0a}
 .results .lrow .t{font-size:16px}
 .srch{display:flex;flex-direction:column;gap:14px}
-.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:62px;border-radius:12px;background:var(--fill);font-size:13px;font-weight:600;letter-spacing:-.08px}
-.tile svg{width:22px;height:22px}
-.tile.home{background:var(--tint);color:var(--tint-fg)}
+.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:62px;padding:6px 2px 7px;border-radius:12px;background:var(--fill);font-size:13px;font-weight:600;letter-spacing:-.08px}
+.tile img{width:50px;height:50px;object-fit:contain}
 .mk.home{z-index:3}
 .mk.home .head{width:40px;height:40px;border-radius:12px;background:#000;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.45)}
 .mk.home .head svg{width:20px;height:20px}
@@ -200,6 +198,9 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 .searchfield input{flex:1;border:0;background:transparent;outline:none;font-size:17px;padding:7px 0;color:var(--label);min-width:0}
 .foot{font-size:13px;color:var(--label2);letter-spacing:-.08px;padding:0 16px;line-height:18px;margin:0}
 .empty{text-align:center;padding:18px 16px;margin:0}
+.empty img{display:block;width:124px;height:124px;object-fit:contain;margin:0 auto 8px}
+@media (prefers-color-scheme: dark){ .tile img,.empty img{filter:drop-shadow(0 0 1px rgba(255,255,255,.4))} }
+:root.dark .tile img,:root.dark .empty img{filter:drop-shadow(0 0 1px rgba(255,255,255,.4))}
 .empty .t{font-size:15px;font-weight:600;color:var(--label2);margin:0}
 .empty .s{font-size:13px;color:var(--label3);margin:3px 0 0}
 .pav{width:32px;height:32px;border-radius:50%;color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px;flex:0 0 auto}
@@ -212,7 +213,6 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 .fab.follow{background:#007aff;color:#fff}
 .mk.home .cnt{position:absolute;top:-8px;right:-10px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#34c759;color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;border:2px solid #fff}
 .mk.home .head{position:relative}
-.tile.match{background:#ff2d55;color:#fff}
 .tile .n{font-size:11px;font-weight:600;opacity:.85;margin-top:-2px}
 #who .pav{width:46px;height:46px;font-size:18px}
 #who .lrow{min-height:62px}
@@ -321,7 +321,9 @@ function h(tag, attrs, ...kids){
 }
 // Textos: vacío «No hay …», confirmación «X guardado», error «No se pudo …».
 const WEB_ONLY = 'Disponible solo en sicilian-boys.netlify.app';
-const empty = (t, s) => h('div', { class:'empty' }, h('p', { class:'t' }, t), s ? h('p', { class:'s' }, s) : null);
+// Ilustraciones de pumas en pumas/: botones de la ficha y pantallas vacías.
+const puma = (name, size) => h('img', { src:'pumas/' + name + '.webp', alt:'', width: size, height: size, decoding:'async' });
+const empty = (t, s, img) => h('div', { class:'empty' }, img ? puma(img, 124) : null, h('p', { class:'t' }, t), s ? h('p', { class:'s' }, s) : null);
 function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2600); }
 const store = { get(k){ try { return localStorage.getItem(k); } catch { return null; } }, set(k, v){ try { localStorage.setItem(k, v); } catch {} } };
 // Iconos de cada uno en fotos/; con null se muestra la inicial sobre su color.
@@ -525,10 +527,10 @@ function renderCard(){
         switchEl(S.sharing, () => { if (!S.sync) return toast(WEB_ONLY); setSharing(!S.sharing); }, 'Compartir mi ubicación')),
     ),
     h('div', { class:'tiles3' },
-      h('button', { class:'tile home', type:'button', onclick: goHome, html: ICON.home + '<span>Casa</span>' }, h('span', { class:'n', id:'homeTileN' }, (S.atHome && S.atHome.length) ? S.atHome.length + ' en casa' : '')),
-      h('button', { class:'tile noche', type:'button', html: ICON.moon + '<span>Noche</span>', onclick: openNoche }),
-      h('button', { class:'tile match', type:'button', html: ICON.heart + '<span>Match</span>', onclick: openNight }),
-      h('button', { class:'tile', type:'button', html: ICON.pinAdd + '<span>Añadir</span>', onclick: () => openPlaceForm(null) }))));
+      h('button', { class:'tile home', type:'button', onclick: goHome }, puma('casa', 50), h('span', {}, 'Casa'), h('span', { class:'n', id:'homeTileN' }, (S.atHome && S.atHome.length) ? S.atHome.length + ' en casa' : '')),
+      h('button', { class:'tile noche', type:'button', onclick: openNoche }, puma('noche', 50), h('span', {}, 'Noche')),
+      h('button', { class:'tile match', type:'button', onclick: openNight }, puma('match', 50), h('span', {}, 'Match')),
+      h('button', { class:'tile', type:'button', onclick: () => openPlaceForm(null) }, puma('anadir', 50), h('span', {}, 'Añadir')))));
 }
 function escapeText(s){ return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
 function shareStatus(){
@@ -575,10 +577,10 @@ function openSearch(){
     let res; try { res = await mapSearch(v); } catch (e) { res = null; }
     if (my !== seq) return;
     const gmaps = h('a', { class:'btn-sec', href:'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(v), target:'_blank', rel:'noopener', html: ICON.map + '<span>Buscar en Google Maps</span>' });
-    if (!res){ ext.replaceChildren(empty('No se pudo buscar', 'Revisa la conexión.')); return; }
+    if (!res){ ext.replaceChildren(empty('No se pudo buscar', 'Revisa la conexión.', 'sin-conexion')); return; }
     const rs = res.results.filter(r => !allPlaces().some(x => sameSpot(x, r)));
     ext.replaceChildren(h('p', { class:'sec-h' }, res.src === 'google' ? 'En Google Maps' : res.src === 'link' ? 'Enlace' : 'En el mapa'),
-      rs.length ? h('div', { class:'list' }, ...rs.map(r => row(r, r.addr, () => showFound(r)))) : empty(isLink(v) ? 'Enlace no válido' : 'No hay resultados', isLink(v) ? 'Usa un enlace de Google Maps o Apple Maps.' : null),
+      rs.length ? h('div', { class:'list' }, ...rs.map(r => row(r, r.addr, () => showFound(r)))) : empty(isLink(v) ? 'Enlace no válido' : 'No hay resultados', isLink(v) ? 'Usa un enlace de Google Maps o Apple Maps.' : null, 'vacio-buscar'),
       res.src === 'google' || isLink(v) ? null : gmaps,
       res.src === 'google' || isLink(v) ? null : h('p', { class:'foot' }, '¿No aparece? Pega aquí el enlace del sitio en Google Maps.'));
   };
@@ -668,7 +670,7 @@ async function openNoche(){
   const body = h('div', { style:'display:flex;flex-direction:column;gap:16px' }, h('p', { class:'foot' }, 'Cargando…'));
   openSheet(sheetNav('Noche', null, ['Cerrar', closeSheet]), body);
   try { await Promise.all([loadRatings(), S.placesLoaded ? null : loadPlaces()]); drawNoche(body); }
-  catch (e) { console.warn(e); body.replaceChildren(empty('No se pudo cargar', 'Revisa la conexión.')); }
+  catch (e) { console.warn(e); body.replaceChildren(empty('No se pudo cargar', 'Revisa la conexión.', 'sin-conexion')); }
 }
 function drawNoche(body){
   const ps = allPlaces().filter(p => p.cat === 'noche').map(p => ({ p, sc: nightScore(p.id) }));
@@ -678,7 +680,7 @@ function drawNoche(body){
       h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, x.p.name), h('span', { class:'s', style:'display:block' }, best + (x.sc ? ' · ' + x.sc.n + (x.sc.n === 1 ? ' voto' : ' votos') : ''))),
         x.sc ? h('span', { class:'big' }, fmt1(x.sc.avg)) : null, h('span', { class:'chev', style:'color:var(--label3)', html: ICON.chev }))); };
   body.replaceChildren(
-    h('p', { class:'sec-h' }, 'Ranking'), rated.length ? h('div', { class:'list' }, ...rated.map((x, i) => row(x, i))) : empty('No hay puntuaciones', 'Toca un local para puntuarlo.'),
+    h('p', { class:'sec-h' }, 'Ranking'), rated.length ? h('div', { class:'list' }, ...rated.map((x, i) => row(x, i))) : empty('No hay puntuaciones', 'Toca un local para puntuarlo.', 'vacio-noche'),
     unrated.length ? h('p', { class:'sec-h' }, 'Sin puntuar') : null, unrated.length ? h('div', { class:'list' }, ...unrated.map(x => row(x, null))) : null,
     h('button', { class:'btn-primary', type:'button', html: ICON.plus + '<span>Añadir local</span>', onclick: () => openPlaceForm({ cat:'noche' }) }),
     h('p', { class:'foot' }, 'Nota: media del grupo, de 1 a 5.'));
@@ -731,7 +733,7 @@ async function openNight(){
   const body = h('div', { style:'display:flex;flex-direction:column;gap:16px' }, h('p', { class:'foot' }, 'Cargando…'));
   openSheet(sheetNav('Match', null, ['Cerrar', closeSheet]), body);
   try { const res = await api({ action:'matches' }); S.matches = Object.values(res.matches || {}).sort((a, b) => b.t - a.t); drawNight(body); }
-  catch (e) { console.warn(e); body.replaceChildren(empty('No se pudo cargar', 'Revisa la conexión.')); }
+  catch (e) { console.warn(e); body.replaceChildren(empty('No se pudo cargar', 'Revisa la conexión.', 'sin-conexion')); }
 }
 function drawNight(body){
   const ms = S.matches || [];
@@ -741,7 +743,7 @@ function drawNight(body){
     h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, r.n + (r.id === S.me.id ? ' (tú)' : '')),
       h('span', { class:'s', style:'display:block' }, r.l.length ? r.l.length + (r.l.length === 1 ? ' match · ' : ' matches · ') + DAYS.map(([d, l]) => l.split(' ')[0] + ' ' + r.l.filter(m => m.day === d).length).join(' · ') : 'Sin matches')),
       h('span', { class:'big' }, r.pts, h('small', {}, r.pts === 1 ? 'pt' : 'pts'))))));
-  const hist = ms.length ? h('div', { class:'list' }, ...ms.map(matchRow)) : empty('No hay matches');
+  const hist = ms.length ? h('div', { class:'list' }, ...ms.map(matchRow)) : empty('No hay matches', null, 'vacio-match');
   body.replaceChildren(board, h('p', { class:'foot', style:'margin-top:-8px' }, Object.values(LEVELS).map(([l, pts]) => l + ' ' + pts).join(' · ')),
     h('button', { class:'btn-primary', type:'button', html: ICON.plus + '<span>Apuntar match</span>', onclick: openNewMatch }),
     h('p', { class:'sec-h' }, 'Historial'), hist);
