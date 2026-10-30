@@ -286,7 +286,7 @@ const CAT_LONG = { ver:'Qué ver', comer:'Dónde comer', noche:'Noche', ruta:'Ex
 // Alojamiento del grupo. Coordenadas del centro de la plaza (OpenStreetMap); el portal 4 está en ella.
 const HOME = { id:'casa', cat:'casa', name:'Dimora Lucia Majorana', addr:'Piazza Angelo Majorana 4, Catania', lat:37.50528, lng:15.09368, note:'Piazza Angelo Majorana 4' };
 const DAYS = [['04', 'Jue 4'], ['05', 'Vie 5'], ['06', 'Sáb 6']];
-const LEVELS = { charla:['Conversación', 1, '#30b0c7'], beso:['Beso', 2, '#ff2d55'], lio:['Liado', 3, '#af52de'], otro:['Otro', 1, '#8e8e93'] };
+const LEVELS = { lio:['Lío', 1, '#ff9500'], manuela:['Manuela', 3, '#af52de'], sexo:['Sexo', 5, '#ff2d55'] };
 const ICON = {
   eye:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l9.5 5V10h-19V7.5zM4.5 11h2.6v6.5H4.5zm4.2 0h2.6v6.5H8.7zm4 0h2.6v6.5h-2.6zm4.2 0h2.6v6.5h-2.6zM3 18.5h18V21H3z"/></svg>',
   food:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h1.5v6.2c0 1-.6 1.9-1.5 2.3V22H5.5V10.5C4.6 10.1 4 9.2 4 8.2V2h1.5v6h.75V2h.75v6H7zM18.5 2C16 2 14.5 4.5 14.5 8v5h2.5v9h1.5z"/></svg>',
@@ -735,7 +735,7 @@ async function openNight(){
 }
 function drawNight(body){
   const ms = S.matches || [];
-  const rows = TRAVELLERS.map(([n]) => { const id = slug(n); const l = ms.filter(m => m.by === id); return { n, id, l, pts: l.reduce((a, m) => a + (LEVELS[m.level] || LEVELS.otro)[1], 0) }; }).sort((a, b) => b.pts - a.pts || b.l.length - a.l.length);
+  const rows = TRAVELLERS.map(([n]) => { const id = slug(n); const l = ms.filter(m => m.by === id); return { n, id, l, pts: l.reduce((a, m) => a + (LEVELS[m.level] || LEVELS.lio)[1], 0) }; }).sort((a, b) => b.pts - a.pts || b.l.length - a.l.length);
   const board = h('div', { class:'list' }, ...rows.map((r, i) => h('div', { class:'lrow' },
     h('span', { class:'rank-n' }, i + 1), (() => { const f = face(r.id, r.n); f.classList.add('pav'); return f; })(),
     h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, r.n + (r.id === S.me.id ? ' (tú)' : '')),
@@ -748,7 +748,7 @@ function drawNight(body){
 }
 const photoUrl = m => `/api/photo?g=${S.group}&id=${encodeURIComponent(m.id)}`;
 function matchRow(m){
-  const L = LEVELS[m.level] || LEVELS.otro;
+  const L = LEVELS[m.level] || LEVELS.lio;
   let lead = m.photo ? h('img', { class:'thumb', src: photoUrl(m), alt: m.name, loading:'lazy' }) : h('span', { class:'thumb', html: ICON.heart });
   if (m.photo) lead.addEventListener('error', () => lead.replaceWith(h('span', { class:'thumb', html: ICON.heart })));
   const el = h('button', { class:'lrow', type:'button' }, lead,
@@ -773,7 +773,7 @@ async function compressPhoto(file){
   return url;
 }
 function openNewMatch(){
-  let level = 'beso', file = null;
+  let level = 'lio', file = null;
   const name = h('input', { class:'in', placeholder:'Nombre', maxlength:'40', id:'nmName' });
   const ig = h('input', { class:'in', placeholder:'Instagram', maxlength:'40', autocapitalize:'none', autocorrect:'off', id:'nmIg' });
   const seg = h('div', { class:'seg' }, ...Object.entries(LEVELS).map(([k, [l]]) => h('button', { type:'button', 'aria-pressed': k === level ? 'true' : 'false', onclick: e => { level = k; for (const b of seg.children) b.setAttribute('aria-pressed', b === e.currentTarget ? 'true' : 'false'); } }, l)));

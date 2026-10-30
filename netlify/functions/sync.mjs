@@ -8,7 +8,7 @@ import { searchPlaces, resolveLink } from '../lib/maps.mjs';
 const GROUP = /^[a-f0-9]{24}$/;          // hash del PIN, calculado en el teléfono
 const ID = /^[A-Za-z0-9_-]{1,40}$/;
 const STALE_MS = 6 * 3600e3;             // posiciones de hace más de 6 h se borran
-const LEVELS = ['charla', 'beso', 'lio', 'otro'];
+const LEVELS = ['lio', 'manuela', 'sexo'];
 const DAYS = ['04', '05', '06'];
 const MAX_PHOTO = 1_500_000;             // bytes de la foto ya comprimida en el móvil
 const PLACE_CATS = ['ver', 'comer', 'noche', 'ruta', 'otro'];
