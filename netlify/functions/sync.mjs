@@ -1,8 +1,9 @@
-// Servidor del mapa en vivo: guarda posiciones y pines del grupo en Netlify Blobs.
+// Servidor del mapa en vivo: guarda posiciones, sitios, puntuaciones y matches del grupo en Netlify Blobs.
 // Una sola ruta, /api/sync. Cada teléfono hace una petición cada pocos segundos:
 // envía su posición (si comparte) y recibe la de los demás y los pines.
 import { getStore } from '@netlify/blobs';
 import SEED from '../lib/seed-places.mjs';
+import { searchPlaces, resolveLink } from '../lib/maps.mjs';
 
 const GROUP = /^[a-f0-9]{24}$/;          // hash del PIN, calculado en el teléfono
 const ID = /^[A-Za-z0-9_-]{1,40}$/;
@@ -12,6 +13,8 @@ const DAYS = ['04', '05', '06'];
 const MAX_PHOTO = 1_500_000;             // bytes de la foto ya comprimida en el móvil
 const PLACE_CATS = ['ver', 'comer', 'noche', 'ruta', 'otro'];
 const CRIT = ['musica', 'ambiente', 'gente', 'precio', 'cola'];
+const GID = /^[A-Za-z0-9_-]{10,300}$/;     // id de sitio de Google Maps
+const CATANIA = [37.5045, 15.0862];
 
 // Sitios del grupo: uno por clave en `${g}/pl/<id>`. `${g}/plv` guarda la versión de la lista,
 // que el móvil recibe en cada sincronización para saber cuándo volver a pedirla.
@@ -111,7 +114,7 @@ export async function handle(req, store) {
     if (p.id && !ID.test(p.id)) return json({ error: 'id' }, 400);
     const id = p.id || ('p' + now.toString(36) + Math.random().toString(36).slice(2, 5));
     await placesVersion(store, g);
-    await store.setJSON(`${g}/pl/${id}`, { id, cat: p.cat, name, addr: str(p.addr, 120), note: str(p.note, 240), lat: p.lat, lng: p.lng, by: str(b.by, 18), t: now });
+    await store.setJSON(`${g}/pl/${id}`, { id, cat: p.cat, name, addr: str(p.addr, 120), note: str(p.note, 240), lat: p.lat, lng: p.lng, gid: GID.test(p.gid || '') ? p.gid : '', by: str(b.by, 18), t: now });
     const plv = await bumpPlaces(store, g);
     return json({ ok: true, id, plv });
   }
@@ -121,6 +124,16 @@ export async function handle(req, store) {
     await Promise.all([store.delete(`${g}/pl/${b.id}`), ...blobs.map(x => store.delete(x.key))]);
     const plv = await bumpPlaces(store, g);
     return json({ ok: true, plv });
+  }
+  // Buscador: Google Maps si hay clave, si no OpenStreetMap; y enlaces de Maps pegados.
+  if (b.action === 'search' || b.action === 'resolve') {
+    const [lat, lng] = num(b.lat) && num(b.lng) ? [b.lat, b.lng] : CATANIA;
+    try {
+      if (b.action === 'resolve') { const result = await resolveLink(str(b.url, 2000), lat, lng); return result ? json({ result }) : json({ error: 'link' }, 404); }
+      const q = str(b.q, 120);
+      if (q.length < 2) return json({ error: 'q' }, 400);
+      return json(await searchPlaces(q, lat, lng));
+    } catch (e) { console.warn(e); return json({ error: 'search' }, 502); }
   }
   // Puntuaciones de la noche: una por persona y local en `${g}/r/<lugar>/<persona>`.
   if (b.action === 'ratings') return json({ now, ratings: await readPrefix(store, `${g}/r/`, 0) });

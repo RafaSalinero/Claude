@@ -116,6 +116,7 @@ body.has-badge .card{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))
 .ratechip{display:inline-flex;align-items:center;gap:3px;font-weight:600}
 .ratechip svg{width:13px;height:13px;color:#ff9f0a}
 .results .lrow .t{font-size:16px}
+.srch{display:flex;flex-direction:column;gap:14px}
 .tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:62px;border-radius:12px;background:var(--fill);font-size:13px;font-weight:600;letter-spacing:-.08px}
 .tile svg{width:22px;height:22px}
 .tile.home{background:var(--tint);color:var(--tint-fg)}
@@ -159,6 +160,7 @@ textarea.in{resize:none;min-height:84px;line-height:22px}
 .mk .head svg{width:13px;height:13px}
 .mk.extra .head{background:#fff;border-color:#000;color:#000}
 .mk.sel .head{transform:scale(1.3)}
+.mk.temp .head{background:#ff3b30;border-color:#fff;color:#fff}
 .mk .lbl{font-size:12px;font-weight:600;line-height:15px;letter-spacing:-.08px;background:#fff;color:#000;padding:3px 7px;border-radius:7px;box-shadow:0 1px 4px rgba(0,0,0,.22);white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;display:none}
 body.labels .mk .lbl,.mk.sel .lbl{display:block}
 .me-dot{width:20px;height:20px;border-radius:50%;background:#007aff;border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.35);position:relative}
@@ -197,6 +199,9 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 .searchfield svg{width:16px;height:16px;flex:0 0 auto}
 .searchfield input{flex:1;border:0;background:transparent;outline:none;font-size:17px;padding:7px 0;color:var(--label);min-width:0}
 .foot{font-size:13px;color:var(--label2);letter-spacing:-.08px;padding:0 16px;line-height:18px;margin:0}
+.empty{text-align:center;padding:18px 16px;margin:0}
+.empty .t{font-size:15px;font-weight:600;color:var(--label2);margin:0}
+.empty .s{font-size:13px;color:var(--label3);margin:3px 0 0}
 .pav{width:32px;height:32px;border-radius:50%;color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px;flex:0 0 auto}
 .face{position:relative;overflow:visible}
 .hb{position:absolute;right:-5px;bottom:-5px;width:18px;height:18px;border-radius:50%;background:#000;border:2px solid #fff;display:grid;place-items:center;color:#fff;z-index:1}
@@ -283,7 +288,7 @@ const HOME = { id:'casa', cat:'casa', name:'Dimora Lucia Majorana', addr:'Piazza
 const DAYS = [['04', 'Jue 4'], ['05', 'Vie 5'], ['06', 'Sáb 6']];
 const LEVELS = { charla:['Conversación', 1, '#30b0c7'], beso:['Beso', 2, '#ff2d55'], lio:['Liado', 3, '#af52de'], otro:['Otro', 1, '#8e8e93'] };
 const ICON = {
-  eye:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 21V10l8-6 8 6v11h-5.5v-6h-5v6z"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l9.5 5V10h-19V7.5zM4.5 11h2.6v6.5H4.5zm4.2 0h2.6v6.5H8.7zm4 0h2.6v6.5h-2.6zm4.2 0h2.6v6.5h-2.6zM3 18.5h18V21H3z"/></svg>',
   food:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h1.5v6.2c0 1-.6 1.9-1.5 2.3V22H5.5V10.5C4.6 10.1 4 9.2 4 8.2V2h1.5v6h.75V2h.75v6H7zM18.5 2C16 2 14.5 4.5 14.5 8v5h2.5v9h1.5z"/></svg>',
   moon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
   car:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.6 6.2A2 2 0 0 1 7.5 5h9a2 2 0 0 1 1.9 1.2L20 10.5c.6.3 1 .9 1 1.6V17a1 1 0 0 1-1 1h-1v1.2a1.3 1.3 0 0 1-2.6 0V18H7.6v1.2a1.3 1.3 0 0 1-2.6 0V18H4a1 1 0 0 1-1-1v-4.9c0-.7.4-1.3 1-1.6zM7.3 7l-1.3 3.5h12L16.7 7zM6.5 15.3a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6zm11 0a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6z"/></svg>',
@@ -314,6 +319,9 @@ function h(tag, attrs, ...kids){
   for (const k of kids.flat()){ if (k == null || k === false || k === '') continue; e.append(k.nodeType ? k : document.createTextNode(String(k))); }
   return e;
 }
+// Textos: vacío «No hay …», confirmación «X guardado», error «No se pudo …».
+const WEB_ONLY = 'Disponible solo en sicilian-boys.netlify.app';
+const empty = (t, s) => h('div', { class:'empty' }, h('p', { class:'t' }, t), s ? h('p', { class:'s' }, s) : null);
 function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2600); }
 const store = { get(k){ try { return localStorage.getItem(k); } catch { return null; } }, set(k, v){ try { localStorage.setItem(k, v); } catch {} } };
 // Iconos de cada uno en fotos/; con null se muestra la inicial sobre su color.
@@ -372,7 +380,7 @@ setInterval(checkTheme, 60000);
 prefersDark.addEventListener?.('change', checkTheme);
 map.on('zoom', () => document.body.classList.toggle('labels', map.getZoom() >= 15));
 map.on('click', e => {
-  if (S.addMode === 'place' && S.draft){ S.addMode = false; S.draft.lat = e.lngLat.lat; S.draft.lng = e.lngLat.lng; S.draft.where = 'Punto elegido en el mapa'; openPlaceForm(S.draft); return; }
+  if (S.addMode === 'place' && S.draft){ S.addMode = false; S.draft.lat = e.lngLat.lat; S.draft.lng = e.lngLat.lng; S.draft.gid = ''; S.draft.where = 'Elegida en el mapa'; openPlaceForm(S.draft); return; }
   if (e.originalEvent && e.originalEvent.target && e.originalEvent.target.closest && e.originalEvent.target.closest('.mk,.peer')) return;
   if (S.selected) select(null);
 });
@@ -398,7 +406,7 @@ function allPlaces(){
 async function loadPlaces(){
   const res = await api({ action:'places' });
   S.places = res.places || {}; S.plv = res.plv; S.placesLoaded = true;
-  if (S.selected && S.selected.type === 'place' && S.selected.p.id !== 'casa'){ const fresh = S.places[S.selected.p.id]; if (fresh) S.selected.p = fresh; else S.selected = null; renderCard(); }
+  if (S.selected && S.selected.type === 'place' && S.selected.p.id !== 'casa' && !S.selected.p.temp){ const fresh = S.places[S.selected.p.id]; if (fresh) S.selected.p = fresh; else S.selected = null; renderCard(); }
   renderPlaces();
 }
 function renderPlaces(){
@@ -449,7 +457,7 @@ function setFollow(on, resetNorth){
   b.classList.toggle('follow', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.innerHTML = on ? ICON_FOLLOW : ICON_ARROW;
   b.setAttribute('aria-label', on ? 'Dejar de seguirte' : 'Seguirte');
   if (!on){ if (resetNorth) map.easeTo({ bearing: 0, duration: 500 }); return; }
-  if (!S.lastPos){ toast('Buscando tu posición…'); startLocating(false); return; }
+  if (!S.lastPos){ toast('Buscando ubicación…'); startLocating(false); return; }
   map.easeTo({ center:[S.lastPos.lng, S.lastPos.lat], zoom: Math.max(map.getZoom(), 16.5), bearing: S.heading ?? map.getBearing(), padding:{ top:120, bottom: cardH() + 30, left:0, right:0 }, duration: 600 });
 }
 $('#btnMe').addEventListener('click', () => {
@@ -463,7 +471,7 @@ map.on('dragstart', e => { if (e.originalEvent && S.follow) setFollow(false, fal
 $('#btnAll').addEventListener('click', () => {
   const pts = Object.values(S.peers).filter(p => p.id !== S.me.id && p.lat && !isStale(p, 15 * 60e3)).map(p => [p.lng, p.lat]);
   if (S.lastPos) pts.push([S.lastPos.lng, S.lastPos.lat]);
-  if (!pts.length) return toast('Nadie está compartiendo su posición');
+  if (!pts.length) return toast('No hay ubicaciones compartidas');
   if (pts.length === 1) return map.flyTo({ center: pts[0], zoom: 16 });
   const b = pts.reduce((bb, p) => bb.extend(p), new maplibregl.LngLatBounds(pts[0], pts[0]));
   map.fitBounds(b, { padding:{ top: 130, bottom: cardH() + 40, left: 60, right: 80 }, maxZoom: 17, duration: 700 });
@@ -477,21 +485,25 @@ const cardH = () => $('#card').offsetHeight;
 function syncCardH(){ document.documentElement.style.setProperty('--card-h', cardH() + 'px'); }
 new ResizeObserver(syncCardH).observe($('#card'), { box:'border-box' });
 function switchEl(on, onToggle, label){ return h('button', { class:'sw', type:'button', role:'switch', 'aria-checked': on ? 'true' : 'false', 'aria-label': label, onclick: e => { e.stopPropagation(); onToggle(); } }); }
-function select(sel){ S.selected = sel; markSelected(); renderCard(); }
+function select(sel){ S.selected = sel; markSelected(); setTempMarker(sel && sel.type === 'place' && sel.p.temp ? sel.p : null); renderCard(); }
+function setTempMarker(p){ if (S.tempMarker){ S.tempMarker.remove(); S.tempMarker = null; } if (!p) return; S.tempMarker = makeMarker(p); S.tempMarker.getElement().classList.add('temp', 'sel'); }
 function reveal(lng, lat){ requestAnimationFrame(() => map.easeTo({ center:[lng, lat], padding:{ top:120, bottom: cardH() + 30, left:0, right:0 }, duration:450 })); }
+const mapsHref = p => 'https://www.google.com/maps/search/?api=1&query=' + (p.gid ? encodeURIComponent(p.name) + '&query_place_id=' + p.gid : p.lat + ',' + p.lng);
 function directions(p){ const far = kmFrom(origin(), p) > 3; return { far, href: `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=${far ? 'driving' : 'walking'}` }; }
 function renderCard(){
   const body = $('#cardBody'); const sel = S.selected;
   if (sel && sel.type === 'place'){
     const p = sel.p; const d = directions(p);
     body.replaceChildren(h('div', { style:'display:flex;flex-direction:column;gap:12px' },
-      h('div', { class:'ph' }, h('div', { class:'grow' }, h('h2', {}, p.name), h('div', { class:'sub' }, [CAT_LONG[p.cat], p.cat === 'noche' && nightScore(p.id) ? '★ ' + fmt1(nightScore(p.id).avg) + ' (' + nightScore(p.id).n + ')' : null, p.cat === 'casa' && atHome(S.lastPos) ? 'estás en casa' : fmtKm(kmFrom(origin(), p)) + (S.lastPos ? ' de ti' : ' de Catania')].filter(Boolean).join(' · ')), p.addr && p.cat !== 'casa' ? h('div', { class:'sub' }, p.addr) : null, p.cat === 'casa' ? h('div', { class:'sub' }, (S.atHome && S.atHome.length) ? 'En casa ahora: ' + S.atHome.join(', ') : 'Ahora mismo no hay nadie en casa') : null, p.note ? h('div', { class:'note' }, p.note) : null, p.by ? h('div', { class:'sub' }, 'Añadido por ' + p.by) : null),
-        p.cat !== 'casa' && netlifyOn() ? h('button', { class:'circle', type:'button', 'aria-label':'Editar o borrar', html: ICON.more, onclick: () => placeActions(p) }) : null,
+      h('div', { class:'ph' }, h('div', { class:'grow' }, h('h2', {}, p.name), h('div', { class:'sub' }, [p.temp ? (p.cat !== 'otro' ? CATS[p.cat] : null) : CAT_LONG[p.cat], p.cat === 'noche' && nightScore(p.id) ? '★ ' + fmt1(nightScore(p.id).avg) + ' (' + nightScore(p.id).n + ')' : null, p.cat === 'casa' && atHome(S.lastPos) ? 'estás en casa' : fmtKm(kmFrom(origin(), p)) + (S.lastPos ? ' de ti' : ' de Catania')].filter(Boolean).join(' · ')), p.addr && p.cat !== 'casa' ? h('div', { class:'sub' }, p.addr) : null, p.cat === 'casa' ? h('div', { class:'sub' }, (S.atHome && S.atHome.length) ? 'En casa: ' + S.atHome.join(', ') : 'No hay nadie en casa') : null, p.note ? h('div', { class:'note' }, p.note) : null, p.by ? h('div', { class:'sub' }, 'Añadido por ' + p.by) : null),
+        p.cat !== 'casa' && !p.temp && netlifyOn() ? h('button', { class:'circle', type:'button', 'aria-label':'Editar o eliminar', html: ICON.more, onclick: () => placeActions(p) }) : null,
         h('button', { class:'circle', type:'button', 'aria-label':'Cerrar', html: ICON.x, onclick: () => select(null) })),
-      h('a', { class:'btn-primary', href: d.href, target:'_blank', rel:'noopener', html: (d.far ? ICON.car : ICON.walk) + '<span>' + (p.cat === 'casa' ? (d.far ? 'Volver a casa en coche' : 'Volver a casa andando') : (d.far ? 'Ir en coche' : 'Ir andando')) + '</span>' }),
+      p.temp ? (netlifyOn() ? h('button', { class:'btn-primary', type:'button', html: ICON.plus + '<span>Añadir al grupo</span>', onclick: () => openPlaceForm({ cat: p.cat, name: p.name, addr: p.addr || '', lat: p.lat, lng: p.lng, gid: p.gid || '', where: p.addr || p.name }) }) : null)
+        : h('a', { class:'btn-primary', href: d.href, target:'_blank', rel:'noopener', html: (d.far ? ICON.car : ICON.walk) + '<span>' + (d.far ? 'Ir en coche' : 'Ir a pie') + '</span>' }),
       h('div', { class:'btn-row' },
-        h('a', { class:'btn-sec', href:`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`, target:'_blank', rel:'noopener', html: ICON.map + '<span>Ver en Maps</span>' }),
-        p.cat === 'noche' && netlifyOn() ? h('button', { class:'btn-sec', type:'button', html: ICON.star + '<span>Puntuar</span>', onclick: () => openRate(p) })
+        h('a', { class:'btn-sec', href: mapsHref(p), target:'_blank', rel:'noopener', html: ICON.map + '<span>Ver en Maps</span>' }),
+        p.temp ? h('a', { class:'btn-sec', href: d.href, target:'_blank', rel:'noopener', html: (d.far ? ICON.car : ICON.walk) + '<span>' + (d.far ? 'Ir en coche' : 'Ir a pie') + '</span>' })
+        : p.cat === 'noche' && netlifyOn() ? h('button', { class:'btn-sec', type:'button', html: ICON.star + '<span>Puntuar</span>', onclick: () => openRate(p) })
           : h('button', { class:'btn-sec', type:'button', html: ICON.arrow + '<span>Centrar</span>', onclick: () => map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), 15.5) }) }))));
     return;
   }
@@ -506,11 +518,11 @@ function renderCard(){
     return;
   }
   body.replaceChildren(h('div', { style:'display:flex;flex-direction:column;gap:10px' },
-    h('button', { class:'search', type:'button', html: ICON.search + '<span>¿A dónde vamos?</span>', onclick: openSearch }),
+    h('button', { class:'search', type:'button', html: ICON.search + '<span>Buscar sitios</span>', onclick: openSearch }),
     h('div', { class:'rows' },
       h('div', { class:'crow' }, h('span', { class:'dot' + (S.sharing ? ' on' : ''), html: ICON.arrow }),
         h('span', { class:'grow' }, h('span', { class:'t' }, 'Compartir mi ubicación'), h('span', { class:'s', id:'shareSub' }, shareStatus())),
-        switchEl(S.sharing, () => { if (!S.sync) return toast('Para veros entre vosotros hay que abrir la web desde Netlify (ver README)'); setSharing(!S.sharing); }, 'Compartir mi ubicación')),
+        switchEl(S.sharing, () => { if (!S.sync) return toast(WEB_ONLY); setSharing(!S.sharing); }, 'Compartir mi ubicación')),
     ),
     h('div', { class:'tiles3' },
       h('button', { class:'tile home', type:'button', onclick: goHome, html: ICON.home + '<span>Casa</span>' }, h('span', { class:'n', id:'homeTileN' }, (S.atHome && S.atHome.length) ? S.atHome.length + ' en casa' : '')),
@@ -520,89 +532,122 @@ function renderCard(){
 }
 function escapeText(s){ return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
 function shareStatus(){
-  if (!S.sync) return 'Modo individual: abre la web desde Netlify para veros'; 
-  if (S.offline) return 'Sin conexión con el grupo, reintentando…';
-  if (!S.sharing) return 'Los demás no te ven';
+  if (!S.sync) return 'Modo grupo no disponible';
+  if (S.offline) return 'Sin conexión. Reintentando…';
+  if (!S.sharing) return 'Desactivado';
   const n = Object.values(S.peers).filter(p => p.id !== S.me.id && !isStale(p, 15 * 60e3)).length;
-  return 'Te ven ' + (n ? (n === 1 ? '1 persona' : n + ' personas') : 'los del grupo al conectarse') + (S.lastPos ? ' · precisión ' + Math.round(S.lastPos.acc) + ' m' : '');
+  return 'Visible para ' + (n ? (n === 1 ? '1 persona' : n + ' personas') : 'el grupo') + (S.lastPos ? ' · ±' + Math.round(S.lastPos.acc) + ' m' : '');
 }
 
 // ---------- sheets ----------
 function openSheet(...kids){ const b = $('#backdrop'), s = $('#sheet'); s.replaceChildren(...kids.flat().filter(Boolean)); b.hidden = false; s.hidden = false; requestAnimationFrame(() => { b.classList.add('show'); s.classList.add('show'); }); }
 function closeSheet(){ const b = $('#backdrop'), s = $('#sheet'); b.classList.remove('show'); s.classList.remove('show'); setTimeout(() => { b.hidden = true; s.hidden = true; }, 320); }
 $('#backdrop').addEventListener('click', closeSheet);
+// Búsqueda fuera del grupo: Google Maps u OpenStreetMap (lo decide el servidor), enlaces de Maps y coordenadas.
+const isLink = v => /^https?:\/\//i.test(v);
+const COORDS = /^\s*(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)\s*$/;
+const searchBias = () => (S.lastPos && kmFrom(CATANIA, S.lastPos) < 250) ? { lat: S.lastPos.lat, lng: S.lastPos.lng } : CATANIA;
+const mapCache = new Map();
+async function mapSearch(v){
+  const c = COORDS.exec(v);
+  if (c) return { src:'coords', results:[{ name: (+c[1]).toFixed(5) + ', ' + (+c[2]).toFixed(5), addr:'', lat: +c[1], lng: +c[2], cat:'otro' }] };
+  if (mapCache.has(v)) return mapCache.get(v);
+  const res = isLink(v) ? await api({ action:'resolve', url: v, ...searchBias() }).then(r => ({ src:'link', results:[r.result] }), () => ({ src:'link', results:[] }))
+    : await api({ action:'search', q: v, ...searchBias() });
+  mapCache.set(v, res); return res;
+}
+const sameSpot = (x, r) => (r.gid && x.gid === r.gid) || (x.name.toLowerCase() === r.name.toLowerCase() && kmFrom(x, r) < 0.5);
+function showFound(r){
+  const dup = allPlaces().find(x => sameSpot(x, r));
+  const p = dup || { ...r, id:'tmp', temp: true };
+  closeSheet(); select({ type:'place', p });
+  map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), kmFrom(origin(), p) > 20 ? 12 : 15.5), padding:{ bottom: 260 } });
+}
 function openSearch(){
-  const q = h('input', { type:'search', placeholder:'Buscar sitios', autocomplete:'off', id:'q' });
-  const box = h('div', { class:'list' });
+  const q = h('input', { type:'search', placeholder:'Sitio, dirección o enlace de Maps', autocomplete:'off', enterkeyhint:'search', id:'q' });
+  const own = h('div', { class:'srch' }), ext = h('div', { class:'srch' });
+  const row = (p, sub, onclick) => h('button', { class:'lrow', type:'button', onclick }, h('span', { class:'ico' + (isOther(p) ? ' extra' : ''), html: PIN_ICON[p.cat] || ICON.star }),
+    h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, p.name), h('span', { class:'s', style:'display:block' }, [sub, fmtKm(kmFrom(origin(), p))].filter(Boolean).join(' · '))), h('span', { class:'chev', html: ICON.chev })));
+  let timer = null, seq = 0;
+  const runExt = async v => {
+    const my = ++seq;
+    ext.replaceChildren(h('p', { class:'sec-h' }, isLink(v) ? 'Enlace' : 'En el mapa'), h('div', { class:'list' }, h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'s' }, 'Buscando…')))));
+    let res; try { res = await mapSearch(v); } catch (e) { res = null; }
+    if (my !== seq) return;
+    const gmaps = h('a', { class:'btn-sec', href:'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(v), target:'_blank', rel:'noopener', html: ICON.map + '<span>Buscar en Google Maps</span>' });
+    if (!res){ ext.replaceChildren(empty('No se pudo buscar', 'Revisa la conexión.')); return; }
+    const rs = res.results.filter(r => !allPlaces().some(x => sameSpot(x, r)));
+    ext.replaceChildren(h('p', { class:'sec-h' }, res.src === 'google' ? 'En Google Maps' : res.src === 'link' ? 'Enlace' : 'En el mapa'),
+      rs.length ? h('div', { class:'list' }, ...rs.map(r => row(r, r.addr, () => showFound(r)))) : empty(isLink(v) ? 'Enlace no válido' : 'No hay resultados', isLink(v) ? 'Usa un enlace de Google Maps o Apple Maps.' : null),
+      res.src === 'google' || isLink(v) ? null : gmaps,
+      res.src === 'google' || isLink(v) ? null : h('p', { class:'foot' }, '¿No aparece? Pega aquí el enlace del sitio en Google Maps.'));
+  };
   const draw = () => {
-    const term = q.value.trim().toLowerCase();
-    const ps = [HOME, ...allPlaces()].filter(p => !term || (p.name + ' ' + (p.addr || '') + ' ' + (CATS[p.cat] || '')).toLowerCase().includes(term)).sort((a, b) => kmFrom(origin(), a) - kmFrom(origin(), b));
-    box.replaceChildren(...(ps.length ? ps.map(p => h('button', { class:'lrow', type:'button', onclick: () => { closeSheet(); select({ type:'place', p }); map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), kmFrom(origin(), p) > 20 ? 12 : 15.5), padding:{ bottom: 260 } }); } },
-      h('span', { class:'ico' + (isOther(p) ? ' extra' : ''), html: PIN_ICON[p.cat] || ICON.star }),
-      h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, p.name), h('span', { class:'s', style:'display:block' }, [CATS[p.cat], fmtKm(kmFrom(origin(), p))].join(' · '))), h('span', { class:'chev', html: ICON.chev }))))
-      : [h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'s' }, 'Sin resultados')))]));
+    const v = q.value.trim(), term = v.toLowerCase();
+    clearTimeout(timer); seq++;
+    const ps = isLink(v) ? [] : [HOME, ...allPlaces()].filter(p => !term || (p.name + ' ' + (p.addr || '') + ' ' + (CATS[p.cat] || '')).toLowerCase().includes(term)).sort((a, b) => kmFrom(origin(), a) - kmFrom(origin(), b));
+    own.replaceChildren(...(ps.length ? [term ? h('p', { class:'sec-h' }, 'Del grupo') : null, h('div', { class:'list' }, ...ps.map(p => row(p, CATS[p.cat], () => showFound(p))))] : []));
+    ext.replaceChildren();
+    if (v.length >= 3) timer = setTimeout(() => runExt(v), isLink(v) ? 0 : 500);
   };
   q.addEventListener('input', draw);
-  openSheet(h('div', { class:'snav' }, h('span'), h('div', { class:'c' }, '¿A dónde vamos?'), h('button', { class:'r', type:'button', onclick: closeSheet }, 'Cerrar')),
-    h('label', { class:'searchfield', html: ICON.search }, q), box);
+  q.addEventListener('keydown', e => { if (e.key === 'Enter'){ const v = q.value.trim(); if (v.length >= 2){ clearTimeout(timer); runExt(v); } q.blur(); } });
+  openSheet(h('div', { class:'snav' }, h('span'), h('div', { class:'c' }, 'Buscar'), h('button', { class:'r', type:'button', onclick: closeSheet }, 'Cerrar')),
+    h('label', { class:'searchfield', html: ICON.search }, q), own, ext);
   draw();
 }
 // ---------- añadir y editar sitios ----------
 function placeActions(p){
   actionSheet(p.name, [
-    { label:'Editar sitio', onclick: () => openPlaceForm({ id: p.id, cat: isOther(p) ? 'otro' : p.cat, name: p.name, addr: p.addr || '', note: p.note || '', lat: p.lat, lng: p.lng, where:'Ubicación actual del sitio' }) },
-    { label:'Borrar sitio', destructive: true, onclick: () => actionSheet('Se borrará «' + p.name + '» para los tres, con sus puntuaciones.', [{ label:'Borrar', destructive: true, onclick: async () => {
-      try { await api({ action:'delPlace', id: p.id }); toast('Sitio borrado'); select(null); await loadPlaces(); } catch (e) { toast('No se pudo borrar'); } } }]) }]);
-}
-async function geoSearch(q){
-  const u = 'https://nominatim.openstreetmap.org/search?format=json&limit=6&accept-language=es&countrycodes=it&viewbox=14.3,38.4,15.8,36.6&bounded=1&q=' + encodeURIComponent(q);
-  const r = await fetch(u); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json();
+    { label:'Editar sitio', onclick: () => openPlaceForm({ id: p.id, cat: isOther(p) ? 'otro' : p.cat, name: p.name, addr: p.addr || '', note: p.note || '', lat: p.lat, lng: p.lng, gid: p.gid || '', where:'Ubicación guardada' }) },
+    { label:'Eliminar sitio', destructive: true, onclick: () => actionSheet('Se eliminará «' + p.name + '» y sus puntuaciones para todo el grupo.', [{ label:'Eliminar', destructive: true, onclick: async () => {
+      try { await api({ action:'delPlace', id: p.id }); toast('Sitio eliminado'); select(null); await loadPlaces(); } catch (e) { toast('No se pudo eliminar'); } } }]) }]);
 }
 function openPlaceForm(draft){
-  if (!netlifyOn()) return toast('Añadir sitios necesita la web de Netlify');
+  if (!netlifyOn()) return toast(WEB_ONLY);
   const d = S.draft = draft || { cat: 'ver' };
   const name = h('input', { class:'in', placeholder:'Nombre del sitio', maxlength:'60', id:'plName', value: d.name || '' });
   name.addEventListener('input', () => { d.name = name.value; });
-  const note = h('textarea', { class:'in', placeholder:'Nota: horario, qué pedir, truco…', maxlength:'240', id:'plNote' }); note.value = d.note || '';
+  const note = h('textarea', { class:'in', placeholder:'Nota (opcional)', maxlength:'240', id:'plNote' }); note.value = d.note || '';
   note.addEventListener('input', () => { d.note = note.value; });
   const addr = h('input', { class:'in', placeholder:'Dirección (opcional)', maxlength:'120', id:'plAddr', value: d.addr || '' });
   addr.addEventListener('input', () => { d.addr = addr.value; });
   const seg = h('div', { class:'seg' }, ...CAT_FORM.map(([k, l]) => h('button', { type:'button', 'aria-pressed': k === d.cat ? 'true' : 'false', onclick: e => { d.cat = k; for (const b of seg.children) b.setAttribute('aria-pressed', b === e.currentTarget ? 'true' : 'false'); } }, l)));
   const hasLoc = typeof d.lat === 'number';
   const locRow = h('div', { class:'lrow' }, h('span', { class:'ico' + (hasLoc ? '' : ' extra'), html: ICON.pinAdd }), h('span', { class:'body' }, h('span', { class:'grow' },
-    h('span', { class:'t', style:'display:block' }, hasLoc ? (d.where || 'Ubicación elegida') : 'Sin ubicación todavía'),
-    h('span', { class:'s', style:'display:block' }, hasLoc ? fmtKm(kmFrom(origin(), d)) + (S.lastPos ? ' de ti' : ' de Catania') : 'Elige una de estas tres opciones'))));
+    h('span', { class:'t', style:'display:block' }, hasLoc ? (d.where || 'Ubicación elegida') : 'Sin ubicación'),
+    h('span', { class:'s', style:'display:block' }, hasLoc ? fmtKm(kmFrom(origin(), d)) + (S.lastPos ? ' de ti' : ' de Catania') : 'Elige una opción'))));
   const results = h('div', { class:'list results', hidden: true });
-  const q = h('input', { type:'search', placeholder:'Calle, local o lugar', autocomplete:'off', id:'plQ' });
+  const q = h('input', { type:'search', placeholder:'Sitio, dirección o enlace de Maps', autocomplete:'off', id:'plQ' });
   const searchBox = h('div', { hidden: true, style:'display:flex;flex-direction:column;gap:8px' }, h('label', { class:'searchfield', html: ICON.search }, q), results);
   let timer = null;
   q.addEventListener('input', () => { clearTimeout(timer); const v = q.value.trim(); if (v.length < 3){ results.hidden = true; return; } timer = setTimeout(async () => {
-    try { const rs = await geoSearch(v); results.hidden = false;
-      results.replaceChildren(...(rs.length ? rs.map(r => h('button', { class:'lrow', type:'button', onclick: () => { d.lat = +r.lat; d.lng = +r.lon; const parts = r.display_name.split(',').map(x => x.trim()); d.where = parts.slice(0, 2).join(', '); if (!d.addr) d.addr = parts.slice(0, 3).join(', '); if (!d.name) d.name = r.name || parts[0]; openPlaceForm(d); } },
-        h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, r.name || r.display_name.split(',')[0]), h('span', { class:'s', style:'display:block' }, r.display_name.split(',').slice(1, 4).join(','))))))
-        : [h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'s' }, 'Sin resultados. Prueba a elegirlo en el mapa.')))]));
-    } catch (e) { results.hidden = false; results.replaceChildren(h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'s' }, 'No se pudo buscar. Elige el punto en el mapa.')))); } }, 450); });
+    try { const rs = (await mapSearch(v)).results; results.hidden = false;
+      results.replaceChildren(...(rs.length ? rs.map(r => h('button', { class:'lrow', type:'button', onclick: () => { d.lat = r.lat; d.lng = r.lng; d.gid = r.gid || ''; d.where = r.addr ? r.name + ', ' + r.addr : r.name; if (!d.addr) d.addr = r.addr; if (!d.name) d.name = r.name; openPlaceForm(d); } },
+        h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, r.name), h('span', { class:'s', style:'display:block' }, r.addr || fmtKm(kmFrom(origin(), r)))))))
+        : [h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'s' }, 'No hay resultados')))]));
+    } catch (e) { results.hidden = false; results.replaceChildren(h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'s' }, 'No se pudo buscar. Revisa la conexión.')))); } }, 450); });
   const locBtns = h('div', { class:'locbtns' },
-    h('button', { class:'btn-sec', type:'button', html: ICON.arrow + '<span>Aquí</span>', onclick: () => { if (!S.lastPos){ toast('Aún no tengo tu posición'); startLocating(false); return; } d.lat = S.lastPos.lat; d.lng = S.lastPos.lng; d.where = 'Donde estás ahora'; openPlaceForm(d); } }),
-    h('button', { class:'btn-sec', type:'button', html: ICON.map + '<span>Mapa</span>', onclick: () => { closeSheet(); select(null); S.addMode = 'place'; toast('Toca el mapa donde está el sitio'); } }),
+    h('button', { class:'btn-sec', type:'button', html: ICON.arrow + '<span>Aquí</span>', onclick: () => { if (!S.lastPos){ toast('Ubicación no disponible'); startLocating(false); return; } d.lat = S.lastPos.lat; d.lng = S.lastPos.lng; d.gid = ''; d.where = 'Tu ubicación actual'; openPlaceForm(d); } }),
+    h('button', { class:'btn-sec', type:'button', html: ICON.map + '<span>Mapa</span>', onclick: () => { closeSheet(); select(null); S.addMode = 'place'; toast('Toca el mapa para elegir la ubicación'); } }),
     h('button', { class:'btn-sec', type:'button', html: ICON.search + '<span>Buscar</span>', onclick: () => { searchBox.hidden = false; q.focus(); } }));
   const save = async e => {
     const btn = e.currentTarget; if (btn.disabled) return;
-    if (!(d.name || '').trim()) return toast('Ponle un nombre');
-    if (typeof d.lat !== 'number') return toast('Elige dónde está: aquí, en el mapa o buscando');
+    if (!(d.name || '').trim()) return toast('Añade un nombre');
+    if (typeof d.lat !== 'number') return toast('Elige una ubicación');
     btn.disabled = true; btn.textContent = 'Guardando…';
     try {
-      const res = await api({ action:'savePlace', by: S.me.name, place:{ id: d.id, cat: d.cat, name: d.name.trim(), addr: (d.addr || '').trim(), note: (d.note || '').trim(), lat: d.lat, lng: d.lng } });
-      S.draft = null; closeSheet(); toast(d.id ? 'Sitio actualizado' : 'Sitio añadido para los tres');
+      const res = await api({ action:'savePlace', by: S.me.name, place:{ id: d.id, cat: d.cat, name: d.name.trim(), addr: (d.addr || '').trim(), note: (d.note || '').trim(), lat: d.lat, lng: d.lng, gid: d.gid || '' } });
+      S.draft = null; closeSheet(); toast(d.id ? 'Sitio guardado' : 'Sitio añadido');
       await loadPlaces(); const np = S.places[res.id]; if (np){ select({ type:'place', p: np }); reveal(np.lng, np.lat); }
-    } catch (err) { console.warn(err); toast('No se pudo guardar. Inténtalo otra vez.'); btn.disabled = false; btn.textContent = 'Guardar'; }
+    } catch (err) { console.warn(err); toast('No se pudo guardar. Inténtalo de nuevo.'); btn.disabled = false; btn.textContent = 'Guardar'; }
   };
   openSheet(sheetNav(d.id ? 'Editar sitio' : 'Nuevo sitio', ['Cancelar', () => { S.draft = null; closeSheet(); }], ['Guardar', save]),
     h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, name))),
     h('p', { class:'sec-h' }, 'Categoría'), seg,
-    h('p', { class:'sec-h' }, 'Dónde está'), h('div', { class:'list' }, locRow), locBtns, searchBox,
+    h('p', { class:'sec-h' }, 'Ubicación'), h('div', { class:'list' }, locRow), locBtns, searchBox,
     h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, addr)), h('div', { class:'lrow' }, h('div', { class:'body' }, note))),
-    h('p', { class:'foot' }, 'Lo verán los tres en el mapa, en el buscador y en las listas. Cualquiera puede editarlo o borrarlo desde su ficha.'));
+    h('p', { class:'foot' }, 'Visible para todo el grupo.'));
 }
 
 // ---------- noche: puntuar locales ----------
@@ -619,27 +664,27 @@ function nightScore(pid){
 }
 const fmt1 = n => n.toFixed(1).replace('.', ',');
 async function openNoche(){
-  if (!netlifyOn()) return toast('La noche necesita la web de Netlify');
+  if (!netlifyOn()) return toast(WEB_ONLY);
   const body = h('div', { style:'display:flex;flex-direction:column;gap:16px' }, h('p', { class:'foot' }, 'Cargando…'));
   openSheet(sheetNav('Noche', null, ['Cerrar', closeSheet]), body);
   try { await Promise.all([loadRatings(), S.placesLoaded ? null : loadPlaces()]); drawNoche(body); }
-  catch (e) { console.warn(e); body.replaceChildren(h('p', { class:'foot' }, 'No se pudo cargar. Revisa la conexión.')); }
+  catch (e) { console.warn(e); body.replaceChildren(empty('No se pudo cargar', 'Revisa la conexión.')); }
 }
 function drawNoche(body){
   const ps = allPlaces().filter(p => p.cat === 'noche').map(p => ({ p, sc: nightScore(p.id) }));
   const rated = ps.filter(x => x.sc).sort((a, b) => b.sc.avg - a.sc.avg), unrated = ps.filter(x => !x.sc).sort((a, b) => a.p.name.localeCompare(b.p.name));
-  const row = (x, i) => { const best = x.sc ? CRIT.filter(([k]) => x.sc.crit[k] != null).sort((a, b) => x.sc.crit[b[0]] - x.sc.crit[a[0]]).slice(0, 2).map(([k, l]) => l + ' ' + fmt1(x.sc.crit[k])).join(' · ') : 'Sin puntuar';
+  const row = (x, i) => { const best = x.sc ? CRIT.filter(([k]) => x.sc.crit[k] != null).sort((a, b) => x.sc.crit[b[0]] - x.sc.crit[a[0]]).slice(0, 2).map(([k, l]) => l + ' ' + fmt1(x.sc.crit[k])).join(' · ') : fmtKm(kmFrom(origin(), x.p));
     return h('button', { class:'lrow', type:'button', onclick: () => openRate(x.p) }, i != null ? h('span', { class:'rank-n' }, i + 1) : null, h('span', { class:'ico', html: ICON.moon }),
       h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, x.p.name), h('span', { class:'s', style:'display:block' }, best + (x.sc ? ' · ' + x.sc.n + (x.sc.n === 1 ? ' voto' : ' votos') : ''))),
         x.sc ? h('span', { class:'big' }, fmt1(x.sc.avg)) : null, h('span', { class:'chev', style:'color:var(--label3)', html: ICON.chev }))); };
   body.replaceChildren(
-    h('p', { class:'sec-h' }, 'Ranking'), rated.length ? h('div', { class:'list' }, ...rated.map((x, i) => row(x, i))) : h('p', { class:'foot' }, 'Todavía no habéis puntuado ningún local. Toca uno para puntuarlo.'),
+    h('p', { class:'sec-h' }, 'Ranking'), rated.length ? h('div', { class:'list' }, ...rated.map((x, i) => row(x, i))) : empty('No hay puntuaciones', 'Toca un local para puntuarlo.'),
     unrated.length ? h('p', { class:'sec-h' }, 'Sin puntuar') : null, unrated.length ? h('div', { class:'list' }, ...unrated.map(x => row(x, null))) : null,
     h('button', { class:'btn-primary', type:'button', html: ICON.plus + '<span>Añadir local</span>', onclick: () => openPlaceForm({ cat:'noche' }) }),
-    h('p', { class:'foot' }, 'Cada uno puntúa del 1 al 5 la música, el ambiente, la gente, el precio de las copas y la cola. La nota es la media del grupo.'));
+    h('p', { class:'foot' }, 'Nota: media del grupo, de 1 a 5.'));
 }
 function openRate(p){
-  if (!netlifyOn()) return toast('Puntuar necesita la web de Netlify');
+  if (!netlifyOn()) return toast(WEB_ONLY);
   const mine = { ...((S.ratings[p.id] || {})[S.me.id] || {}) };
   const rows = CRIT.map(([k, l]) => { const sg = h('div', { class:'seg sm' }, ...[1, 2, 3, 4, 5].map(v => h('button', { type:'button', 'aria-pressed': mine[k] === v ? 'true' : 'false', onclick: e => { mine[k] = v; for (const b of sg.children) b.setAttribute('aria-pressed', b === e.currentTarget ? 'true' : 'false'); } }, v)));
     return h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'t grow' }, l), sg)); });
@@ -649,12 +694,12 @@ function openRate(p){
     if (!Object.keys(mine).filter(k => CRIT.some(([c]) => c === k)).length) return toast('Puntúa al menos un criterio');
     btn.disabled = true; btn.textContent = 'Guardando…';
     try { await api({ action:'rate', place: p.id, by: S.me.id, scores: mine }); toast('Puntuación guardada'); openNoche(); }
-    catch (err) { toast('No se pudo guardar'); btn.disabled = false; btn.textContent = 'Guardar'; }
+    catch (err) { toast('No se pudo guardar. Inténtalo de nuevo.'); btn.disabled = false; btn.textContent = 'Guardar'; }
   };
   const d = directions(p);
   openSheet(sheetNav(p.name, ['Noche', openNoche], ['Guardar', save]),
     h('p', { class:'sec-h' }, 'Tu puntuación'), h('div', { class:'list' }, ...rows),
-    h('p', { class:'foot' }, sc ? 'Media del grupo ' + fmt1(sc.avg) + ' de 5 · votos de ' + voters.join(', ') : 'Nadie lo ha puntuado todavía.'),
+    h('p', { class:'foot' }, sc ? 'Media ' + fmt1(sc.avg) + ' · ' + voters.join(', ') : 'No hay puntuaciones'),
     h('div', { class:'btn-row' }, h('a', { class:'btn-sec', href: d.href, target:'_blank', rel:'noopener', html: (d.far ? ICON.car : ICON.walk) + '<span>Cómo llegar</span>' }),
       h('button', { class:'btn-sec', type:'button', html: ICON.map + '<span>Ver en el mapa</span>', onclick: () => { closeSheet(); select({ type:'place', p }); reveal(p.lng, p.lat); } })));
 }
@@ -682,11 +727,11 @@ async function api(body){
 }
 function sheetNav(title, left, right){ return h('div', { class:'snav' }, left ? h('button', { class:'l', type:'button', onclick: left[1] }, left[0]) : h('span'), h('div', { class:'c' }, title), right ? h('button', { class:'r', type:'button', onclick: right[1] }, right[0]) : h('span')); }
 async function openNight(){
-  if (!S.sync || S.sync.kind !== 'netlify') return toast('El Match necesita la web de Netlify');
+  if (!S.sync || S.sync.kind !== 'netlify') return toast(WEB_ONLY);
   const body = h('div', { style:'display:flex;flex-direction:column;gap:16px' }, h('p', { class:'foot' }, 'Cargando…'));
   openSheet(sheetNav('Match', null, ['Cerrar', closeSheet]), body);
   try { const res = await api({ action:'matches' }); S.matches = Object.values(res.matches || {}).sort((a, b) => b.t - a.t); drawNight(body); }
-  catch (e) { console.warn(e); body.replaceChildren(h('p', { class:'foot' }, 'No se pudo cargar el marcador. Revisa la conexión.')); }
+  catch (e) { console.warn(e); body.replaceChildren(empty('No se pudo cargar', 'Revisa la conexión.')); }
 }
 function drawNight(body){
   const ms = S.matches || [];
@@ -696,7 +741,7 @@ function drawNight(body){
     h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, r.n + (r.id === S.me.id ? ' (tú)' : '')),
       h('span', { class:'s', style:'display:block' }, r.l.length ? r.l.length + (r.l.length === 1 ? ' match · ' : ' matches · ') + DAYS.map(([d, l]) => l.split(' ')[0] + ' ' + r.l.filter(m => m.day === d).length).join(' · ') : 'Sin matches')),
       h('span', { class:'big' }, r.pts, h('small', {}, r.pts === 1 ? 'pt' : 'pts'))))));
-  const hist = ms.length ? h('div', { class:'list' }, ...ms.map(matchRow)) : h('p', { class:'foot' }, 'Todavía nadie ha marcado. Lo que pase en Catania se apunta aquí.');
+  const hist = ms.length ? h('div', { class:'list' }, ...ms.map(matchRow)) : empty('No hay matches');
   body.replaceChildren(board, h('p', { class:'foot', style:'margin-top:-8px' }, Object.values(LEVELS).map(([l, pts]) => l + ' ' + pts).join(' · ')),
     h('button', { class:'btn-primary', type:'button', html: ICON.plus + '<span>Apuntar match</span>', onclick: openNewMatch }),
     h('p', { class:'sec-h' }, 'Historial'), hist);
@@ -714,7 +759,7 @@ function matchRow(m){
   el.addEventListener('click', () => actionSheet(m.name, [
     m.photo && { label:'Ver foto', onclick: () => { const lb = h('div', { class:'lightbox', onclick: () => lb.remove() }, h('img', { src: photoUrl(m), alt: m.name })); document.body.append(lb); } },
     m.ig && { label:'Abrir Instagram', href:'https://www.instagram.com/' + encodeURIComponent(m.ig) + '/' },
-    m.by === S.me.id && { label:'Eliminar', destructive:true, onclick: async () => { try { await api({ action:'delMatch', id: m.id, by: S.me.id }); toast('Eliminado'); } catch (e) { toast('No se pudo eliminar'); } openNight(); } }]));
+    m.by === S.me.id && { label:'Eliminar', destructive:true, onclick: async () => { try { await api({ action:'delMatch', id: m.id, by: S.me.id }); toast('Match eliminado'); } catch (e) { toast('No se pudo eliminar'); } openNight(); } }]));
   return el;
 }
 async function compressPhoto(file){
@@ -733,42 +778,42 @@ function openNewMatch(){
   const ig = h('input', { class:'in', placeholder:'Instagram', maxlength:'40', autocapitalize:'none', autocorrect:'off', id:'nmIg' });
   const seg = h('div', { class:'seg' }, ...Object.entries(LEVELS).map(([k, [l]]) => h('button', { type:'button', 'aria-pressed': k === level ? 'true' : 'false', onclick: e => { level = k; for (const b of seg.children) b.setAttribute('aria-pressed', b === e.currentTarget ? 'true' : 'false'); } }, l)));
   const day = h('select', { class:'ctl', id:'nmDay' }, ...DAYS.map(([d, l]) => h('option', { value: d, selected: d === todayKey() }, l)));
-  const note = h('textarea', { class:'in', placeholder:'Dónde, cómo, qué pasó…', maxlength:'200', id:'nmNote' });
+  const note = h('textarea', { class:'in', placeholder:'Nota (opcional)', maxlength:'200', id:'nmNote' });
   const preview = h('img', { class:'preview', alt:'Vista previa', hidden: true });
   const fileIn = h('input', { type:'file', accept:'image/*', id:'nmPhoto', style:'position:absolute;inset:0;opacity:0;width:100%;cursor:pointer' });
   const photoT = h('span', { class:'t', style:'display:block;color:var(--tint);font-weight:500' }, 'Añadir foto');
   fileIn.addEventListener('change', () => { file = fileIn.files[0] || null; preview.hidden = !file; if (file){ preview.src = URL.createObjectURL(file); photoT.textContent = 'Cambiar foto'; } });
   const save = async (e) => {
     const btn = e.currentTarget; if (btn.disabled) return;
-    if (!name.value.trim()) return toast('Ponle un nombre');
+    if (!name.value.trim()) return toast('Añade un nombre');
     btn.disabled = true; btn.textContent = 'Guardando…';
     try {
       const match = { by: S.me.id, name: name.value.trim(), ig: ig.value.trim(), level, day: day.value, note: note.value.trim() };
       if (file) match.photo = await compressPhoto(file);
-      await api({ action:'addMatch', match }); toast('Match apuntado'); openNight();
-    } catch (err) { console.warn(err); toast('No se pudo guardar. Inténtalo otra vez.'); btn.disabled = false; btn.textContent = 'Guardar'; }
+      await api({ action:'addMatch', match }); toast('Match guardado'); openNight();
+    } catch (err) { console.warn(err); toast('No se pudo guardar. Inténtalo de nuevo.'); btn.disabled = false; btn.textContent = 'Guardar'; }
   };
   openSheet(sheetNav('Nuevo match', ['Cancelar', openNight], ['Guardar', save]),
     h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, name)), h('div', { class:'lrow' }, h('div', { class:'body' }, ig))),
-    h('p', { class:'sec-h' }, 'Hasta dónde llegó'), seg,
+    h('p', { class:'sec-h' }, 'Resultado'), seg,
     h('div', { class:'list' }, h('label', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'t grow' }, 'Noche'), day))),
     h('div', { class:'list' }, h('label', { class:'lrow', style:'position:relative' }, h('span', { class:'dot', style:'width:30px;height:30px;border-radius:7px;background:var(--fill);display:grid;place-items:center', html: ICON.camera }),
-      h('span', { class:'body' }, h('span', { class:'grow' }, photoT, h('span', { class:'s', style:'display:block' }, 'Se guarda comprimida'))), fileIn)),
+      h('span', { class:'body' }, h('span', { class:'grow' }, photoT, h('span', { class:'s', style:'display:block' }, 'Opcional'))), fileIn)),
     preview,
     h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, note))));
 }
 
 // ---------- geolocation ----------
 function startLocating(fly){
-  if (!('geolocation' in navigator)) return toast('Este navegador no da acceso a la ubicación');
+  if (!('geolocation' in navigator)) return toast('Ubicación no disponible en este navegador');
   if (S.watchId != null) return;
   S.flyOnFirst = fly !== false;
-  S.watchId = navigator.geolocation.watchPosition(onPos, err => { console.warn(err); S.watchId = null; toast(err.code === 1 ? 'Permiso de ubicación denegado. Actívalo en los ajustes del navegador.' : 'No se pudo obtener tu posición. ¿GPS activado?'); if (S.sharing) setSharing(false); }, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
+  S.watchId = navigator.geolocation.watchPosition(onPos, err => { console.warn(err); S.watchId = null; toast(err.code === 1 ? 'Permiso de ubicación denegado. Actívalo en Ajustes.' : 'No se pudo obtener la ubicación. Revisa el GPS.'); if (S.sharing) setSharing(false); }, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
 }
 function onPos(pos){
   const { latitude:lat, longitude:lng, accuracy:acc } = pos.coords; const first = !S.lastPos; S.lastPos = { lat, lng, acc, t: Date.now() };
   if (!S.meMarker){
-    const el = h('div', { class:'me', 'aria-label':'Tu posición', html:'<svg class="cone" viewBox="0 0 64 64"><defs><linearGradient id="cg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#007aff" stop-opacity=".55"/><stop offset="1" stop-color="#007aff" stop-opacity="0"/></linearGradient></defs><path d="M32 64 L8 8 A34 34 0 0 1 56 8 Z" fill="url(#cg)"/></svg><div class="me-dot"></div>' });
+    const el = h('div', { class:'me', 'aria-label':'Tu ubicación', html:'<svg class="cone" viewBox="0 0 64 64"><defs><linearGradient id="cg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#007aff" stop-opacity=".55"/><stop offset="1" stop-color="#007aff" stop-opacity="0"/></linearGradient></defs><path d="M32 64 L8 8 A34 34 0 0 1 56 8 Z" fill="url(#cg)"/></svg><div class="me-dot"></div>' });
     S.meMarker = new maplibregl.Marker({ element: el, rotationAlignment:'map', pitchAlignment:'map' }).setLngLat([lng, lat]).addTo(map);
     if (S.heading != null) setHeading(S.heading);
   } else S.meMarker.setLngLat([lng, lat]);
@@ -783,7 +828,7 @@ function onPos(pos){
 function setSharing(on){
   S.sharing = on; $('#liveDot').classList.toggle('on', on); store.set('cl-sharing', on ? '1' : '0');
   if (S.sync) S.sync.setSharing(on);
-  if (on){ startLocating(); if (S.lastPos) onPos({ coords:{ latitude:S.lastPos.lat, longitude:S.lastPos.lng, accuracy:S.lastPos.acc } }); toast('Compartiendo tu ubicación'); }
+  if (on){ startLocating(); if (S.lastPos) onPos({ coords:{ latitude:S.lastPos.lat, longitude:S.lastPos.lng, accuracy:S.lastPos.acc } }); toast('Compartiendo ubicación'); }
   renderCard();
 }
 
@@ -860,7 +905,7 @@ async function firebaseSync(group, onPeople, onPins){
   if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
   const db = firebase.database(); const base = `groups/${group}`; let sharing = false, last = 0;
   db.ref(`${base}/people/${S.me.id}`).onDisconnect().remove();
-  db.ref(`${base}/people`).on('value', snap => onPeople(snap.val() || {}), err => { console.error(err); toast('Sin conexión con el grupo: revisa las reglas de Firebase'); });
+  db.ref(`${base}/people`).on('value', snap => onPeople(snap.val() || {}), err => { console.error(err); toast('Sin conexión con el grupo'); });
   db.ref(`${base}/pins`).on('value', snap => onPins(snap.val() || {}));
   return { kind:'firebase',
     sendPos(pos){ if (!sharing) return; const now = Date.now(); if (now - last < 4000) return; last = now; db.ref(`${base}/people/${S.me.id}`).set({ name: S.me.name, ...pos, t: firebase.database.ServerValue.TIMESTAMP }); },
@@ -896,9 +941,9 @@ const valid = n => TRAVELLERS.some(([x]) => x === n);
 async function start(n){
   const kind = await backendReady;
   if (!kind) return enterLocal(n);
-  enter(n, kind).catch(err => { console.error(err); toast('No se pudo conectar: ' + (err.message || err)); });
+  enter(n, kind).catch(err => { console.error(err); toast('No se pudo conectar. Inténtalo de nuevo.'); });
 }
-backendReady.then(kind => { if (!kind){ const f = $('#gateFoot'); f.textContent = 'Esta copia de la web no tiene el modo grupo: verás el mapa y tu posición, pero no os veréis entre vosotros.'; f.hidden = false; } });
+backendReady.then(kind => { if (!kind){ const f = $('#gateFoot'); f.textContent = 'Modo grupo no disponible. Solo se mostrará tu ubicación.'; f.hidden = false; } });
 gate.addEventListener('submit', e => { e.preventDefault(); if (!valid(picked)) return toast('Elige quién eres'); start(picked); });
 if (valid(picked)) { $('#gate').hidden = true; start(picked); }
 $('#brand').addEventListener('click', () => {
@@ -908,8 +953,7 @@ $('#brand').addEventListener('click', () => {
     (() => { const f = face(slug(n), n); f.classList.add('pav'); return f; })(), h('span', { class:'body' }, h('span', { class:'t grow' }, n), h('span', { class:'ck', html:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' })))));
   draw();
   openSheet(h('div', { class:'snav' }, h('button', { class:'l', type:'button', onclick: closeSheet }, 'Cancelar'), h('div', { class:'c' }, '¿Quién eres?'),
-    h('button', { class:'r', type:'button', onclick: () => { if (choice === S.me.name) return closeSheet(); if (S.sharing) setSharing(false); store.set('cl-name', choice); setTimeout(() => location.reload(), 150); } }, 'Listo')), list,
-    h('p', { class:'foot' }, 'Cambia solo si este móvil es de otra persona del grupo.'));
+    h('button', { class:'r', type:'button', onclick: () => { if (choice === S.me.name) return closeSheet(); if (S.sharing) setSharing(false); store.set('cl-name', choice); setTimeout(() => location.reload(), 150); } }, 'Listo')), list);
 });
 })();
 </script>
