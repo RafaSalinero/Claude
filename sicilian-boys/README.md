@@ -19,7 +19,7 @@ Funciona fuera del visor de claude.ai porque ese visor bloquea la ubicación del
 | `../netlify/lib/maps.mjs` | El buscador: Google, Foursquare o TomTom si hay clave, si no OpenStreetMap; y lectura de enlaces de Maps. |
 | `../netlify.toml`, `../package.json` | Configuración de Netlify y su única dependencia. |
 | `manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`, `logo-96.png` | Icono de los tres pumas y datos para añadir a la pantalla de inicio. |
-| `pumas/` | Ilustraciones de los pumas: botones Casa, Noche, Match y Añadir, y pantallas vacías. |
+| `pumas/` | Ilustraciones de los pumas: botones Casa, Noche, Match, Traducir y Añadir, y pantallas vacías. |
 | `map-style.js` | Colores del mapa estilo Uber, con calles legibles en claro y en oscuro. |
 | `fotos/` | Fotos de Salinero, Braulio y Pomares. Se activan en la lista `TRAVELLERS` de `index.html`; sin foto se ve la inicial. |
 | `config.js`, `database.rules.json` | Solo para la alternativa con Firebase. No hacen falta con Netlify. |
@@ -48,6 +48,7 @@ Importante en iPhone: la posición solo se envía mientras la página está abie
 - **Noche**: el botón morado "Noche" muestra el ranking de locales y los que faltan por puntuar. Cada uno puntúa del 1 al 5 música, ambiente, gente, precio de las copas y cola; la nota es la media del grupo. "Añadir local" crea un sitio de noche nuevo.
 - **Casa**: el alojamiento, Dimora Lucia Majorana (Piazza Angelo Majorana 4), está marcado con un pin negro grande. El botón "Casa" de la ficha inferior lo centra y da la ruta de vuelta, andando o en coche según la distancia.
 - **Match**: el botón rosa "Match" abre el ranking de la noche de Salinero, Braulio y Pomares (Lío 1, Manuela 3, Sexo 5 puntos) y el historial. "Apuntar match" guarda nombre, Instagram, resultado, noche, foto y nota. Solo quien lo apuntó puede eliminarlo. Ojo: sin PIN, cualquiera con el enlace podría verlo.
+- **Traducir**: el botón del puma con el bocadillo italiano abre el traductor. Toca "Español" o "Italiano", habla, y la app escribe la traducción y la dice en voz alta (conversación por turnos). También se puede escribir o dictar con el micrófono del teclado y tocar "Al italiano" o "Al español". "Mostrar" pone la frase en grande para enseñarla. Debajo hay frases hechas (básico, comer, noche, coche y taxi, urgencias) que funcionan sin conexión, incluida "Llévame a casa" con la dirección del alojamiento. La traducción automática es de MyMemory: gratis, sin clave, unas 100 frases al día por móvil.
 - **Quién está en casa**: quien esté a menos de 50 m del alojamiento lleva una casita en su icono, el pin de casa muestra cuántos hay y el botón Casa lo dice.
 - **Distancia a cada amigo**: junto a su icono en el mapa, por ejemplo "Braulio · 300 m".
 - **Seguirte al andar**: la flecha azul mantiene el mapa centrado en ti y lo gira según hacia dónde miras (en iPhone pide permiso de movimiento la primera vez). Si mueves el mapa con el dedo, deja de seguirte.

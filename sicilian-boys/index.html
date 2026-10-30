@@ -115,15 +115,27 @@ body.picking .card,body.picking .fabs{display:none}
 .btn-sec{display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;border-radius:12px;background:var(--fill);font-size:15px;font-weight:600;letter-spacing:-.24px}
 .btn-sec svg{width:18px;height:18px}
 .btn-sec.red{color:var(--red)}
-.tiles3{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tiles3{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 .locbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .seg.sm button{min-width:34px;padding:4px 0}
 .ratechip{display:inline-flex;align-items:center;gap:3px;font-weight:600}
 .ratechip svg{width:13px;height:13px;color:#ff9f0a}
 .results .lrow .t{font-size:16px}
 .srch{display:flex;flex-direction:column;gap:14px}
-.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:62px;padding:6px 2px 7px;border-radius:12px;background:var(--fill);font-size:13px;font-weight:600;letter-spacing:-.08px}
-.tile img{width:50px;height:50px;object-fit:contain}
+.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:62px;padding:6px 2px 7px;border-radius:12px;background:var(--fill);font-size:12px;font-weight:600;letter-spacing:-.08px}
+.tile img{width:44px;height:44px;object-fit:contain}
+.tr-mics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tr-mic{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:88px;border-radius:14px;background:var(--fill);font-size:15px;font-weight:600}
+.tr-mic svg{width:28px;height:28px}
+.tr-mic.on{background:var(--red);color:#fff}
+.tr-out{background:var(--cell);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.tr-out .big{font-size:24px;line-height:30px;font-weight:600;letter-spacing:-.3px;white-space:normal;overflow-wrap:break-word}
+.tr-out .src{font-size:15px;color:var(--label2)}
+.tr-full{position:fixed;inset:0;z-index:40;background:var(--bg);color:var(--label);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:32px;text-align:center}
+.tr-full .big{font-size:clamp(28px,9vw,44px);line-height:1.2;font-weight:700;letter-spacing:-.5px;max-width:100%;white-space:normal;overflow-wrap:break-word}
+.tr-say{display:grid;color:var(--label3)}
+.tr-say svg{width:20px;height:20px}
+.tr-full .s{font-size:15px;color:var(--label2)}
 .mk.home{z-index:3}
 .mk.home .head{width:40px;height:40px;border-radius:12px;background:#000;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.45)}
 .mk.home .head svg{width:20px;height:20px}
@@ -183,6 +195,7 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 .backdrop.show{opacity:1}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--bg);border-radius:12px 12px 0 0;max-height:calc(100% - 44px);overflow:auto;transform:translateY(100%);transition:transform .32s cubic-bezier(.32,.72,0,1);max-width:640px;margin:0 auto;padding:6px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:16px}
 .sheet.show{transform:none}
+.sheet > *{flex-shrink:0}
 .snav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:44px}
 .snav .l{justify-self:start;color:var(--tint);font-size:17px}
 .snav .c{font-weight:600;font-size:17px}
@@ -320,7 +333,10 @@ const ICON = {
   home:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.2l9 7.4-1.3 1.5-1.2-1V20h-5v-6h-3v6h-5v-8.9l-1.2 1L2.9 10.6z"/></svg>',
   heart:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.5s-8.5-5.2-8.5-11a4.8 4.8 0 0 1 8.5-3 4.8 4.8 0 0 1 8.5 3c0 5.8-8.5 11-8.5 11z"/></svg>',
   camera:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 4h6l1.5 2H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.5zm3 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>',
-  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="8.5" y="2.5" width="7" height="12" rx="3.5" fill="currentColor" stroke="none"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>',
+  sound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor" stroke="none"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg>',
+  expand:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'
 };
 const PIN_ICON = { ver: ICON.eye, comer: ICON.food, noche: ICON.moon, ruta: ICON.car, otro: ICON.star, extra: ICON.star, casa: ICON.home };
 const isOther = p => p.cat === 'otro' || p.cat === 'extra';
@@ -558,10 +574,11 @@ function renderCard(){
         switchEl(S.sharing, () => { if (!S.sync) return toast(WEB_ONLY); setSharing(!S.sharing); }, 'Compartir mi ubicación')),
     ),
     h('div', { class:'tiles3' },
-      h('button', { class:'tile home', type:'button', onclick: goHome }, puma('casa', 50), h('span', {}, 'Casa'), h('span', { class:'n', id:'homeTileN' }, (S.atHome && S.atHome.length) ? S.atHome.length + ' en casa' : '')),
-      h('button', { class:'tile noche', type:'button', onclick: openNoche }, puma('noche', 50), h('span', {}, 'Noche')),
-      h('button', { class:'tile match', type:'button', onclick: openNight }, puma('match', 50), h('span', {}, 'Match')),
-      h('button', { class:'tile', type:'button', onclick: () => openPlaceForm(null) }, puma('anadir', 50), h('span', {}, 'Añadir')))));
+      h('button', { class:'tile home', type:'button', onclick: goHome }, puma('casa', 44), h('span', {}, 'Casa'), h('span', { class:'n', id:'homeTileN' }, (S.atHome && S.atHome.length) ? S.atHome.length + ' en casa' : '')),
+      h('button', { class:'tile noche', type:'button', onclick: openNoche }, puma('noche', 44), h('span', {}, 'Noche')),
+      h('button', { class:'tile match', type:'button', onclick: openNight }, puma('match', 44), h('span', {}, 'Match')),
+      h('button', { class:'tile', type:'button', onclick: openTranslator }, puma('traducir', 44), h('span', {}, 'Traducir')),
+      h('button', { class:'tile', type:'button', onclick: () => openPlaceForm(null) }, puma('anadir', 44), h('span', {}, 'Añadir')))));
 }
 function escapeText(s){ return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
 function shareStatus(){
@@ -573,6 +590,8 @@ function shareStatus(){
 }
 
 // ---------- sheets ----------
+// Vacía un elemento y le pone los hijos que no sean null (replaceChildren escribiría "null").
+const fill = (el, ...kids) => el.replaceChildren(...kids.flat().filter(Boolean));
 function openSheet(...kids){ const b = $('#backdrop'), s = $('#sheet'); s.replaceChildren(...kids.flat().filter(Boolean)); b.hidden = false; s.hidden = false; requestAnimationFrame(() => { b.classList.add('show'); s.classList.add('show'); }); }
 function closeSheet(){ const b = $('#backdrop'), s = $('#sheet'); b.classList.remove('show'); s.classList.remove('show'); setTimeout(() => { b.hidden = true; s.hidden = true; }, 320); }
 $('#backdrop').addEventListener('click', closeSheet);
@@ -604,13 +623,13 @@ function openSearch(){
   let timer = null, seq = 0;
   const runExt = async v => {
     const my = ++seq;
-    ext.replaceChildren(h('p', { class:'sec-h' }, isLink(v) ? 'Enlace' : 'En el mapa'), h('div', { class:'list' }, h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'s' }, 'Buscando…')))));
+    fill(ext, h('p', { class:'sec-h' }, isLink(v) ? 'Enlace' : 'En el mapa'), h('div', { class:'list' }, h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'s' }, 'Buscando…')))));
     let res; try { res = await mapSearch(v); } catch (e) { res = null; }
     if (my !== seq) return;
     const gmaps = h('a', { class:'btn-sec', href:'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(v), target:'_blank', rel:'noopener', html: ICON.map + '<span>Buscar en Google Maps</span>' });
     if (!res){ ext.replaceChildren(empty('No se pudo buscar', 'Revisa la conexión.', 'sin-conexion')); return; }
     const rs = res.results.filter(r => !allPlaces().some(x => sameSpot(x, r)));
-    ext.replaceChildren(h('p', { class:'sec-h' }, res.src === 'google' ? 'En Google Maps' : res.src === 'link' ? 'Enlace' : 'En el mapa'),
+    fill(ext, h('p', { class:'sec-h' }, res.src === 'google' ? 'En Google Maps' : res.src === 'link' ? 'Enlace' : 'En el mapa'),
       rs.length ? h('div', { class:'list' }, ...rs.map(r => row(r, r.addr, () => showFound(r)))) : empty(isLink(v) ? 'Enlace no válido' : 'No hay resultados', isLink(v) ? 'Usa un enlace de Google Maps o Apple Maps.' : null, 'vacio-buscar'),
       res.src === 'google' || isLink(v) ? null : gmaps,
       res.src === 'google' || isLink(v) ? null : h('p', { class:'foot' }, '¿No aparece? Pega aquí el enlace del sitio en Google Maps.'));
@@ -619,7 +638,7 @@ function openSearch(){
     const v = q.value.trim(), term = v.toLowerCase();
     clearTimeout(timer); seq++;
     const ps = isLink(v) ? [] : [HOME, ...allPlaces()].filter(p => !term || (p.name + ' ' + (p.addr || '') + ' ' + (CATS[p.cat] || '')).toLowerCase().includes(term)).sort((a, b) => kmFrom(origin(), a) - kmFrom(origin(), b));
-    own.replaceChildren(...(ps.length ? [term ? h('p', { class:'sec-h' }, 'Del grupo') : null, h('div', { class:'list' }, ...ps.map(p => row(p, CATS[p.cat], () => showFound(p))))] : []));
+    fill(own, ps.length && term ? h('p', { class:'sec-h' }, 'Del grupo') : null, ps.length ? h('div', { class:'list' }, ...ps.map(p => row(p, CATS[p.cat], () => showFound(p)))) : null);
     ext.replaceChildren();
     if (v.length >= 3) timer = setTimeout(() => runExt(v), isLink(v) ? 0 : 500);
   };
@@ -683,6 +702,83 @@ function openPlaceForm(draft){
     h('p', { class:'foot' }, 'Visible para todo el grupo.'));
 }
 
+// ---------- traductor español-italiano: voz o texto, y frases hechas ----------
+// Reconocimiento y voz del propio móvil (Web Speech); traducción automática de MyMemory, gratis y sin clave
+// (unos 5.000 caracteres al día por móvil). Las frases hechas no necesitan conexión.
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const LANGS = { es:['Español', 'es-ES'], it:['Italiano', 'it-IT'] };
+const PHRASES = [
+  ['Básico', [['Hola', 'Ciao'], ['Gracias', 'Grazie'], ['Por favor', 'Per favore'], ['Perdona', 'Scusa'], ['No hablo italiano', 'Non parlo italiano'], ['¿Hablas inglés o español?', 'Parli inglese o spagnolo?']]],
+  ['Comer', [['Una mesa para tres, por favor', 'Un tavolo per tre, per favore'], ['¿Qué nos recomiendas?', 'Cosa ci consigli?'], ['Tres cervezas, por favor', 'Tre birre, per favore'], ['La cuenta, por favor', 'Il conto, per favore'], ['¿Se puede pagar con tarjeta?', 'Si può pagare con la carta?']]],
+  ['Noche', [['¿Cómo te llamas?', 'Come ti chiami?'], ['Somos españoles', 'Siamo spagnoli'], ['¿Bailamos?', 'Balliamo?'], ['¿Te invito a una copa?', 'Ti offro da bere?'], ['¿Me das tu Instagram?', 'Mi dai il tuo Instagram?'], ['¿Cuánto cuesta la entrada?', "Quanto costa l'ingresso?"]]],
+  ['Coche y taxi', [['Llévame a casa (' + HOME.addr + ')', 'Mi porti in ' + HOME.addr.replace(', Catania', '') + ', a Catania, per favore'], ['¿Dónde puedo aparcar?', 'Dove posso parcheggiare?'], ['¿Hay una gasolinera cerca?', "C'è un distributore di benzina qui vicino?"]]],
+  ['Urgencias', [['Necesito ayuda', 'Ho bisogno di aiuto'], ['Llame a una ambulancia', "Chiami un'ambulanza"], ['¿Dónde está la farmacia más cercana?', "Dov'è la farmacia più vicina?"]]],
+];
+function speak(text, lang){
+  if (!('speechSynthesis' in window) || !text) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text); u.lang = LANGS[lang][1]; u.rate = .95;
+  const v = speechSynthesis.getVoices().find(x => x.lang.replace('_', '-').toLowerCase().startsWith(lang)); if (v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+// En iPhone la voz solo suena si se ha usado antes dentro de un toque.
+const unlockVoice = () => { if ('speechSynthesis' in window && !unlockVoice.done){ speechSynthesis.speak(new SpeechSynthesisUtterance('')); unlockVoice.done = true; } };
+async function translateText(text, from, to){
+  const r = await fetch('https://api.mymemory.translated.net/get?langpair=' + from + '|' + to + '&q=' + encodeURIComponent(text.slice(0, 450)));
+  if (!r.ok) throw new Error(r.status === 429 ? 'quota' : 'HTTP ' + r.status);
+  const d = await r.json(), t = d.responseData && d.responseData.translatedText;
+  if (d.quotaFinished || !t || /^MYMEMORY WARNING/i.test(t)) throw new Error('quota');
+  return t;
+}
+function showBig(text, lang){ const o = h('div', { class:'tr-full', role:'dialog', onclick: () => o.remove() }, h('div', { class:'big', lang }, text), h('div', { class:'s' }, 'Toca para cerrar')); document.body.append(o); }
+function openTranslator(){
+  let rec = null;
+  const out = h('div', { class:'tr-out', hidden: true, 'aria-live':'polite' });
+  const input = h('textarea', { class:'in', placeholder:'Escribe o dicta en español o italiano', maxlength:'450', id:'trIn' });
+  const show = (src, res, to) => {
+    out.hidden = false;
+    out.replaceChildren(h('div', { class:'big', lang: to }, res), h('div', { class:'src' }, src),
+      h('div', { class:'btn-row' }, h('button', { class:'btn-sec', type:'button', html: ICON.sound + '<span>Escuchar</span>', onclick: () => speak(res, to) }),
+        h('button', { class:'btn-sec', type:'button', html: ICON.expand + '<span>Mostrar</span>', onclick: () => showBig(res, to) })));
+    speak(res, to);
+  };
+  const run = async (text, from) => {
+    text = (text || '').trim(); if (!text) return;
+    const to = from === 'es' ? 'it' : 'es';
+    out.hidden = false; out.replaceChildren(h('div', { class:'src' }, 'Traduciendo…'));
+    try { show(text, await translateText(text, from, to), to); }
+    catch (e) { console.warn(e); out.replaceChildren(h('div', { class:'src' }, e.message === 'quota' ? 'Límite diario de traducciones alcanzado. Las frases de abajo siguen funcionando.' : 'No se pudo traducir. Revisa la conexión.')); }
+  };
+  const mic = from => {
+    const label = h('span', {}, LANGS[from][0]);
+    const b = h('button', { class:'tr-mic', type:'button', 'aria-label':'Hablar en ' + LANGS[from][0].toLowerCase() }, h('span', { html: ICON.mic, style:'display:grid' }), label);
+    b.addEventListener('click', () => {
+      if (rec){ rec.stop(); return; }
+      unlockVoice(); if ('speechSynthesis' in window) speechSynthesis.cancel();
+      let heard = '';
+      rec = new SR(); rec.lang = LANGS[from][1]; rec.interimResults = true;
+      rec.onresult = e => { heard = [...e.results].map(x => x[0].transcript).join(' '); input.value = heard; };
+      rec.onerror = e => { if (/not-allowed/.test(e.error)) toast('Micrófono no disponible. Usa el del teclado.'); };
+      rec.onend = () => { b.classList.remove('on'); label.textContent = LANGS[from][0]; rec = null; run(heard, from); };
+      try { rec.start(); b.classList.add('on'); label.textContent = 'Escuchando…'; }
+      catch (e) { rec = null; toast('Micrófono no disponible. Usa el del teclado.'); }
+    });
+    return b;
+  };
+  const phrase = ([es, it]) => h('button', { class:'lrow', type:'button', onclick: () => { unlockVoice(); show(es, it, 'it'); out.scrollIntoView({ behavior:'smooth', block:'nearest' }); } },
+    h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, es), h('span', { class:'s', style:'display:block' }, it)), h('span', { class:'tr-say', html: ICON.sound })));
+  openSheet(sheetNav('Traductor', null, ['Cerrar', () => { if (rec) rec.abort(); closeSheet(); }]),
+    SR ? h('p', { class:'sec-h' }, 'Toca y habla') : null,
+    SR ? h('div', { class:'tr-mics' }, mic('es'), mic('it')) : null,
+    h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, input))),
+    h('div', { class:'btn-row' },
+      h('button', { class:'btn-sec', type:'button', onclick: () => { unlockVoice(); run(input.value, 'es'); } }, 'Al italiano'),
+      h('button', { class:'btn-sec', type:'button', onclick: () => { unlockVoice(); run(input.value, 'it'); } }, 'Al español')),
+    out,
+    ...PHRASES.flatMap(([title, list]) => [h('p', { class:'sec-h' }, title), h('div', { class:'list' }, ...list.map(phrase))]),
+    h('p', { class:'foot' }, 'Traducción automática: unas 100 frases al día por móvil. Las frases hechas funcionan sin conexión.'));
+}
+
 // ---------- elegir la ubicación moviendo el mapa bajo un pin fijo ----------
 const NO_PAD = { top:0, bottom:0, left:0, right:0 };
 function startPick(){
@@ -728,7 +824,7 @@ function drawNoche(body){
     return h('button', { class:'lrow', type:'button', onclick: () => openRate(x.p) }, i != null ? h('span', { class:'rank-n' }, i + 1) : null, h('span', { class:'ico', html: ICON.moon }),
       h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, x.p.name), h('span', { class:'s', style:'display:block' }, best + (x.sc ? ' · ' + x.sc.n + (x.sc.n === 1 ? ' voto' : ' votos') : ''))),
         x.sc ? h('span', { class:'big' }, fmt1(x.sc.avg)) : null, h('span', { class:'chev', style:'color:var(--label3)', html: ICON.chev }))); };
-  body.replaceChildren(
+  fill(body,
     h('p', { class:'sec-h' }, 'Ranking'), rated.length ? h('div', { class:'list' }, ...rated.map((x, i) => row(x, i))) : empty('No hay puntuaciones', 'Toca un local para puntuarlo.', 'vacio-noche'),
     unrated.length ? h('p', { class:'sec-h' }, 'Sin puntuar') : null, unrated.length ? h('div', { class:'list' }, ...unrated.map(x => row(x, null))) : null,
     h('button', { class:'btn-primary', type:'button', html: ICON.plus + '<span>Añadir local</span>', onclick: () => openPlaceForm({ cat:'noche' }) }),
