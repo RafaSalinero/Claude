@@ -88,20 +88,12 @@ a{color:inherit;text-decoration:none}
 body.has-badge .card{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))}
 .search{display:flex;align-items:center;gap:10px;width:100%;min-height:50px;padding:0 14px;border-radius:12px;background:var(--fill);font-size:18px;font-weight:600;letter-spacing:-.43px;text-align:left}
 .search svg{width:20px;height:20px;flex:0 0 auto}
-.rows{display:flex;flex-direction:column}
-.crow{display:flex;align-items:center;gap:12px;min-height:56px;width:100%;text-align:left}
-.crow + .crow{border-top:.5px solid var(--sep)}
-.crow .dot{width:38px;height:38px;border-radius:50%;background:var(--fill);display:grid;place-items:center;flex:0 0 auto}
-.crow .dot svg{width:18px;height:18px}
-.crow .dot.on{background:var(--green);color:#fff}
-.crow .t{font-size:16px;font-weight:600;letter-spacing:-.32px;display:block}
-.crow .s{font-size:13px;color:var(--label2);letter-spacing:-.08px;display:block;margin-top:1px}
 .sw{width:51px;height:31px;border-radius:16px;background:var(--fill2);position:relative;flex:0 0 auto;transition:background .2s}
 .sw::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.15),0 3px 1px rgba(0,0,0,.06);transition:transform .2s}
 .sw[aria-checked="true"]{background:var(--green)}
 .sw[aria-checked="true"]::after{transform:translateX(20px)}
 .ph{display:flex;align-items:flex-start;gap:12px}
-.ph h2{font-family:var(--font-d);font-size:24px;font-weight:700;letter-spacing:.07px;line-height:29px;margin:0}
+.ph h2{font-family:var(--font-d);font-size:24px;font-weight:700;letter-spacing:.07px;line-height:29px;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ph .sub{font-size:15px;color:var(--label2);letter-spacing:-.24px;margin-top:2px}
 .ph .note{font-size:15px;letter-spacing:-.24px;margin-top:8px;color:var(--label)}
 .circle{width:30px;height:30px;border-radius:50%;background:var(--fill);display:grid;place-items:center;color:var(--label2);flex:0 0 auto}
@@ -159,7 +151,7 @@ body.picking .card,body.picking .fabs{display:none}
 .ctl{appearance:none;-webkit-appearance:none;border:0;background:transparent;font-size:17px;color:var(--label2);text-align:right;text-align-last:right;outline:none;padding:0}
 .ctl option{color:#000}
 textarea.in{resize:none;min-height:84px;line-height:22px}
-.preview{width:100%;max-height:240px;object-fit:cover;border-radius:12px;display:block}
+.preview{width:100%;max-height:180px;object-fit:cover;border-radius:12px;display:block}
 .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:50;display:grid;place-items:center;padding:16px}
 .lightbox img{max-width:100%;max-height:100%;border-radius:10px}
 .aswrap{position:fixed;inset:0;z-index:40}
@@ -244,10 +236,24 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 .mk.car .head{width:34px;height:34px;border-radius:10px;background:#0a84ff;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.4)}
 .mk.car .head svg{width:18px;height:18px}
 .mk.car .lbl{display:block;background:#0a84ff;color:#fff;font-weight:700}
-.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
-.chips::-webkit-scrollbar{display:none}
-.chip{flex:0 0 auto;padding:7px 12px;border-radius:999px;background:var(--fill);font-size:14px;font-weight:600;letter-spacing:-.15px}
-.chip[aria-pressed="true"]{background:var(--tint);color:var(--tint-fg)}
+.xchips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+.xchips::-webkit-scrollbar{display:none}
+.xchip{flex:0 0 auto;padding:7px 12px;border-radius:999px;background:var(--fill);font-size:14px;font-weight:600;letter-spacing:-.15px}
+.xchip[aria-pressed="true"]{background:var(--tint);color:var(--tint-fg)}
+.brand .chev-d{width:11px;height:11px;color:var(--label2);margin-left:-2px}
+.people button.off{filter:grayscale(1);opacity:.55}
+.sq{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;flex:0 0 auto}
+.sq svg{width:17px;height:17px}
+.sq.green{background:#34c759}
+.sq.red{background:#ff3b30}
+.tiles3{touch-action:pan-x}
+body.sheet-open .toast{top:calc(6px + env(safe-area-inset-top,0px))}
+.fabs{transition:bottom .25s,opacity .2s}
+body.fabs-off .fabs{opacity:0;pointer-events:none}
+.fhead{display:flex;align-items:center;gap:12px}
+.fhead .t{display:block;font-size:17px;font-weight:700;letter-spacing:-.4px}
+.fhead .s{display:block;font-size:13px;color:var(--label2)}
+.card-list{max-height:max(132px,min(44vh,calc(100dvh - 450px)));overflow-y:auto;touch-action:pan-y;overscroll-behavior:contain;background:transparent;border-radius:0;margin:0 -16px}
 .xsum{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .xsum > div{background:var(--cell);border-radius:12px;padding:12px 14px}
 .xsum small{display:block;font-size:13px;color:var(--label2)}
@@ -304,7 +310,7 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 
 <div class="top">
   <div class="toprow">
-    <button class="brand" id="brand" type="button" aria-label="Cambiar de persona"><img src="logo-96.png" alt="" width="32" height="32"><span>Sicilian Boys</span><span class="live" id="liveDot"></span></button>
+    <button class="brand" id="brand" type="button" aria-label="Ajustes: persona, ubicación, avisos y apariencia"><img src="logo-96.png" alt="" width="32" height="32"><span>Sicilian Boys</span><span class="live" id="liveDot"></span><svg class="chev-d" viewBox="0 0 12 8" aria-hidden="true"><path d="M1.5 1.5l4.5 4.5 4.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <span class="spacer"></span>
     <div class="people" id="people" aria-label="Quién está conectado"></div>
   </div>
@@ -312,7 +318,6 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 </div>
 
 <div class="fabs">
-  <button class="fab" id="btnTheme" aria-label="Apariencia"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.7a8.3 8.3 0 0 1 0 16.6z" fill="currentColor"/></svg></button>
   <button class="fab" id="btn3d" aria-pressed="false" aria-label="Vista 3D">3D</button>
   <button class="fab" id="btnAll" aria-label="Ver a todos"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 19c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5z"/><circle cx="17" cy="8.5" r="2.8"/><path d="M16.5 13.6c3 .2 5 2.2 5 5.4h-4.3c0-2.1-.3-3.9-.7-5.4z"/></svg></button>
   <button class="fab" id="btnMe" aria-label="Centrar en mí"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5L3.6 10.4c-.7.3-.6 1.3.1 1.5l6.6 1.8 1.8 6.6c.2.7 1.2.8 1.5.1l6.9-16.9z"/></svg></button>
@@ -398,6 +403,7 @@ function h(tag, attrs, ...kids){
 }
 // Textos: vacío «No hay …», confirmación «X guardado», error «No se pudo …».
 const WEB_ONLY = 'Disponible solo en sicilian-boys.netlify.app';
+const webOnly = () => toast(S.connecting ? 'Conectando con el grupo…' : WEB_ONLY);
 // Ilustraciones de pumas en pumas/: botones de la ficha y pantallas vacías.
 const puma = (name, size) => h('img', { src:'pumas/' + name + '.webp', alt:'', width: size, height: size, decoding:'async' });
 const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
@@ -462,7 +468,7 @@ function checkTheme(){
   const want = wantDark();
   if (want === dark) return;
   dark = want; paintTheme();
-  map.setStyle('https://tiles.openfreemap.org/styles/' + (dark ? 'dark' : 'positron'));
+  map.setStyle('https://tiles.openfreemap.org/styles/' + (dark ? 'dark' : 'positron'), { diff: false });
 }
 function setTheme(mode){
   themeMode = mode;
@@ -470,8 +476,7 @@ function setTheme(mode){
   checkTheme();
   if (mode === 'auto') toast('Automático: oscuro al atardecer');
 }
-$('#btnTheme').addEventListener('click', () => actionSheet('Apariencia', [['auto', 'Automático'], ['light', 'Claro'], ['dark', 'Oscuro']]
-  .map(([k, label]) => ({ label, checked: themeMode === k, onclick: () => setTheme(k) }))));
+
 setInterval(checkTheme, 60000);
 prefersDark.addEventListener?.('change', checkTheme);
 map.on('zoom', () => document.body.classList.toggle('labels', map.getZoom() >= 15));
@@ -513,13 +518,13 @@ function renderPlaces(){
 function markSelected(){ for (const m of S.placeMarkers) m.getElement().classList.toggle('sel', !!(S.selected && S.selected.type === 'place' && S.selected.p.id === m._p.id)); }
 function fitPlaces(){
   const pts = S.placeMarkers.map(m => m.getLngLat()).map(l => [l.lng, l.lat]);
-  if (!pts.length) return toast('No hay sitios en esta categoría');
+  if (!pts.length) return;                    // la ficha ya muestra «No hay sitios»
   if (pts.length === 1) return map.flyTo({ center: pts[0], zoom: 15 });
   const b = pts.reduce((bb, p) => bb.extend(p), new maplibregl.LngLatBounds(pts[0], pts[0]));
   map.fitBounds(b, { padding:{ top: 130, bottom: cardH() + 40, left: 40, right: 70 }, maxZoom: 16, duration: 800 });
 }
 const filt = $('#filters');
-for (const [k, lab] of [['all','Todo'], ...Object.entries(CATS)]) filt.append(h('button', { class:'chip', type:'button', 'aria-pressed': k === 'all' ? 'true' : 'false', onclick: e => { S.filter = k; for (const x of filt.children) x.setAttribute('aria-pressed', x === e.currentTarget ? 'true' : 'false'); renderPlaces(); fitPlaces(); } }, lab));
+for (const [k, lab] of [['all','Todo'], ...Object.entries(CATS)]) filt.append(h('button', { class:'chip', type:'button', 'data-k': k, 'aria-pressed': k === 'all' ? 'true' : 'false', onclick: () => setFilter(k) }, lab));
 
 $('#btn3d').addEventListener('click', () => {
   S.is3d = !S.is3d; $('#btn3d').setAttribute('aria-pressed', S.is3d ? 'true' : 'false');
@@ -536,6 +541,7 @@ function onOrient(e){
   if (typeof e.webkitCompassHeading === 'number') hdg = e.webkitCompassHeading;
   else if ((e.absolute || e.type === 'deviceorientationabsolute') && typeof e.alpha === 'number') hdg = 360 - e.alpha;
   if (hdg == null || isNaN(hdg)) return;
+  COMPASS.at = Date.now();
   setHeading((hdg + screenAngle() + 360) % 360);
 }
 function setHeading(hdg){
@@ -579,8 +585,13 @@ const badgeCheck = () => { document.body.classList.toggle('has-badge', !!documen
 new MutationObserver(badgeCheck).observe(document.body, { childList:true }); badgeCheck();
 // Altura visible de la ficha inferior (la parte plegada no cuenta).
 const cardH = () => $('#card').offsetHeight - (S.cardY || 0);
-function syncCardH(){ document.documentElement.style.setProperty('--card-h', cardH() + 'px'); }
+function syncCardH(){
+  const h = cardH(); document.documentElement.style.setProperty('--card-h', h + 'px');
+  // Sin sitio entre la barra de arriba y la ficha, los botones redondos se ocultan para no tapar los filtros.
+  document.body.classList.toggle('fabs-off', innerHeight - h < 300);
+}
 new ResizeObserver(() => { if (S.cardMin) placeCard(cardMax(), true); else syncCardH(); }).observe($('#card'), { box:'border-box' });
+addEventListener('resize', () => { if (S.cardMin) placeCard(cardMax(), true); else syncCardH(); });
 
 // ---------- ficha inferior plegable: se arrastra hacia abajo (queda solo el buscador) o hacia arriba ----------
 const cardEl = $('#card');
@@ -599,7 +610,7 @@ function placeCard(y, animate){
 function setCardMin(on){ S.cardMin = on; $('#grabZone').setAttribute('aria-expanded', on ? 'false' : 'true'); placeCard(on ? cardMax() : 0, true); }
 let drag = null;
 cardEl.addEventListener('pointerdown', e => {
-  if (e.button > 0 || e.target.closest('input,textarea,select,.sw')) return;
+  if (e.button > 0 || e.target.closest('input,textarea,select,.sw,.card-list')) return;
   drag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, base: S.cardY || 0, last: e.clientY, lt: e.timeStamp, v: 0, on: false };
 });
 cardEl.addEventListener('pointermove', e => {
@@ -672,15 +683,7 @@ function renderCard(){
   }
   body.replaceChildren(h('div', { style:'display:flex;flex-direction:column;gap:10px' },
     h('button', { class:'search', type:'button', html: ICON.search + '<span>Buscar sitios</span>', onclick: openSearch }),
-    h('div', { class:'rows' },
-      h('div', { class:'crow' }, h('span', { class:'dot' + (S.sharing ? ' on' : ''), html: ICON.arrow }),
-        h('span', { class:'grow' }, h('span', { class:'t' }, 'Compartir mi ubicación'), h('span', { class:'s', id:'shareSub' }, shareStatus())),
-        switchEl(S.sharing, () => { if (!S.sync) return toast(WEB_ONLY); setSharing(!S.sharing); }, 'Compartir mi ubicación')),
-      h('div', { class:'crow', id:'pushRow' }, h('span', { class:'dot' + (S.pushOn ? ' on' : ''), html: ICON.bell }),
-        h('span', { class:'grow' }, h('span', { class:'t' }, 'Avisos'), h('span', { class:'s' }, pushStatus())),
-        switchEl(!!S.pushOn, () => setPush(!S.pushOn), 'Avisos')),
-    ),
-    h('div', { class:'tiles3' },
+    S.filter !== 'all' ? filterList() : h('div', { class:'tiles3' },
       tile('casa', 'Casa', goHome, 'homeTileN', (S.atHome && S.atHome.length) ? S.atHome.length + ' en casa' : ''),
       tile('coche', 'Coche', carTile, 'carTileN', carText()),
       tile('noche', 'Noche', openNoche),
@@ -689,6 +692,23 @@ function renderCard(){
       tile('tiempo', 'Tiempo', openWeather, 'wxTileN', wxText()),
       tile('traducir', 'Traducir', openTranslator),
       tile('anadir', 'Añadir', () => openPlaceForm(null)))));
+}
+// Lista de la categoría elegida arriba (Ver, Comer, Noche, Excursiones u Otros), de más cerca a más lejos.
+function filterList(){
+  const ps = allPlaces().filter(p => S.filter === 'otro' ? isOther(p) : p.cat === S.filter).sort((a, b) => kmFrom(origin(), a) - kmFrom(origin(), b));
+  const row = p => { const sc = p.cat === 'noche' && nightScore(p.id);
+    return h('button', { class:'lrow', type:'button', onclick: () => { select({ type:'place', p }); reveal(p.lng, p.lat); } }, h('span', { class:'ico' + (isOther(p) ? ' extra' : ''), html: PIN_ICON[p.cat] || ICON.star }),
+      h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, p.name), h('span', { class:'s', style:'display:block' }, [sc ? '★ ' + fmt1(sc.avg) : null, fmtKm(kmFrom(origin(), p)), p.addr || null].filter(Boolean).join(' · '))), h('span', { class:'chev', html: ICON.chev }))); };
+  return [h('div', { class:'fhead' }, h('span', { class:'ico', html: PIN_ICON[S.filter] || ICON.star }), h('span', { class:'grow' }, h('span', { class:'t' }, CATS[S.filter]), h('span', { class:'s' }, ps.length === 1 ? '1 sitio' : ps.length + ' sitios')),
+      h('button', { class:'circle', type:'button', 'aria-label':'Ver todo', html: ICON.x, onclick: () => setFilter('all') })),
+    ps.length ? h('div', { class:'list card-list' }, ...ps.map(row)) : empty('No hay sitios', 'Añade uno con «Añadir».')];
+}
+function setFilter(k){
+  S.filter = k;
+  for (const x of $('#filters').children) x.setAttribute('aria-pressed', x.dataset.k === k ? 'true' : 'false');
+  if (k !== 'all' && S.cardMin) setCardMin(false);
+  if (S.selected && S.selected.type === 'place') S.selected = null;
+  renderPlaces(); renderCard(); requestAnimationFrame(fitPlaces);
 }
 function tile(img, label, onclick, id, n){ return h('button', { class:'tile', type:'button', onclick }, puma(img, 44), h('span', {}, label), h('span', { class:'n', id }, n || '\u00a0')); }
 function updateTile(id, text){ const el = document.getElementById(id); if (el) el.textContent = text || '\u00a0'; }
@@ -704,8 +724,8 @@ function shareStatus(){
 // ---------- sheets ----------
 // Vacía un elemento y le pone los hijos que no sean null (replaceChildren escribiría "null").
 const fill = (el, ...kids) => el.replaceChildren(...kids.flat().filter(Boolean));
-function openSheet(...kids){ const b = $('#backdrop'), s = $('#sheet'); s.replaceChildren(...kids.flat().filter(Boolean)); b.hidden = false; s.hidden = false; requestAnimationFrame(() => { b.classList.add('show'); s.classList.add('show'); }); }
-function closeSheet(){ const b = $('#backdrop'), s = $('#sheet'); b.classList.remove('show'); s.classList.remove('show'); setTimeout(() => { b.hidden = true; s.hidden = true; }, 320); }
+function openSheet(...kids){ document.body.classList.add('sheet-open'); const b = $('#backdrop'), s = $('#sheet'); s.replaceChildren(...kids.flat().filter(Boolean)); b.hidden = false; s.hidden = false; requestAnimationFrame(() => { b.classList.add('show'); s.classList.add('show'); }); }
+function closeSheet(){ if (S.stopListening){ S.stopListening(); S.stopListening = null; } document.body.classList.remove('sheet-open'); const b = $('#backdrop'), s = $('#sheet'); b.classList.remove('show'); s.classList.remove('show'); setTimeout(() => { b.hidden = true; s.hidden = true; }, 320); }
 $('#backdrop').addEventListener('click', closeSheet);
 // Búsqueda fuera del grupo: Google Maps u OpenStreetMap (lo decide el servidor), enlaces de Maps y coordenadas.
 const isLink = v => /^https?:\/\//i.test(v);
@@ -716,13 +736,13 @@ async function mapSearch(v){
   const c = COORDS.exec(v);
   if (c) return { src:'coords', results:[{ name: (+c[1]).toFixed(5) + ', ' + (+c[2]).toFixed(5), addr:'', lat: +c[1], lng: +c[2], cat:'otro' }] };
   if (mapCache.has(v)) return mapCache.get(v);
-  const res = isLink(v) ? await api({ action:'resolve', url: v, ...searchBias() }).then(r => ({ src:'link', results:[r.result] }), () => ({ src:'link', results:[] }))
+  const res = isLink(v) ? await api({ action:'resolve', url: v, ...searchBias() }).then(r => ({ src:'link', results:[r.result] }), e => { if (/HTTP 404/.test(e.message)) return { src:'link', results:[] }; throw e; })
     : await api({ action:'search', q: v, ...searchBias() });
   mapCache.set(v, res); return res;
 }
 const sameSpot = (x, r) => (r.gid && x.gid === r.gid) || (x.name.toLowerCase() === r.name.toLowerCase() && kmFrom(x, r) < 0.5);
 function showFound(r){
-  const dup = allPlaces().find(x => sameSpot(x, r));
+  const dup = r.id === 'casa' ? HOME : allPlaces().find(x => sameSpot(x, r));
   const p = dup || { ...r, id:'tmp', temp: true };
   closeSheet(); select({ type:'place', p });
   map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), kmFrom(origin(), p) > 20 ? 12 : 15.5), padding:{ bottom: 260 } });
@@ -768,7 +788,7 @@ function placeActions(p){
       try { await api({ action:'delPlace', id: p.id }); toast('Sitio eliminado'); select(null); await loadPlaces(); } catch (e) { toast('No se pudo eliminar'); } } }]) }]);
 }
 function openPlaceForm(draft){
-  if (!netlifyOn()) return toast(WEB_ONLY);
+  if (!netlifyOn()) return webOnly();
   const d = S.draft = draft || { cat: 'ver' };
   const name = h('input', { class:'in', placeholder:'Nombre del sitio', maxlength:'60', id:'plName', value: d.name || '' });
   name.addEventListener('input', () => { d.name = name.value; });
@@ -801,7 +821,7 @@ function openPlaceForm(draft){
     if (typeof d.lat !== 'number') return toast('Elige una ubicación');
     btn.disabled = true; btn.textContent = 'Guardando…';
     try {
-      const res = await api({ action:'savePlace', by: S.me.name, place:{ id: d.id, cat: d.cat, name: d.name.trim(), addr: (d.addr || '').trim(), note: (d.note || '').trim(), lat: d.lat, lng: d.lng, gid: d.gid || '' } });
+      const res = await api({ action:'savePlace', by: S.me.name, actor: S.me.id, place:{ id: d.id, cat: d.cat, name: d.name.trim(), addr: (d.addr || '').trim(), note: (d.note || '').trim(), lat: d.lat, lng: d.lng, gid: d.gid || '' } });
       S.draft = null; closeSheet(); toast(d.id ? 'Sitio guardado' : 'Sitio añadido');
       await loadPlaces(); const np = S.places[res.id]; if (np){ select({ type:'place', p: np }); reveal(np.lng, np.lat); }
     } catch (err) { console.warn(err); toast('No se pudo guardar. Inténtalo de nuevo.'); btn.disabled = false; btn.textContent = 'Guardar'; }
@@ -868,19 +888,21 @@ function setCarState(car, force){
   if (S.selected && S.selected.type === 'car'){ if (!S.car) S.selected = null; renderCard(); }
 }
 async function saveCar(c){
+  S.carAt = Date.now();
   try {
     const res = await api({ action:'setCar', by: S.me.name, actor: S.me.id, car:{ lat: c.lat, lng: c.lng } });
     setCarState(res.car); select({ type:'car' }); reveal(res.car.lng, res.car.lat); toast('Coche guardado');
   } catch (e) { console.warn(e); toast('No se pudo guardar. Inténtalo de nuevo.'); }
 }
 async function clearCar(){
+  S.carAt = Date.now();
   try { await api({ action:'clearCar' }); setCarState(null); select(null); toast('Coche quitado'); }
   catch (e) { toast('No se pudo quitar'); }
 }
 function parkHere(){ if (!S.lastPos){ toast('Ubicación no disponible'); startLocating(false); return; } saveCar(S.lastPos); }
 function parkOnMap(){ startPick(S.car, c => { if (c) saveCar(c); else if (S.car) select({ type:'car' }); }, 'Mueve el mapa hasta el coche'); }
 function carTile(){
-  if (!netlifyOn()) return toast(WEB_ONLY);
+  if (!netlifyOn()) return webOnly();
   if (S.car){ select({ type:'car' }); reveal(S.car.lng, S.car.lat); return; }
   actionSheet('Coche', [{ label:'Aparqué aquí', onclick: parkHere }, { label:'Elegir en el mapa', onclick: parkOnMap }]);
 }
@@ -922,7 +944,7 @@ async function openWeather(){
 }
 function drawWeather(body){
   if (!S.wx || !S.wx[0] || !S.wx[0].daily) return fill(body, empty('No se pudo cargar', 'Revisa la conexión.', 'sin-conexion'));
-  const today = localISO(), tripIn = S.wx[0].daily.time.includes(TRIP_DATES[0]);
+  const today = localISO(), tripIn = TRIP_DATES.some(d => S.wx[0].daily.time.includes(d));
   fill(body, ...S.wx.flatMap((w, i) => {
     const n = w.current, dd = w.daily;
     let days = dd.time.map((t, j) => j).filter(j => tripIn ? TRIP_DATES.includes(dd.time[j]) : dd.time[j] >= today).slice(0, 5);
@@ -976,7 +998,7 @@ const dateLabel = iso => {
 const avatar = id => { const f = face(id, travellerName(id)); f.classList.add('pav'); return f; };
 async function loadExpenses(){ const res = await apiCached({ action:'expenses' }); S.expenses = res.expenses || {}; updateTile('expTileN', expText()); return res; }
 async function openGastos(tab){
-  if (!netlifyOn()) return toast(WEB_ONLY);
+  if (!netlifyOn()) return webOnly();
   if (tab) S.xTab = tab; else S.xTab = S.xTab || 'gastos';
   const body = h('div', { style:'display:flex;flex-direction:column;gap:16px' }, h('p', { class:'foot' }, 'Cargando…'));
   const seg = h('div', { class:'seg' }, ...[['gastos', 'Gastos'], ['saldos', 'Saldos']].map(([k, l]) => h('button', { type:'button', 'aria-pressed': S.xTab === k ? 'true' : 'false',
@@ -1071,7 +1093,7 @@ function openExpenseForm(x){
     });
     remain = d.mode === 'amounts' ? h('p', { class:'foot' }) : null;
     fill(parts,
-      h('p', { class:'sec-h' }, 'Categoría'), h('div', { class:'chips' }, ...EXP_CATS.map(([k, l, e]) => h('button', { class:'chip', type:'button', 'aria-pressed': k === d.cat ? 'true' : 'false', onclick: ev => { d.cat = k; for (const b of ev.currentTarget.parentNode.children) b.setAttribute('aria-pressed', b === ev.currentTarget ? 'true' : 'false'); } }, e + ' ' + l))),
+      h('p', { class:'sec-h' }, 'Categoría'), h('div', { class:'xchips' }, ...EXP_CATS.map(([k, l, e]) => h('button', { class:'xchip', type:'button', 'aria-pressed': k === d.cat ? 'true' : 'false', onclick: ev => { d.cat = k; for (const b of ev.currentTarget.parentNode.children) b.setAttribute('aria-pressed', b === ev.currentTarget ? 'true' : 'false'); } }, e + ' ' + l))),
       h('p', { class:'sec-h' }, 'Pagado por'), segOf(people, d.by, k => { d.by = k; }),
       h('p', { class:'sec-h' }, 'Para quién'), segOf([['equal', 'A partes iguales'], ['amounts', 'Importes']], d.mode, k => { d.mode = k; draw(); }),
       h('div', { class:'list' }, ...rows), remain);
@@ -1111,11 +1133,11 @@ function pushStatus(){
 }
 function refreshPushRow(){
   const r = document.getElementById('pushRow'); if (!r) return;
-  r.querySelector('.s').textContent = pushStatus(); r.querySelector('.sw').setAttribute('aria-checked', S.pushOn ? 'true' : 'false'); r.querySelector('.dot').classList.toggle('on', !!S.pushOn);
+  r.querySelector('.s').textContent = pushStatus(); r.querySelector('.sw').setAttribute('aria-checked', S.pushOn ? 'true' : 'false');
 }
 const b64u = v => Uint8Array.from(atob(v.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - v.length % 4) % 4)), ch => ch.charCodeAt(0));
 async function setPush(on){
-  if (!netlifyOn()) return toast(WEB_ONLY);
+  if (!netlifyOn()) return webOnly();
   if (!pushOK()){
     if (isIOS && !standalone()) actionSheet('En iPhone los avisos solo funcionan con la app en la pantalla de inicio: en Safari, Compartir > Añadir a pantalla de inicio, y ábrela desde el icono.', [{ label:'Entendido', onclick: () => {} }]);
     else toast('Avisos no disponibles en este navegador');
@@ -1206,7 +1228,7 @@ function openTranslator(){
       rec = new SR(); rec.lang = LANGS[from][1]; rec.interimResults = true;
       rec.onresult = e => { heard = [...e.results].map(x => x[0].transcript).join(' '); input.value = heard; };
       rec.onerror = e => { if (/not-allowed/.test(e.error)) toast('Micrófono no disponible. Usa el del teclado.'); };
-      rec.onend = () => { b.classList.remove('on'); label.textContent = LANGS[from][0]; rec = null; run(heard, from); };
+      rec.onend = () => { b.classList.remove('on'); label.textContent = LANGS[from][0]; const r = rec; rec = null; if (r && !r.cancelled) run(heard, from); };
       try { rec.start(); b.classList.add('on'); label.textContent = 'Escuchando…'; }
       catch (e) { rec = null; toast('Micrófono no disponible. Usa el del teclado.'); }
     });
@@ -1214,7 +1236,8 @@ function openTranslator(){
   };
   const phrase = ([es, it]) => h('button', { class:'lrow', type:'button', onclick: () => { unlockVoice(); show(es, it, 'it'); out.scrollIntoView({ behavior:'smooth', block:'nearest' }); } },
     h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, es), h('span', { class:'s', style:'display:block' }, it)), h('span', { class:'tr-say', html: ICON.sound })));
-  openSheet(sheetNav('Traductor', null, ['Cerrar', () => { if (rec) rec.abort(); closeSheet(); }]),
+  S.stopListening = () => { if (rec){ rec.cancelled = true; rec.abort(); } };
+  openSheet(sheetNav('Traductor', null, ['Cerrar', closeSheet]),
     SR ? h('p', { class:'sec-h' }, 'Toca y habla') : null,
     SR ? h('div', { class:'tr-mics' }, mic('es'), mic('it')) : null,
     h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, input))),
@@ -1253,6 +1276,12 @@ async function loadRatings(){
   for (const [k, v] of Object.entries(res.ratings || {})){ const [pid, by] = k.split('/'); (out[pid] ||= {})[by] = v; }
   S.ratings = out;
 }
+// Recarga las puntuaciones y redibuja la ficha si algo de lo que muestra ha cambiado.
+async function refreshRatings(){
+  const before = JSON.stringify(S.ratings);
+  try { await loadRatings(); } catch (e) { return; }
+  if (JSON.stringify(S.ratings) !== before && (S.filter === 'noche' || (S.selected && S.selected.type === 'place' && S.selected.p.cat === 'noche'))) renderCard();
+}
 function nightScore(pid){
   const rs = Object.values(S.ratings[pid] || {}); if (!rs.length) return null;
   const crit = {}; for (const [k] of CRIT){ const vals = rs.map(r => r[k]).filter(v => typeof v === 'number'); if (vals.length) crit[k] = vals.reduce((a, b) => a + b, 0) / vals.length; }
@@ -1261,7 +1290,7 @@ function nightScore(pid){
 }
 const fmt1 = n => n.toFixed(1).replace('.', ',');
 async function openNoche(){
-  if (!netlifyOn()) return toast(WEB_ONLY);
+  if (!netlifyOn()) return webOnly();
   const body = h('div', { style:'display:flex;flex-direction:column;gap:16px' }, h('p', { class:'foot' }, 'Cargando…'));
   openSheet(sheetNav('Noche', null, ['Cerrar', closeSheet]), body);
   try { await Promise.all([loadRatings(), S.placesLoaded ? null : loadPlaces()]); drawNoche(body); }
@@ -1281,7 +1310,7 @@ function drawNoche(body){
     h('p', { class:'foot' }, 'Nota: media del grupo, de 1 a 5.'));
 }
 function openRate(p){
-  if (!netlifyOn()) return toast(WEB_ONLY);
+  if (!netlifyOn()) return webOnly();
   const mine = { ...((S.ratings[p.id] || {})[S.me.id] || {}) };
   const rows = CRIT.map(([k, l]) => { const sg = h('div', { class:'seg sm' }, ...[1, 2, 3, 4, 5].map(v => h('button', { type:'button', 'aria-pressed': mine[k] === v ? 'true' : 'false', onclick: e => { mine[k] = v; for (const b of sg.children) b.setAttribute('aria-pressed', b === e.currentTarget ? 'true' : 'false'); } }, v)));
     return h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'t grow' }, l), sg)); });
@@ -1316,7 +1345,8 @@ function actionSheet(title, actions){
 }
 
 // ---------- marcador de la noche ----------
-const todayKey = () => { const t = new Date(); return (t.getFullYear() === 2026 && t.getMonth() === 11 && t.getDate() >= 4 && t.getDate() <= 6) ? '0' + t.getDate() : '04'; };
+// Noche del viaje: de madrugada (antes de las 6) sigue contando la noche anterior.
+const todayKey = () => { const t = new Date(Date.now() - 6 * 3600e3); return (t.getFullYear() === 2026 && t.getMonth() === 11 && t.getDate() >= 4 && t.getDate() <= 6) ? '0' + t.getDate() : '04'; };
 const dayLabel = d => (DAYS.find(x => x[0] === d) || [d, d])[1];
 const travellerName = id => (TRAVELLERS.find(([n]) => slug(n) === id) || [id])[0];
 async function api(body){
@@ -1325,7 +1355,7 @@ async function api(body){
 }
 function sheetNav(title, left, right){ return h('div', { class:'snav' }, left ? h('button', { class:'l', type:'button', onclick: left[1] }, left[0]) : h('span'), h('div', { class:'c' }, title), right ? h('button', { class:'r', type:'button', onclick: right[1] }, right[0]) : h('span')); }
 async function openNight(){
-  if (!S.sync || S.sync.kind !== 'netlify') return toast(WEB_ONLY);
+  if (!S.sync || S.sync.kind !== 'netlify') return webOnly();
   const body = h('div', { style:'display:flex;flex-direction:column;gap:16px' }, h('p', { class:'foot' }, 'Cargando…'));
   openSheet(sheetNav('Match', null, ['Cerrar', closeSheet]), body);
   try { const res = await apiCached({ action:'matches' }); if (res.offline) toast('Sin conexión. Datos de la última vez.'); S.matches = Object.values(res.matches || {}).sort((a, b) => b.t - a.t); drawNight(body); }
@@ -1406,9 +1436,15 @@ function startLocating(fly){
   if (!('geolocation' in navigator)) return toast('Ubicación no disponible en este navegador');
   if (S.watchId != null) return;
   S.flyOnFirst = fly !== false;
-  S.watchId = navigator.geolocation.watchPosition(onPos, err => { console.warn(err); S.watchId = null; toast(err.code === 1 ? 'Permiso de ubicación denegado. Actívalo en Ajustes.' : 'No se pudo obtener la ubicación. Revisa el GPS.'); if (S.sharing) setSharing(false); }, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
+  S.watchId = navigator.geolocation.watchPosition(onPos, err => {
+    console.warn(err);
+    if (err.code === 1){ navigator.geolocation.clearWatch(S.watchId); S.watchId = null; toast('Permiso de ubicación denegado. Actívalo en Ajustes.'); if (S.sharing) setSharing(false); return; }
+    // Sin señal un rato (un sótano, una discoteca): el seguimiento continúa solo; se avisa una vez.
+    if (!S.gpsWarned){ S.gpsWarned = true; toast('Sin señal de GPS. Reintentando…'); }
+  }, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
 }
 function onPos(pos){
+  S.gpsWarned = false;
   const { latitude:lat, longitude:lng, accuracy:acc } = pos.coords; const first = !S.lastPos; S.lastPos = { lat, lng, acc, t: Date.now() };
   if (!S.meMarker){
     const el = h('div', { class:'me', 'aria-label':'Tu ubicación', html:'<svg class="cone" viewBox="0 0 64 64"><defs><linearGradient id="cg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#007aff" stop-opacity=".55"/><stop offset="1" stop-color="#007aff" stop-opacity="0"/></linearGradient></defs><path d="M32 64 L8 8 A34 34 0 0 1 56 8 Z" fill="url(#cg)"/></svg><div class="me-dot"></div>' });
@@ -1416,7 +1452,7 @@ function onPos(pos){
     if (S.heading != null) setHeading(S.heading);
   } else S.meMarker.setLngLat([lng, lat]);
   // Sin brújula (ordenadores, permisos denegados), el rumbo del GPS al moverse.
-  if (typeof pos.coords.heading === 'number' && !isNaN(pos.coords.heading) && (pos.coords.speed || 0) > 0.8 && !COMPASS.on) setHeading(pos.coords.heading);
+  if (typeof pos.coords.heading === 'number' && !isNaN(pos.coords.heading) && (pos.coords.speed || 0) > 0.8 && !(COMPASS.at && Date.now() - COMPASS.at < 3000)) setHeading(pos.coords.heading);
   if (S.follow) map.easeTo({ center:[lng, lat], duration: 800, padding:{ top:120, bottom: cardH() + 30, left:0, right:0 } });
   else if (first && S.flyOnFirst) map.flyTo({ center:[lng, lat], zoom: Math.max(map.getZoom(), 15.5) });
   if (!S.peersAt || Date.now() - S.peersAt > 3000){ S.peersAt = Date.now(); renderPeers(); }
@@ -1427,7 +1463,9 @@ function setSharing(on){
   S.sharing = on; $('#liveDot').classList.toggle('on', on); store.set('cl-sharing', on ? '1' : '0');
   if (S.sync) S.sync.setSharing(on);
   if (on){ startLocating(); if (S.lastPos) onPos({ coords:{ latitude:S.lastPos.lat, longitude:S.lastPos.lng, accuracy:S.lastPos.acc } }); toast('Compartiendo ubicación'); }
-  renderCard();
+  const sw = document.querySelector('#shareRow .sw'); if (sw) sw.setAttribute('aria-checked', on ? 'true' : 'false');
+  const sub = $('#shareSub'); if (sub) sub.textContent = shareStatus();
+  renderCard(); renderPeers();
 }
 
 // ---------- peers ----------
@@ -1438,7 +1476,7 @@ const atHome = pos => !!pos && kmFrom(HOME, pos) * 1000 <= HOME_M;
 const homeBadge = () => h('span', { class:'hb', title:'En casa', html: ICON.home });
 function renderPeers(){
   const pe = $('#people'); pe.replaceChildren(); const home = [];
-  { const b = face(S.me.id || 'me', S.me.name, 'button'); b.title = S.me.name + ' (tú)'; b.setAttribute('aria-label', 'Tú'); b.addEventListener('click', () => $('#btnMe').click()); if (atHome(S.lastPos)){ b.append(homeBadge()); home.push('tú'); } pe.append(b); }
+  { const b = face(S.me.id || 'me', S.me.name, 'button'); b.title = S.me.name + (S.sharing ? ' (tú)' : ' (tú) · no compartes ubicación'); b.setAttribute('aria-label', 'Tus ajustes'); if (!S.sharing) b.classList.add('off'); b.addEventListener('click', openSettings); if (atHome(S.lastPos)){ b.append(homeBadge()); home.push('tú'); } pe.append(b); }
   for (const p of Object.values(S.peers)){
     if (p.id === S.me.id) continue;
     if (isStale(p, 15 * 60e3)){ if (S.peerMarkers[p.id]){ S.peerMarkers[p.id].remove(); delete S.peerMarkers[p.id]; } continue; }
@@ -1487,13 +1525,14 @@ function netlifySync(group, onPeople, onPins){
   const tick = async () => {
     if (busy || document.hidden) return; busy = true;
     try {
+      const sent = Date.now();
       const me = sharing && myPos ? { id: S.me.id, name: S.me.name, ...myPos } : null;
       const res = await post({ action:'sync', me, v: 2 }); if (me) lastSend = Date.now();
       if (res.plv && res.plv !== S.plv){ S.plv = res.plv; loadPlaces().catch(e => console.warn('places', e)); }
       const skew = (res.now || Date.now()) - Date.now();
       const people = {}; for (const [id, p] of Object.entries(res.people || {})) people[id] = { ...p, t: p.t - skew };
       fails = 0; if (S.offline){ S.offline = false; renderCard(); }
-      S.skew = skew; setCarState(res.car || null);
+      S.skew = skew; if (sent >= (S.carAt || 0)) setCarState(res.car || null);
       onPeople(people);
     } catch (e) { console.warn('sync', e); if (++fails >= 3 && !S.offline){ S.offline = true; renderCard(); } }
     finally { busy = false; }
@@ -1535,8 +1574,12 @@ async function enter(name, kind){
   const onPins = v => { const next = JSON.stringify(v); if (next === S.pinsSig) return; S.pinsSig = next; S.extraPins = v; renderPlaces(); };
   if (kind === 'netlify') hydrateOffline();
   S.sync = kind === 'netlify' ? netlifySync(S.group, onPeople, onPins) : await firebaseSync(S.group, onPeople, onPins);
+  S.connecting = false;
   renderCard();
-  if (kind === 'netlify'){ loadExpenses().catch(() => {}); initPush(); }
+  if (kind === 'netlify'){
+    loadExpenses().catch(() => {}); refreshRatings(); initPush();
+    setInterval(() => { if (!document.hidden){ loadExpenses().catch(() => {}); refreshRatings(); } }, 60e3);
+  }
   if (store.get('cl-sharing') === '1') setSharing(true); else startLocating();
 }
 function enterLocal(name){ enterCommon(name); startLocating(); }
@@ -1550,23 +1593,44 @@ const drawWho = () => who.replaceChildren(...TRAVELLERS.map(([n, c]) => h('butto
   (() => { const f = face(slug(n), n); f.classList.add('pav'); return f; })(), h('span', { class:'body' }, h('span', { class:'t grow' }, n), h('span', { class:'ck', html:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' })))));
 drawWho();
 const valid = n => TRAVELLERS.some(([x]) => x === n);
+let started = false;
 async function start(n){
+  if (started) return; started = true; S.connecting = true;
   const kind = await backendReady;
-  if (!kind) return enterLocal(n);
-  enter(n, kind).catch(err => { console.error(err); toast('No se pudo conectar. Inténtalo de nuevo.'); });
+  if (!kind){ S.connecting = false; return enterLocal(n); }
+  enter(n, kind).catch(err => { console.error(err); S.connecting = false; started = false; toast('No se pudo conectar. Inténtalo de nuevo.'); });
 }
 backendReady.then(kind => { if (!kind){ const f = $('#gateFoot'); f.textContent = 'Modo grupo no disponible. Solo se mostrará tu ubicación.'; f.hidden = false; } });
 gate.addEventListener('submit', e => { e.preventDefault(); if (!valid(picked)) return toast('Elige quién eres'); start(picked); });
 if (valid(picked)) { $('#gate').hidden = true; start(picked); }
-$('#brand').addEventListener('click', () => {
+// ---------- ajustes: persona, ubicación, avisos y apariencia (en la pastilla "Sicilian Boys" y en tu foto) ----------
+function openSettings(){
   let choice = S.me.name;
-  const list = h('div', { class:'list' });
-  const draw = () => list.replaceChildren(...TRAVELLERS.map(([n, c]) => h('button', { class:'lrow', type:'button', role:'radio', 'aria-checked': n === choice ? 'true' : 'false', onclick: () => { choice = n; draw(); } },
-    (() => { const f = face(slug(n), n); f.classList.add('pav'); return f; })(), h('span', { class:'body' }, h('span', { class:'t grow' }, n), h('span', { class:'ck', html:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' })))));
-  draw();
-  openSheet(h('div', { class:'snav' }, h('button', { class:'l', type:'button', onclick: closeSheet }, 'Cancelar'), h('div', { class:'c' }, '¿Quién eres?'),
-    h('button', { class:'r', type:'button', onclick: () => { if (choice === S.me.name) return closeSheet(); if (S.sharing) setSharing(false); store.set('cl-name', choice); setTimeout(() => location.reload(), 150); } }, 'Listo')), list);
-});
+  const people = h('div', { class:'list' });
+  const drawPeople = () => fill(people, ...TRAVELLERS.map(([n]) => h('button', { class:'lrow', type:'button', role:'radio', 'aria-checked': n === choice ? 'true' : 'false', onclick: () => { choice = n; drawPeople(); } },
+    avatar(slug(n)), h('span', { class:'body' }, h('span', { class:'t grow' }, n), h('span', { class:'ck', html: CHECK_SVG })))));
+  drawPeople();
+  const theme = h('div', { class:'seg' }, ...[['auto', 'Automático'], ['light', 'Claro'], ['dark', 'Oscuro']].map(([k, l]) => h('button', { type:'button', 'aria-pressed': themeMode === k ? 'true' : 'false',
+    onclick: e => { for (const b of theme.children) b.setAttribute('aria-pressed', b === e.currentTarget ? 'true' : 'false'); setTheme(k); } }, l)));
+  const done = () => {
+    if (choice === S.me.name) return closeSheet();
+    if (S.sharing) setSharing(false);
+    store.set('cl-name', choice); setTimeout(() => location.reload(), 150);
+  };
+  openSheet(sheetNav('Ajustes', null, ['Listo', done]),
+    h('p', { class:'sec-h' }, 'Quién eres'), people,
+    h('p', { class:'sec-h' }, 'Ubicación'),
+    h('div', { class:'list' }, h('div', { class:'lrow', id:'shareRow' }, h('span', { class:'sq green', html: ICON.arrow }),
+      h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, 'Compartir mi ubicación'), h('span', { class:'s', id:'shareSub', style:'display:block' }, shareStatus())),
+        switchEl(S.sharing, () => { if (!S.sync) return webOnly(); setSharing(!S.sharing); }, 'Compartir mi ubicación')))),
+    h('p', { class:'sec-h' }, 'Avisos'),
+    h('div', { class:'list' }, h('div', { class:'lrow', id:'pushRow' }, h('span', { class:'sq red', html: ICON.bell }),
+      h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, 'Avisos'), h('span', { class:'s', style:'display:block' }, pushStatus())),
+        switchEl(!!S.pushOn, () => setPush(!S.pushOn), 'Avisos')))),
+    h('p', { class:'sec-h' }, 'Apariencia'), theme,
+    h('p', { class:'foot' }, 'Automático sigue al móvil y pasa a oscuro al atardecer en Catania.'));
+}
+$('#brand').addEventListener('click', openSettings);
 })();
 </script>
 </body>
