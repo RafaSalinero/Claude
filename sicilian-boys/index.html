@@ -115,14 +115,15 @@ body.picking .card,body.picking .fabs{display:none}
 .btn-sec{display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;border-radius:12px;background:var(--fill);font-size:15px;font-weight:600;letter-spacing:-.24px}
 .btn-sec svg{width:18px;height:18px}
 .btn-sec.red{color:var(--red)}
-.tiles3{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.tiles3{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px;scroll-padding:0 16px}
+.tiles3::-webkit-scrollbar{display:none}
 .locbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .seg.sm button{min-width:34px;padding:4px 0}
 .ratechip{display:inline-flex;align-items:center;gap:3px;font-weight:600}
 .ratechip svg{width:13px;height:13px;color:#ff9f0a}
 .results .lrow .t{font-size:16px}
 .srch{display:flex;flex-direction:column;gap:14px}
-.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:62px;padding:6px 2px 7px;border-radius:12px;background:var(--fill);font-size:12px;font-weight:600;letter-spacing:-.08px}
+.tile{flex:0 0 64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:62px;padding:6px 2px 7px;border-radius:12px;background:var(--fill);font-size:12px;font-weight:600;letter-spacing:-.08px}
 .tile img{width:44px;height:44px;object-fit:contain}
 .tr-mics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .tr-mic{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:88px;border-radius:14px;background:var(--fill);font-size:15px;font-weight:600}
@@ -235,7 +236,48 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 .fab.follow{background:#007aff;color:#fff}
 .mk.home .cnt{position:absolute;top:-8px;right:-10px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#34c759;color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;border:2px solid #fff}
 .mk.home .head{position:relative}
-.tile .n{font-size:11px;font-weight:600;opacity:.85;margin-top:-2px}
+.tile .n{font-size:11px;font-weight:600;opacity:.85;margin-top:-1px;min-height:14px;line-height:14px;white-space:nowrap}
+.mk.car{z-index:2}
+.mk.car .head{width:34px;height:34px;border-radius:10px;background:#0a84ff;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.mk.car .head svg{width:18px;height:18px}
+.mk.car .lbl{display:block;background:#0a84ff;color:#fff;font-weight:700}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;padding:7px 12px;border-radius:999px;background:var(--fill);font-size:14px;font-weight:600;letter-spacing:-.15px}
+.chip[aria-pressed="true"]{background:var(--tint);color:var(--tint-fg)}
+.xsum{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.xsum > div{background:var(--cell);border-radius:12px;padding:12px 14px}
+.xsum small{display:block;font-size:13px;color:var(--label2)}
+.xsum b{display:block;font-family:var(--font-d);font-size:22px;font-weight:700;margin-top:2px}
+.xico{width:34px;height:34px;border-radius:50%;background:var(--fill);display:grid;place-items:center;font-size:17px;flex:0 0 auto}
+.xico.big{width:52px;height:52px;font-size:26px}
+.xamt{text-align:right;flex:0 0 auto}
+.xamt b{display:block;font-size:16px;font-weight:600}
+.xamt small{display:block;font-size:12px;color:var(--label2);margin-top:1px}
+.xdet{display:flex;align-items:center;gap:12px}
+.xdet h2{font-family:var(--font-d);font-size:22px;font-weight:700;margin:0;line-height:27px}
+.xdet .s{font-size:14px;color:var(--label2);margin-top:2px}
+.xdet > b{margin-left:auto;font-family:var(--font-d);font-size:22px;white-space:nowrap}
+.xamt-in{max-width:96px;text-align:right;font-variant-numeric:tabular-nums}
+.pos{color:var(--green)}
+.neg{color:var(--red)}
+.bal{display:flex;flex-direction:column;gap:14px;background:var(--cell);border-radius:12px;padding:14px 16px}
+.bal-top{display:flex;align-items:center;gap:10px;font-size:16px}
+.bal-top .pav{width:30px;height:30px;font-size:13px}
+.bal-top .grow{font-weight:600}
+.bal-amt{font-weight:700;font-variant-numeric:tabular-nums}
+.bal-track{position:relative;height:6px;border-radius:3px;background:var(--fill);margin-top:7px}
+.bal-track i{position:absolute;top:0;bottom:0;border-radius:3px}
+.bal-track i.p{left:50%;background:var(--green)}
+.bal-track i.n{right:50%;background:var(--red)}
+.wx-now{display:flex;align-items:center;gap:12px;padding:12px 16px}
+.wx-now .e{font-size:34px;line-height:1}
+.wx-now b{display:block;font-family:var(--font-d);font-size:28px;line-height:32px}
+.wx-now .s{font-size:14px;color:var(--label2)}
+.wx-day{display:grid;grid-template-columns:62px 28px 1fr auto;align-items:center;gap:8px;padding:10px 16px;border-top:.5px solid var(--sep);font-size:15px}
+.wx-day .s{font-size:13px;color:var(--label2)}
+.wx-day .mm{font-weight:600;font-variant-numeric:tabular-nums}
+.wx-day.trip{background:rgba(255,149,0,.13)}
 #who .pav{width:46px;height:46px;font-size:18px}
 #who .lrow{min-height:62px}
 .face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
@@ -334,6 +376,7 @@ const ICON = {
   heart:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.5s-8.5-5.2-8.5-11a4.8 4.8 0 0 1 8.5-3 4.8 4.8 0 0 1 8.5 3c0 5.8-8.5 11-8.5 11z"/></svg>',
   camera:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 4h6l1.5 2H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.5zm3 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>',
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  bell:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22zm7-6v-5a7 7 0 0 0-5.5-6.84V3.5a1.5 1.5 0 0 0-3 0v.66A7 7 0 0 0 5 11v5l-2 2v1h18v-1z"/></svg>',
   mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="8.5" y="2.5" width="7" height="12" rx="3.5" fill="currentColor" stroke="none"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>',
   sound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor" stroke="none"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg>',
   expand:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'
@@ -354,6 +397,7 @@ function h(tag, attrs, ...kids){
 const WEB_ONLY = 'Disponible solo en sicilian-boys.netlify.app';
 // Ilustraciones de pumas en pumas/: botones de la ficha y pantallas vacías.
 const puma = (name, size) => h('img', { src:'pumas/' + name + '.webp', alt:'', width: size, height: size, decoding:'async' });
+const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 const empty = (t, s, img) => h('div', { class:'empty' }, img ? puma(img, 124) : null, h('p', { class:'t' }, t), s ? h('p', { class:'s' }, s) : null);
 function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2600); }
 const store = { get(k){ try { return localStorage.getItem(k); } catch { return null; } }, set(k, v){ try { localStorage.setItem(k, v); } catch {} } };
@@ -409,7 +453,7 @@ function styleExtras(){
   } catch (e) { console.warn('3d layer', e); }
 }
 map.on('style.load', styleExtras);
-map.on('load', () => { addHomeMarker(); renderPlaces(); });
+map.on('load', () => { addHomeMarker(); renderPlaces(); if (S.car) setCarState(S.car, true); setTimeout(() => warmOffline().catch(e => console.warn('sin conexión', e)), 8000); });
 // Cambia a oscuro al atardecer y a claro al amanecer (o si cambia el tema del móvil).
 function checkTheme(){
   const want = wantDark();
@@ -453,7 +497,7 @@ function allPlaces(){
   return list.filter(p => typeof p.lat === 'number' && typeof p.lng === 'number');
 }
 async function loadPlaces(){
-  const res = await api({ action:'places' });
+  const res = await apiCached({ action:'places' });
   S.places = res.places || {}; S.plv = res.plv; S.placesLoaded = true;
   if (S.selected && S.selected.type === 'place' && S.selected.p.id !== 'casa' && !S.selected.p.temp){ const fresh = S.places[S.selected.p.id]; if (fresh) S.selected.p = fresh; else S.selected = null; renderCard(); }
   renderPlaces();
@@ -556,6 +600,18 @@ function renderCard(){
           : h('button', { class:'btn-sec', type:'button', html: ICON.arrow + '<span>Centrar</span>', onclick: () => map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), 15.5) }) }))));
     return;
   }
+  if (sel && sel.type === 'car'){
+    const c = S.car; if (!c){ S.selected = null; return renderCard(); }
+    const d = directions(c);
+    body.replaceChildren(h('div', { style:'display:flex;flex-direction:column;gap:12px' },
+      h('div', { class:'ph' }, h('div', { class:'grow' }, h('h2', {}, 'Coche'), h('div', { class:'sub' }, ['Aparcado' + (c.by ? ' por ' + c.by : ''), 'hace ' + ago(c.t - (S.skew || 0)), fmtKm(kmFrom(origin(), c)) + (S.lastPos ? ' de ti' : ' de Catania')].join(' · '))),
+        h('button', { class:'circle', type:'button', 'aria-label':'Quitar coche', html: ICON.trash, onclick: () => actionSheet('Se quitará el coche del mapa para todo el grupo.', [{ label:'Quitar coche', destructive: true, onclick: clearCar }]) }),
+        h('button', { class:'circle', type:'button', 'aria-label':'Cerrar', html: ICON.x, onclick: () => select(null) })),
+      h('a', { class:'btn-primary', href: d.href, target:'_blank', rel:'noopener', html: (d.far ? ICON.car : ICON.walk) + '<span>Volver al coche</span>' }),
+      h('div', { class:'btn-row' }, h('button', { class:'btn-sec', type:'button', html: ICON.arrow + '<span>Aparqué aquí</span>', onclick: parkHere }),
+        h('button', { class:'btn-sec', type:'button', html: ICON.map + '<span>Elegir en mapa</span>', onclick: parkOnMap }))));
+    return;
+  }
   if (sel && sel.type === 'peer'){
     const p = S.peers[sel.id]; if (!p){ S.selected = null; return renderCard(); }
     const d = directions(p);
@@ -572,14 +628,22 @@ function renderCard(){
       h('div', { class:'crow' }, h('span', { class:'dot' + (S.sharing ? ' on' : ''), html: ICON.arrow }),
         h('span', { class:'grow' }, h('span', { class:'t' }, 'Compartir mi ubicación'), h('span', { class:'s', id:'shareSub' }, shareStatus())),
         switchEl(S.sharing, () => { if (!S.sync) return toast(WEB_ONLY); setSharing(!S.sharing); }, 'Compartir mi ubicación')),
+      h('div', { class:'crow', id:'pushRow' }, h('span', { class:'dot' + (S.pushOn ? ' on' : ''), html: ICON.bell }),
+        h('span', { class:'grow' }, h('span', { class:'t' }, 'Avisos'), h('span', { class:'s' }, pushStatus())),
+        switchEl(!!S.pushOn, () => setPush(!S.pushOn), 'Avisos')),
     ),
     h('div', { class:'tiles3' },
-      h('button', { class:'tile home', type:'button', onclick: goHome }, puma('casa', 44), h('span', {}, 'Casa'), h('span', { class:'n', id:'homeTileN' }, (S.atHome && S.atHome.length) ? S.atHome.length + ' en casa' : '')),
-      h('button', { class:'tile noche', type:'button', onclick: openNoche }, puma('noche', 44), h('span', {}, 'Noche')),
-      h('button', { class:'tile match', type:'button', onclick: openNight }, puma('match', 44), h('span', {}, 'Match')),
-      h('button', { class:'tile', type:'button', onclick: openTranslator }, puma('traducir', 44), h('span', {}, 'Traducir')),
-      h('button', { class:'tile', type:'button', onclick: () => openPlaceForm(null) }, puma('anadir', 44), h('span', {}, 'Añadir')))));
+      tile('casa', 'Casa', goHome, 'homeTileN', (S.atHome && S.atHome.length) ? S.atHome.length + ' en casa' : ''),
+      tile('coche', 'Coche', carTile, 'carTileN', carText()),
+      tile('noche', 'Noche', openNoche),
+      tile('match', 'Match', openNight),
+      tile('gastos', 'Gastos', () => openGastos(), 'expTileN', expText()),
+      tile('tiempo', 'Tiempo', openWeather, 'wxTileN', wxText()),
+      tile('traducir', 'Traducir', openTranslator),
+      tile('anadir', 'Añadir', () => openPlaceForm(null)))));
 }
+function tile(img, label, onclick, id, n){ return h('button', { class:'tile', type:'button', onclick }, puma(img, 44), h('span', {}, label), h('span', { class:'n', id }, n || '\u00a0')); }
+function updateTile(id, text){ const el = document.getElementById(id); if (el) el.textContent = text || '\u00a0'; }
 function escapeText(s){ return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
 function shareStatus(){
   if (!S.sync) return 'Modo grupo no disponible';
@@ -681,7 +745,7 @@ function openPlaceForm(draft){
     } catch (e) { results.hidden = false; results.replaceChildren(h('div', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'s' }, 'No se pudo buscar. Revisa la conexión.')))); } }, 450); });
   const locBtns = h('div', { class:'locbtns' },
     h('button', { class:'btn-sec', type:'button', html: ICON.arrow + '<span>Aquí</span>', onclick: () => { if (!S.lastPos){ toast('Ubicación no disponible'); startLocating(false); return; } d.lat = S.lastPos.lat; d.lng = S.lastPos.lng; d.gid = ''; d.where = 'Tu ubicación actual'; openPlaceForm(d); } }),
-    h('button', { class:'btn-sec', type:'button', html: ICON.map + '<span>Mapa</span>', onclick: startPick }),
+    h('button', { class:'btn-sec', type:'button', html: ICON.map + '<span>Mapa</span>', onclick: () => startPick(d, c => { if (c){ d.lat = c.lat; d.lng = c.lng; d.gid = ''; d.where = 'Elegida en el mapa'; } openPlaceForm(d); }) }),
     h('button', { class:'btn-sec', type:'button', html: ICON.search + '<span>Buscar</span>', onclick: () => { searchBox.hidden = false; q.focus(); } }));
   const save = async e => {
     const btn = e.currentTarget; if (btn.disabled) return;
@@ -700,6 +764,341 @@ function openPlaceForm(draft){
     h('p', { class:'sec-h' }, 'Ubicación'), h('div', { class:'list' }, locRow), locBtns, searchBox,
     h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, addr)), h('div', { class:'lrow' }, h('div', { class:'body' }, note))),
     h('p', { class:'foot' }, 'Visible para todo el grupo.'));
+}
+
+// ---------- datos guardados para abrir la app sin cobertura ----------
+async function apiCached(body){
+  const k = 'sb-c-' + body.action;
+  try { const r = await api(body); store.set(k, JSON.stringify(r)); return r; }
+  catch (e) {
+    let c = null; try { c = JSON.parse(store.get(k) || 'null'); } catch { c = null; }
+    if (c){ c.offline = true; return c; }
+    throw e;
+  }
+}
+function hydrateOffline(){
+  let c = null; try { c = JSON.parse(store.get('sb-c-places') || 'null'); } catch { c = null; }
+  if (c && c.places && !S.placesLoaded){ S.places = c.places; S.placesLoaded = true; renderPlaces(); }
+}
+// Mapa sin cobertura: una vez por semana se guardan en la caché Catania, la costa este y Sicilia entera.
+const OFFLINE_AREAS = [[[15.02, 37.45, 15.15, 37.57], 10, 14], [[14.75, 36.85, 15.40, 37.98], 8, 11], [[12.3, 36.6, 15.7, 38.35], 5, 8]];
+const tileXY = (lng, lat, z) => { const n = 2 ** z, r = lat * Math.PI / 180; return [Math.floor((lng + 180) / 360 * n), Math.floor((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * n)]; };
+async function warmOffline(){
+  if (Date.now() - (+store.get('sb-offline') || 0) < 7 * 864e5 || !('serviceWorker' in navigator) || !navigator.onLine || (navigator.connection && navigator.connection.saveData)) return;
+  await navigator.serviceWorker.ready;
+  if (!navigator.serviceWorker.controller) return;          // primera visita: lo hará la próxima vez
+  const urls = new Set(); let tpl = null, maxz = 14;
+  for (const name of ['positron', 'dark']){
+    const st = await (await fetch('https://tiles.openfreemap.org/styles/' + name)).json();
+    for (const sp of [].concat(st.sprite || [])){ const base = typeof sp === 'string' ? sp : sp.url; for (const suf of ['.json', '.png', '@2x.json', '@2x.png']) urls.add(base + suf); }
+    const fonts = new Set();
+    for (const l of st.layers){ const f = l.layout && l.layout['text-font']; if (Array.isArray(f) && f.every(x => typeof x === 'string')) fonts.add(f.join(',')); }
+    for (const f of fonts) for (const r of ['0-255', '256-511', '8192-8447']) urls.add(new URL(st.glyphs.replace('{fontstack}', f).replace('{range}', r)).href);
+    if (!tpl){ const src = Object.values(st.sources).find(x => x.url); if (src){ const tj = await (await fetch(src.url)).json(); tpl = tj.tiles[0]; maxz = tj.maxzoom || 14; } }
+  }
+  if (tpl) for (const [[w, so, e, n], z0, z1] of OFFLINE_AREAS) for (let z = z0; z <= Math.min(z1, maxz); z++){
+    const [x0, y0] = tileXY(w, n, z), [x1, y1] = tileXY(e, so, z);
+    for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) urls.add(tpl.replace('{z}', z).replace('{x}', x).replace('{y}', y));
+  }
+  const list = [...urls]; let i = 0;
+  await Promise.all(Array.from({ length: 4 }, async () => { while (i < list.length){ const u = list[i++]; try { await fetch(u); } catch { /* se reintenta la semana siguiente */ } } }));
+  store.set('sb-offline', String(Date.now()));
+}
+
+// ---------- coche del grupo ----------
+const carText = () => S.car ? fmtKm(kmFrom(origin(), S.car)) : 'Sin aparcar';
+function setCarState(car, force){
+  if (!force && JSON.stringify(car || null) === JSON.stringify(S.car || null)) return;
+  S.car = car || null;
+  if (S.carMarker){ S.carMarker.remove(); S.carMarker = null; }
+  if (S.car){
+    const el = h('div', { class:'mk car', role:'button', 'aria-label':'Coche' }, h('span', { class:'head', html: ICON.car }), h('span', { class:'lbl' }, 'Coche'));
+    el.addEventListener('click', e => { e.stopPropagation(); select({ type:'car' }); reveal(S.car.lng, S.car.lat); });
+    S.carMarker = new maplibregl.Marker({ element: el, anchor:'top', offset:[0, -17] }).setLngLat([S.car.lng, S.car.lat]).addTo(map);
+  }
+  updateTile('carTileN', carText());
+  if (S.selected && S.selected.type === 'car'){ if (!S.car) S.selected = null; renderCard(); }
+}
+async function saveCar(c){
+  try {
+    const res = await api({ action:'setCar', by: S.me.name, actor: S.me.id, car:{ lat: c.lat, lng: c.lng } });
+    setCarState(res.car); select({ type:'car' }); reveal(res.car.lng, res.car.lat); toast('Coche guardado');
+  } catch (e) { console.warn(e); toast('No se pudo guardar. Inténtalo de nuevo.'); }
+}
+async function clearCar(){
+  try { await api({ action:'clearCar' }); setCarState(null); select(null); toast('Coche quitado'); }
+  catch (e) { toast('No se pudo quitar'); }
+}
+function parkHere(){ if (!S.lastPos){ toast('Ubicación no disponible'); startLocating(false); return; } saveCar(S.lastPos); }
+function parkOnMap(){ startPick(S.car, c => { if (c) saveCar(c); else if (S.car) select({ type:'car' }); }, 'Mueve el mapa hasta el coche'); }
+function carTile(){
+  if (!netlifyOn()) return toast(WEB_ONLY);
+  if (S.car){ select({ type:'car' }); reveal(S.car.lng, S.car.lat); return; }
+  actionSheet('Coche', [{ label:'Aparqué aquí', onclick: parkHere }, { label:'Elegir en el mapa', onclick: parkOnMap }]);
+}
+
+// ---------- tiempo: Open-Meteo, gratis y sin clave ----------
+const WX_PLACES = [['Catania', 37.5027, 15.0873, 20], ['Etna (1.900 m)', 37.6995, 14.9996, 1910], ['Taormina', 37.8516, 15.2853, 200], ['Siracusa', 37.0600, 15.2930, 10]];
+const WX = { 0:['☀️','Despejado'], 1:['🌤️','Casi despejado'], 2:['⛅','Nubes y claros'], 3:['☁️','Nublado'], 45:['🌫️','Niebla'], 48:['🌫️','Niebla'],
+  51:['🌦️','Llovizna'], 53:['🌦️','Llovizna'], 55:['🌧️','Llovizna fuerte'], 56:['🌧️','Llovizna helada'], 57:['🌧️','Llovizna helada'],
+  61:['🌧️','Lluvia débil'], 63:['🌧️','Lluvia'], 65:['🌧️','Lluvia fuerte'], 66:['🌧️','Lluvia helada'], 67:['🌧️','Lluvia helada'],
+  71:['🌨️','Nieve débil'], 73:['🌨️','Nieve'], 75:['❄️','Nieve fuerte'], 77:['🌨️','Granizo fino'], 80:['🌦️','Chubascos'], 81:['🌧️','Chubascos'], 82:['⛈️','Chubascos fuertes'],
+  85:['🌨️','Chubascos de nieve'], 86:['❄️','Chubascos de nieve'], 95:['⛈️','Tormenta'], 96:['⛈️','Tormenta con granizo'], 99:['⛈️','Tormenta con granizo'] };
+const wx = c => WX[c] || ['🌡️', 'Sin datos'];
+const TRIP_DATES = ['2026-12-04', '2026-12-05', '2026-12-06'];
+async function loadWeather(force){
+  let c = null; try { c = JSON.parse(store.get('sb-wx') || 'null'); } catch { c = null; }
+  if (c && !force && Date.now() - c.t < 30 * 60e3) S.wx = c.d;
+  else {
+    try {
+      const q = k => WX_PLACES.map(pl => pl[k]).join(',');
+      const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${q(1)}&longitude=${q(2)}&elevation=${q(3)}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,snowfall_sum&timezone=Europe%2FRome&forecast_days=16`, { signal: AbortSignal.timeout ? AbortSignal.timeout(10000) : undefined });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json(); S.wx = Array.isArray(d) ? d : [d];
+      store.set('sb-wx', JSON.stringify({ t: Date.now(), d: S.wx }));
+    } catch (e) { console.warn('tiempo', e); if (c) S.wx = c.d; }
+  }
+  updateTile('wxTileN', wxText());
+  return S.wx;
+}
+const wxText = () => { const n = S.wx && S.wx[0] && S.wx[0].current; return n ? Math.round(n.temperature_2m) + '° ' + wx(n.weather_code)[0] : ''; };
+const WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'], MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const localISO = (d = new Date()) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+const dayShort = iso => { const d = new Date(iso + 'T12:00:00'); return WEEKDAYS[d.getDay()] + ' ' + d.getDate(); };
+async function openWeather(){
+  const body = h('div', { style:'display:flex;flex-direction:column;gap:16px' }, h('p', { class:'foot' }, 'Cargando…'));
+  openSheet(sheetNav('Tiempo', null, ['Cerrar', closeSheet]), body);
+  if (S.wx) drawWeather(body);          // lo guardado primero; se actualiza al llegar la previsión
+  await loadWeather();
+  drawWeather(body);
+}
+function drawWeather(body){
+  if (!S.wx || !S.wx[0] || !S.wx[0].daily) return fill(body, empty('No se pudo cargar', 'Revisa la conexión.', 'sin-conexion'));
+  const today = localISO(), tripIn = S.wx[0].daily.time.includes(TRIP_DATES[0]);
+  fill(body, ...S.wx.flatMap((w, i) => {
+    const n = w.current, dd = w.daily;
+    let days = dd.time.map((t, j) => j).filter(j => tripIn ? TRIP_DATES.includes(dd.time[j]) : dd.time[j] >= today).slice(0, 5);
+    if (!days.length) days = dd.time.map((t, j) => j).slice(0, 5);   // fecha del móvil fuera del rango de la previsión
+    return [h('p', { class:'sec-h' }, WX_PLACES[i][0]), h('div', { class:'list' },
+      h('div', { class:'wx-now' }, h('span', { class:'e' }, wx(n.weather_code)[0]), h('span', { class:'grow' }, h('b', {}, Math.round(n.temperature_2m) + '°'), h('span', { class:'s' }, 'Ahora · ' + wx(n.weather_code)[1]))),
+      ...days.map(j => h('div', { class:'wx-day' + (TRIP_DATES.includes(dd.time[j]) ? ' trip' : '') },
+        h('span', {}, dd.time[j] === today ? 'Hoy' : dayShort(dd.time[j])), h('span', {}, wx(dd.weather_code[j])[0]),
+        h('span', { class:'s' }, [dd.precipitation_probability_max[j] != null ? '💧 ' + dd.precipitation_probability_max[j] + '%' : null, dd.snowfall_sum[j] > 0 ? '❄️ ' + fmt1(dd.snowfall_sum[j]) + ' cm' : null].filter(Boolean).join('  ')),
+        h('span', { class:'mm' }, Math.round(dd.temperature_2m_max[j]) + '° / ' + Math.round(dd.temperature_2m_min[j]) + '°'))))];
+  }), h('p', { class:'foot' }, (tripIn ? 'En naranja, los días del viaje.' : 'La previsión del 4 al 6 de diciembre aparecerá a partir del 19 de noviembre.') + ' Datos de Open-Meteo.'));
+}
+
+// ---------- gastos compartidos, como Tricount ----------
+const EXP_CATS = [['comida', 'Comida', '🍝'], ['copas', 'Copas', '🍹'], ['coche', 'Coche', '⛽'], ['casa', 'Alojamiento', '🏠'], ['entradas', 'Entradas', '🎟️'], ['compras', 'Compras', '🛒'], ['otros', 'Otros', '💶']];
+const expCat = k => k === 'pago' ? ['pago', 'Transferencia', '🔁'] : (EXP_CATS.find(c => c[0] === k) || EXP_CATS[EXP_CATS.length - 1]);
+const IDS = TRAVELLERS.map(([n]) => slug(n));
+const eur = (c, sign) => (sign && c > 0 ? '+' : c < 0 ? '−' : '') + (Math.abs(c) / 100).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+const parseEur = v => { const n = parseFloat(String(v || '').replace(/[\s€]/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.')); return Number.isFinite(n) ? Math.round(n * 100) : NaN; };
+const centsText = c => c ? (c / 100).toFixed(2).replace('.', ',') : '';
+function splitEqual(amount, ids){
+  const base = Math.floor(amount / ids.length), rest = amount - base * ids.length, out = {};
+  ids.forEach((id, i) => { out[id] = base + (i < rest ? 1 : 0); });
+  return out;
+}
+function balances(){
+  const b = Object.fromEntries(IDS.map(id => [id, 0]));
+  for (const x of Object.values(S.expenses || {})){ b[x.by] = (b[x.by] || 0) + x.amount; for (const [id, v] of Object.entries(x.shares || {})) b[id] = (b[id] || 0) - v; }
+  return b;
+}
+// Mínimo de transferencias: el que más debe paga al que más le deben, y así hasta cuadrar.
+function settle(b){
+  const pos = Object.entries(b).filter(([, v]) => v > 0).map(([id, v]) => ({ id, v })).sort((a, c) => c.v - a.v);
+  const neg = Object.entries(b).filter(([, v]) => v < 0).map(([id, v]) => ({ id, v: -v })).sort((a, c) => c.v - a.v);
+  const out = []; let i = 0, j = 0;
+  while (i < neg.length && j < pos.length){
+    const m = Math.min(neg[i].v, pos[j].v);
+    if (m > 0) out.push({ from: neg[i].id, to: pos[j].id, amount: m });
+    neg[i].v -= m; pos[j].v -= m; if (!neg[i].v) i++; if (!pos[j].v) j++;
+  }
+  return out;
+}
+const expText = () => { if (!S.expenses || !S.me.id) return ''; const v = Math.round((balances()[S.me.id] || 0) / 100) * 100; return v ? eur(v, true).replace(',00', '') : ''; };
+const dateLabel = iso => {
+  if (!iso) return '';
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  if (iso === localISO()) return 'Hoy';
+  if (iso === localISO(y)) return 'Ayer';
+  const d = new Date(iso + 'T12:00:00'); return WEEKDAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+};
+const avatar = id => { const f = face(id, travellerName(id)); f.classList.add('pav'); return f; };
+async function loadExpenses(){ const res = await apiCached({ action:'expenses' }); S.expenses = res.expenses || {}; updateTile('expTileN', expText()); return res; }
+async function openGastos(tab){
+  if (!netlifyOn()) return toast(WEB_ONLY);
+  if (tab) S.xTab = tab; else S.xTab = S.xTab || 'gastos';
+  const body = h('div', { style:'display:flex;flex-direction:column;gap:16px' }, h('p', { class:'foot' }, 'Cargando…'));
+  const seg = h('div', { class:'seg' }, ...[['gastos', 'Gastos'], ['saldos', 'Saldos']].map(([k, l]) => h('button', { type:'button', 'aria-pressed': S.xTab === k ? 'true' : 'false',
+    onclick: e => { S.xTab = k; for (const b of seg.children) b.setAttribute('aria-pressed', b === e.currentTarget ? 'true' : 'false'); drawGastos(body); } }, l)));
+  openSheet(sheetNav('Gastos', null, ['Cerrar', closeSheet]), seg, body);
+  try { const res = await loadExpenses(); if (res.offline) toast('Sin conexión. Datos de la última vez.'); drawGastos(body); }
+  catch (e) { console.warn(e); fill(body, empty('No se pudo cargar', 'Revisa la conexión.', 'sin-conexion')); }
+}
+function drawGastos(body){
+  const xs = Object.values(S.expenses || {}).sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.t - a.t);
+  const add = h('button', { class:'btn-primary', type:'button', html: ICON.plus + '<span>Añadir gasto</span>', onclick: () => openExpenseForm(null) });
+  if (!xs.length) return fill(body, empty('No hay gastos', 'Apunta lo que paga cada uno y la app calcula quién debe a quién.', 'vacio-gastos'), add);
+  if (S.xTab === 'saldos') return drawSaldos(body, add);
+  const gastos = xs.filter(x => x.kind !== 'pago');
+  const total = gastos.reduce((a, x) => a + x.amount, 0), mine = gastos.reduce((a, x) => a + ((x.shares || {})[S.me.id] || 0), 0);
+  const groups = [];
+  for (const x of xs){ const g = groups[groups.length - 1]; if (g && g.date === x.date) g.items.push(x); else groups.push({ date: x.date, items: [x] }); }
+  fill(body, h('div', { class:'xsum' }, h('div', {}, h('small', {}, 'Mis gastos'), h('b', {}, eur(mine))), h('div', {}, h('small', {}, 'Total del grupo'), h('b', {}, eur(total)))), add,
+    ...groups.flatMap(g => [h('p', { class:'sec-h' }, dateLabel(g.date)), h('div', { class:'list' }, ...g.items.map(expenseRow))]));
+}
+function expenseRow(x){
+  const pago = x.kind === 'pago', mine = (x.shares || {})[S.me.id] || 0;
+  const sub = pago ? travellerName(x.by) + ' → ' + Object.keys(x.shares).map(travellerName).join(', ') : 'Pagado por ' + (x.by === S.me.id ? 'ti' : travellerName(x.by));
+  return h('button', { class:'lrow', type:'button', onclick: () => openExpense(x) }, h('span', { class:'xico' }, expCat(x.cat)[2]),
+    h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, x.desc), h('span', { class:'s', style:'display:block' }, sub)),
+      h('span', { class:'xamt' }, h('b', {}, eur(x.amount)), pago ? null : h('small', {}, mine ? 'tu parte ' + eur(mine) : 'sin tu parte'))));
+}
+function drawSaldos(body, add){
+  const b = balances(), max = Math.max(1, ...Object.values(b).map(Math.abs)), moves = settle(b);
+  fill(body,
+    h('div', { class:'bal' }, ...IDS.map(id => { const v = b[id] || 0; return h('div', {},
+      h('div', { class:'bal-top' }, avatar(id), h('span', { class:'grow' }, travellerName(id) + (id === S.me.id ? ' (tú)' : '')), h('span', { class:'bal-amt ' + (v > 0 ? 'pos' : v < 0 ? 'neg' : '') }, eur(v, true))),
+      h('div', { class:'bal-track' }, v ? h('i', { class: v > 0 ? 'p' : 'n', style:'width:' + (Math.abs(v) / max * 50).toFixed(1) + '%' }) : null)); })),
+    h('p', { class:'sec-h' }, 'Cómo saldar las cuentas'),
+    moves.length ? h('div', { class:'list' }, ...moves.map(m => h('div', { class:'lrow' }, h('span', { class:'body' },
+      h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, travellerName(m.from) + ' → ' + travellerName(m.to)),
+        h('span', { class:'s', style:'display:block' }, (m.from === S.me.id ? 'Debes ' : m.to === S.me.id ? 'Te debe ' : 'Debe ') + eur(m.amount))),
+      h('button', { class:'btn-sec', type:'button', style:'min-height:34px;padding:0 14px', onclick: () => settleUp(m) }, 'Saldado'))))) : empty('No hay deudas', 'Las cuentas están saldadas.'),
+    add,
+    h('p', { class:'foot' }, 'En verde, a quien le deben dinero; en rojo, quien debe. «Saldado» apunta la transferencia.'));
+}
+function settleUp(m){
+  actionSheet(travellerName(m.from) + ' ha pagado ' + eur(m.amount) + ' a ' + travellerName(m.to), [{ label:'Marcar como pagado', onclick: async () => {
+    try { await api({ action:'saveExpense', actor: S.me.id, expense:{ kind:'pago', by: m.from, amount: m.amount, shares:{ [m.to]: m.amount }, date: localISO() } }); toast('Transferencia apuntada'); openGastos('saldos'); }
+    catch (e) { toast('No se pudo guardar. Inténtalo de nuevo.'); } } }]);
+}
+function openExpense(x){
+  const pago = x.kind === 'pago', ids = IDS.filter(id => x.shares[id]).concat(Object.keys(x.shares).filter(id => !IDS.includes(id)));
+  openSheet(sheetNav(pago ? 'Transferencia' : 'Gasto', ['Gastos', () => openGastos()], ['Editar', () => openExpenseForm(x)]),
+    h('div', { class:'xdet' }, h('span', { class:'xico big' }, expCat(x.cat)[2]),
+      h('div', {}, h('h2', {}, x.desc), h('div', { class:'s' }, (pago ? travellerName(x.by) + ' → ' + ids.map(travellerName).join(', ') : 'Pagado por ' + travellerName(x.by)) + ' · ' + dateLabel(x.date))),
+      h('b', {}, eur(x.amount))),
+    pago ? null : h('p', { class:'sec-h' }, 'Para quién'),
+    pago ? null : h('div', { class:'list' }, ...ids.map(id => h('div', { class:'lrow' }, avatar(id), h('span', { class:'body' }, h('span', { class:'t grow' }, travellerName(id) + (id === S.me.id ? ' (tú)' : '')), h('span', { class:'t' }, eur(x.shares[id])))))),
+    h('button', { class:'btn-sec red', type:'button', html: ICON.trash + '<span>Eliminar</span>', onclick: () => actionSheet('Se eliminará «' + x.desc + '» para todo el grupo.', [{ label:'Eliminar', destructive: true, onclick: async () => {
+      try { await api({ action:'delExpense', id: x.id }); toast(pago ? 'Transferencia eliminada' : 'Gasto eliminado'); openGastos(); } catch (e) { toast('No se pudo eliminar'); } } }]) }));
+}
+function openExpenseForm(x){
+  const d = x ? { kind: x.kind, by: x.by, cat: x.cat, mode: x.mode || 'equal', date: x.date } : { kind:'gasto', by: S.me.id, cat:'comida', mode:'equal', date: localISO() };
+  const who = new Set(x && x.kind !== 'pago' ? Object.keys(x.shares) : IDS);
+  const custom = Object.fromEntries(IDS.map(id => [id, x && x.mode === 'amounts' ? (x.shares[id] || 0) : 0]));
+  let to = x && x.kind === 'pago' ? Object.keys(x.shares)[0] : IDS.find(id => id !== d.by);
+  const title = h('input', { class:'in', placeholder:'Título', maxlength:'60', id:'xTitle', value: x ? x.desc : '' });
+  const amount = h('input', { class:'in', placeholder:'Importe (€)', inputmode:'decimal', autocomplete:'off', id:'xAmount', value: x ? centsText(x.amount) : '' });
+  const date = h('input', { class:'in', type:'date', id:'xDate', value: d.date });
+  const segOf = (opts, cur, on) => { const sg = h('div', { class:'seg' }, ...opts.map(([k, l]) => h('button', { type:'button', 'aria-pressed': k === cur ? 'true' : 'false', onclick: e => { for (const b of sg.children) b.setAttribute('aria-pressed', b === e.currentTarget ? 'true' : 'false'); on(k); } }, l))); return sg; };
+  const people = IDS.map(id => [id, travellerName(id)]);
+  const parts = h('div', { style:'display:flex;flex-direction:column;gap:16px' });
+  const labels = {}; let remain = null;
+  const refresh = () => {
+    const amt = parseEur(amount.value) || 0;
+    if (d.kind !== 'gasto') return;
+    if (d.mode === 'equal'){ const ids = IDS.filter(id => who.has(id)), sh = ids.length ? splitEqual(amt, ids) : {}; for (const id of IDS) if (labels[id]) labels[id].textContent = sh[id] ? eur(sh[id]) : ''; }
+    else if (remain){ const left = amt - IDS.reduce((a, id) => a + (custom[id] || 0), 0); remain.textContent = left === 0 ? 'Cuadra con el total' : (left > 0 ? 'Faltan ' : 'Sobran ') + eur(Math.abs(left)); remain.className = 'foot' + (left ? ' neg' : ' pos'); }
+  };
+  const draw = () => {
+    if (d.kind === 'pago'){
+      if (to === d.by) to = IDS.find(id => id !== d.by);
+      fill(parts, h('p', { class:'sec-h' }, 'De'), segOf(people, d.by, k => { d.by = k; draw(); }), h('p', { class:'sec-h' }, 'Para'), segOf(people.filter(([id]) => id !== d.by), to, k => { to = k; }));
+      return;
+    }
+    const rows = IDS.map(id => {
+      if (d.mode === 'equal'){
+        labels[id] = h('span', { class:'s' });
+        const r = h('button', { class:'lrow', type:'button', role:'checkbox', 'aria-checked': who.has(id) ? 'true' : 'false', onclick: () => { who.has(id) ? who.delete(id) : who.add(id); r.setAttribute('aria-checked', who.has(id) ? 'true' : 'false'); refresh(); } },
+          avatar(id), h('span', { class:'body' }, h('span', { class:'t grow' }, travellerName(id)), labels[id], h('span', { class:'ck', html: CHECK_SVG })));
+        return r;
+      }
+      const inp = h('input', { class:'in xamt-in', inputmode:'decimal', placeholder:'0,00', autocomplete:'off', value: centsText(custom[id]) });
+      inp.addEventListener('input', () => { custom[id] = parseEur(inp.value) || 0; refresh(); });
+      return h('div', { class:'lrow' }, avatar(id), h('span', { class:'body' }, h('span', { class:'t grow' }, travellerName(id)), inp, h('span', { class:'s' }, '€')));
+    });
+    remain = d.mode === 'amounts' ? h('p', { class:'foot' }) : null;
+    fill(parts,
+      h('p', { class:'sec-h' }, 'Categoría'), h('div', { class:'chips' }, ...EXP_CATS.map(([k, l, e]) => h('button', { class:'chip', type:'button', 'aria-pressed': k === d.cat ? 'true' : 'false', onclick: ev => { d.cat = k; for (const b of ev.currentTarget.parentNode.children) b.setAttribute('aria-pressed', b === ev.currentTarget ? 'true' : 'false'); } }, e + ' ' + l))),
+      h('p', { class:'sec-h' }, 'Pagado por'), segOf(people, d.by, k => { d.by = k; }),
+      h('p', { class:'sec-h' }, 'Para quién'), segOf([['equal', 'A partes iguales'], ['amounts', 'Importes']], d.mode, k => { d.mode = k; draw(); }),
+      h('div', { class:'list' }, ...rows), remain);
+    refresh();
+  };
+  amount.addEventListener('input', refresh);
+  const save = async e => {
+    const btn = e.currentTarget; if (btn.disabled) return;
+    const amt = parseEur(amount.value);
+    if (!(amt > 0)) return toast('Añade un importe');
+    let shares;
+    if (d.kind === 'pago') shares = { [to]: amt };
+    else if (d.mode === 'equal'){ const ids = IDS.filter(id => who.has(id)); if (!ids.length) return toast('Elige para quién es'); shares = splitEqual(amt, ids); }
+    else { shares = Object.fromEntries(IDS.map(id => [id, custom[id] || 0])); if (Object.values(shares).reduce((a, b) => a + b, 0) !== amt) return toast('Los importes no suman el total'); }
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      await api({ action:'saveExpense', actor: S.me.id, expense:{ id: x ? x.id : undefined, kind: d.kind, by: d.by, amount: amt, cat: d.cat, mode: d.mode, shares, date: date.value || localISO(),
+        desc: title.value.trim() || (d.kind === 'pago' ? 'Transferencia' : expCat(d.cat)[1]) } });
+      toast(x ? 'Cambios guardados' : d.kind === 'pago' ? 'Transferencia apuntada' : 'Gasto añadido'); openGastos();
+    } catch (err) { console.warn(err); toast('No se pudo guardar. Inténtalo de nuevo.'); btn.disabled = false; btn.textContent = 'Guardar'; }
+  };
+  openSheet(sheetNav(x ? 'Editar' : 'Nuevo gasto', ['Cancelar', () => x ? openExpense(x) : openGastos()], ['Guardar', save]),
+    segOf([['gasto', 'Gasto'], ['pago', 'Transferencia']], d.kind, k => { d.kind = k; title.placeholder = k === 'pago' ? 'Concepto (opcional)' : 'Título'; draw(); }),
+    h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, title)), h('div', { class:'lrow' }, h('div', { class:'body' }, amount)), h('label', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'t grow' }, 'Fecha'), date))),
+    parts);
+  draw();
+}
+
+// ---------- avisos al móvil ----------
+const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const pushOK = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+function pushStatus(){
+  if (!pushOK()) return isIOS && !standalone() ? 'Añade la app a la pantalla de inicio' : 'No disponibles en este navegador';
+  if (Notification.permission === 'denied') return 'Bloqueados en los ajustes del móvil';
+  return S.pushOn ? 'Matches, gastos, coche y llegadas a casa' : 'Desactivados';
+}
+function refreshPushRow(){
+  const r = document.getElementById('pushRow'); if (!r) return;
+  r.querySelector('.s').textContent = pushStatus(); r.querySelector('.sw').setAttribute('aria-checked', S.pushOn ? 'true' : 'false'); r.querySelector('.dot').classList.toggle('on', !!S.pushOn);
+}
+const b64u = v => Uint8Array.from(atob(v.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - v.length % 4) % 4)), ch => ch.charCodeAt(0));
+async function setPush(on){
+  if (!netlifyOn()) return toast(WEB_ONLY);
+  if (!pushOK()){
+    if (isIOS && !standalone()) actionSheet('En iPhone los avisos solo funcionan con la app en la pantalla de inicio: en Safari, Compartir > Añadir a pantalla de inicio, y ábrela desde el icono.', [{ label:'Entendido', onclick: () => {} }]);
+    else toast('Avisos no disponibles en este navegador');
+    return;
+  }
+  try {
+    if (on){
+      // El permiso se pide lo primero, dentro del toque: iPhone no lo deja pedir más tarde.
+      if (await Notification.requestPermission() !== 'granted'){ toast('Permiso de avisos denegado'); return refreshPushRow(); }
+      const reg = await navigator.serviceWorker.ready;
+      const { key } = await api({ action:'vapid' });
+      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(key) });
+      await api({ action:'subscribe', by: S.me.id, sub: sub.toJSON() });
+      S.pushOn = true; toast('Avisos activados');
+      api({ action:'testPush', endpoint: sub.endpoint }).catch(() => {});
+    } else {
+      const reg = await navigator.serviceWorker.ready, sub = await reg.pushManager.getSubscription();
+      if (sub){ api({ action:'unsubscribe', endpoint: sub.endpoint }).catch(() => {}); await sub.unsubscribe(); }
+      S.pushOn = false; toast('Avisos desactivados');
+    }
+  } catch (e) { console.warn('avisos', e); toast('No se pudieron activar los avisos'); }
+  refreshPushRow();
+}
+async function initPush(){
+  if (!pushOK()) return refreshPushRow();
+  try {
+    const reg = await navigator.serviceWorker.ready, sub = await reg.pushManager.getSubscription();
+    S.pushOn = !!sub && Notification.permission === 'granted';
+    if (S.pushOn) api({ action:'subscribe', by: S.me.id, sub: sub.toJSON() }).catch(() => {});   // por si ha cambiado de persona
+  } catch (e) { console.warn('avisos', e); }
+  refreshPushRow();
 }
 
 // ---------- traductor español-italiano: voz o texto, y frases hechas ----------
@@ -781,25 +1180,28 @@ function openTranslator(){
 
 // ---------- elegir la ubicación moviendo el mapa bajo un pin fijo ----------
 const NO_PAD = { top:0, bottom:0, left:0, right:0 };
-function startPick(){
-  const d = S.draft; closeSheet(); select(null); if (S.follow) setFollow(false, false);
-  const c = typeof d.lat === 'number' ? d : (S.lastPos && kmFrom(CATANIA, S.lastPos) < 250 ? S.lastPos : CATANIA);
+// done recibe { lat, lng } al confirmar o null al cancelar.
+function startPick(start, done, label){
+  S.pickDone = done; closeSheet(); select(null); if (S.follow) setFollow(false, false);
+  const c = start && typeof start.lat === 'number' ? start : (S.lastPos && kmFrom(CATANIA, S.lastPos) < 250 ? S.lastPos : CATANIA);
+  $('#pickBar .t').textContent = label || 'Mueve el mapa hasta el sitio';
   S.picking = true; document.body.classList.add('picking'); $('#pickPin').hidden = false; $('#pickBar').hidden = false;
   map.flyTo({ center:[c.lng, c.lat], zoom: Math.max(map.getZoom(), 16), padding: NO_PAD, duration: 600 });
 }
 function endPick(ok){
   if (!S.picking) return;
   S.picking = false; document.body.classList.remove('picking'); $('#pickPin').hidden = true; $('#pickBar').hidden = true;
-  const d = S.draft; if (!d) return;
-  if (ok){ const el = map.getContainer(), c = map.unproject([el.clientWidth / 2, el.clientHeight / 2]); d.lat = c.lat; d.lng = c.lng; d.gid = ''; d.where = 'Elegida en el mapa'; }
-  openPlaceForm(d);
+  const done = S.pickDone; S.pickDone = null;
+  let c = null;
+  if (ok){ const el = map.getContainer(), pt = map.unproject([el.clientWidth / 2, el.clientHeight / 2]); c = { lat: pt.lat, lng: pt.lng }; }
+  if (done) done(c);
 }
 $('#pickOk').addEventListener('click', () => endPick(true));
 $('#pickCancel').addEventListener('click', () => endPick(false));
 
 // ---------- noche: puntuar locales ----------
 async function loadRatings(){
-  const res = await api({ action:'ratings' }); const out = {};
+  const res = await apiCached({ action:'ratings' }); const out = {};
   for (const [k, v] of Object.entries(res.ratings || {})){ const [pid, by] = k.split('/'); (out[pid] ||= {})[by] = v; }
   S.ratings = out;
 }
@@ -878,7 +1280,7 @@ async function openNight(){
   if (!S.sync || S.sync.kind !== 'netlify') return toast(WEB_ONLY);
   const body = h('div', { style:'display:flex;flex-direction:column;gap:16px' }, h('p', { class:'foot' }, 'Cargando…'));
   openSheet(sheetNav('Match', null, ['Cerrar', closeSheet]), body);
-  try { const res = await api({ action:'matches' }); S.matches = Object.values(res.matches || {}).sort((a, b) => b.t - a.t); drawNight(body); }
+  try { const res = await apiCached({ action:'matches' }); if (res.offline) toast('Sin conexión. Datos de la última vez.'); S.matches = Object.values(res.matches || {}).sort((a, b) => b.t - a.t); drawNight(body); }
   catch (e) { console.warn(e); body.replaceChildren(empty('No se pudo cargar', 'Revisa la conexión.', 'sin-conexion')); }
 }
 function drawNight(body){
@@ -1005,7 +1407,7 @@ function renderPeers(){
   for (const id of Object.keys(S.peerMarkers)) if (!S.peers[id]){ S.peerMarkers[id].remove(); delete S.peerMarkers[id]; }
   S.atHome = home;
   if (S.homeEl){ const c = S.homeEl.querySelector('.cnt'); c.hidden = !home.length; c.textContent = home.length; S.homeEl.querySelector('.lbl').textContent = 'Casa · ' + HOME.name + (home.length ? ' · en casa: ' + home.join(', ') : ''); }
-  const ht = $('#homeTileN'); if (ht) ht.textContent = home.length ? home.length + ' en casa' : '';
+  updateTile('homeTileN', home.length ? home.length + ' en casa' : ''); updateTile('carTileN', carText());
   const sub = $('#shareSub'); if (sub) sub.textContent = shareStatus();
   if (S.selected && S.selected.type === 'peer') renderCard();
 }
@@ -1022,7 +1424,7 @@ const backendReady = (async () => {
       const r = await fetch(API + '?ping=1', { cache:'no-store', signal: AbortSignal.timeout ? AbortSignal.timeout(6000) : undefined });
       if (r.ok && (r.headers.get('content-type') || '').includes('json')) return 'netlify';
     } catch { /* sin respuesta */ }
-    if (/\.netlify\.app$/.test(location.hostname)) return 'netlify';
+    if (/\.netlify\.app$|^localhost$/.test(location.hostname)) return 'netlify';   // también en `netlify dev`
     await new Promise(res => setTimeout(res, 1500 * (i + 1)));
   }
   return cfgOk() ? 'firebase' : null;
@@ -1043,6 +1445,7 @@ function netlifySync(group, onPeople, onPins){
       const skew = (res.now || Date.now()) - Date.now();
       const people = {}; for (const [id, p] of Object.entries(res.people || {})) people[id] = { ...p, t: p.t - skew };
       fails = 0; if (S.offline){ S.offline = false; renderCard(); }
+      S.skew = skew; setCarState(res.car || null);
       onPeople(people);
     } catch (e) { console.warn('sync', e); if (++fails >= 3 && !S.offline){ S.offline = true; renderCard(); } }
     finally { busy = false; }
@@ -1082,11 +1485,15 @@ async function enter(name, kind){
   S.group = await sha(GROUP_SEED);
   const onPeople = v => { S.peers = v; for (const [id, p] of Object.entries(S.peers)) p.id = id; renderPeers(); };
   const onPins = v => { const next = JSON.stringify(v); if (next === S.pinsSig) return; S.pinsSig = next; S.extraPins = v; renderPlaces(); };
+  if (kind === 'netlify') hydrateOffline();
   S.sync = kind === 'netlify' ? netlifySync(S.group, onPeople, onPins) : await firebaseSync(S.group, onPeople, onPins);
   renderCard();
+  if (kind === 'netlify'){ loadExpenses().catch(() => {}); initPush(); }
   if (store.get('cl-sharing') === '1') setSharing(true); else startLocating();
 }
 function enterLocal(name){ enterCommon(name); startLocating(); }
+loadWeather().catch(() => {}); setInterval(() => loadWeather().catch(() => {}), 30 * 60e3);
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(e => console.warn('sw', e));
 renderCard();
 const gate = $('#gateForm');
 let picked = store.get('cl-name');
