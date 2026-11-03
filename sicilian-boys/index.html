@@ -81,7 +81,10 @@ a{color:inherit;text-decoration:none}
 
 /* bottom card */
 .card{position:absolute;left:0;right:0;bottom:0;z-index:6;background:var(--cell);border-radius:16px 16px 0 0;box-shadow:var(--shadow-lg);padding:6px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
-.grab{width:36px;height:5px;border-radius:3px;background:var(--label3);margin:0 auto 2px}
+.grab{width:36px;height:5px;border-radius:3px;background:var(--label3);margin:0 auto}
+.grab-zone{margin:-6px -16px -8px;padding:6px 0 8px;cursor:grab}
+.card{touch-action:pan-x;transition:transform .3s cubic-bezier(.32,.72,0,1)}
+.card.dragging,.card-dragging .fabs,.card-dragging .maplibregl-ctrl-bottom-right{transition:none}
 body.has-badge .card{padding-bottom:calc(70px + env(safe-area-inset-bottom,0px))}
 .search{display:flex;align-items:center;gap:10px;width:100%;min-height:50px;padding:0 14px;border-radius:12px;background:var(--fill);font-size:18px;font-weight:600;letter-spacing:-.43px;text-align:left}
 .search svg{width:20px;height:20px;flex:0 0 auto}
@@ -316,7 +319,7 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 </div>
 
 <div class="card" id="card">
-  <div class="grab"></div>
+  <div class="grab-zone" id="grabZone" role="button" tabindex="0" aria-label="Plegar o desplegar el panel" aria-expanded="true"><div class="grab"></div></div>
   <div id="cardBody"></div>
 </div>
 <div class="pickpin" id="pickPin" hidden><svg viewBox="0 0 36 48"><path d="M18 46.5s15-15.2 15-27.5A15 15 0 0 0 3 19c0 12.3 15 27.5 15 27.5z" fill="#ff3b30" stroke="#fff" stroke-width="2.5"/><circle cx="18" cy="18.5" r="5.5" fill="#fff"/></svg></div>
@@ -574,11 +577,56 @@ $('#btnAll').addEventListener('click', () => {
 // Netlify's free plan injects a badge bottom-right; leave room under the card so it covers nothing.
 const badgeCheck = () => { document.body.classList.toggle('has-badge', !!document.getElementById('nl-badge-frame')); if (typeof syncCardH === 'function') requestAnimationFrame(syncCardH); };
 new MutationObserver(badgeCheck).observe(document.body, { childList:true }); badgeCheck();
-const cardH = () => $('#card').offsetHeight;
+// Altura visible de la ficha inferior (la parte plegada no cuenta).
+const cardH = () => $('#card').offsetHeight - (S.cardY || 0);
 function syncCardH(){ document.documentElement.style.setProperty('--card-h', cardH() + 'px'); }
-new ResizeObserver(syncCardH).observe($('#card'), { box:'border-box' });
+new ResizeObserver(() => { if (S.cardMin) placeCard(cardMax(), true); else syncCardH(); }).observe($('#card'), { box:'border-box' });
+
+// ---------- ficha inferior plegable: se arrastra hacia abajo (queda solo el buscador) o hacia arriba ----------
+const cardEl = $('#card');
+function cardPeek(){
+  const body = $('#cardBody').firstElementChild, first = body && body.firstElementChild;
+  const safe = Math.max(0, parseFloat(getComputedStyle(cardEl).paddingBottom) - 14);
+  return (first ? first.getBoundingClientRect().bottom - cardEl.getBoundingClientRect().top + 12 : 70) + safe;
+}
+const cardMax = () => Math.max(0, cardEl.offsetHeight - cardPeek());
+function placeCard(y, animate){
+  S.cardY = Math.max(0, Math.min(cardMax(), y));
+  cardEl.classList.toggle('dragging', !animate);
+  cardEl.style.transform = S.cardY ? 'translateY(' + S.cardY + 'px)' : '';
+  syncCardH();
+}
+function setCardMin(on){ S.cardMin = on; $('#grabZone').setAttribute('aria-expanded', on ? 'false' : 'true'); placeCard(on ? cardMax() : 0, true); }
+let drag = null;
+cardEl.addEventListener('pointerdown', e => {
+  if (e.button > 0 || e.target.closest('input,textarea,select,.sw')) return;
+  drag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, base: S.cardY || 0, last: e.clientY, lt: e.timeStamp, v: 0, on: false };
+});
+cardEl.addEventListener('pointermove', e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  const dy = e.clientY - drag.y0;
+  if (!drag.on){
+    if (Math.abs(dy) < 8 || Math.abs(dy) < Math.abs(e.clientX - drag.x0)) return;   // movimiento horizontal: deslizar los botones
+    drag.on = true; cardEl.setPointerCapture(e.pointerId); document.body.classList.add('card-dragging');
+  }
+  drag.v = (e.clientY - drag.last) / Math.max(1, e.timeStamp - drag.lt); drag.last = e.clientY; drag.lt = e.timeStamp;
+  placeCard(drag.base + dy, false);
+});
+function endDrag(e){
+  if (!drag || e.pointerId !== drag.id) return;
+  const d = drag; drag = null;
+  if (!d.on) return;
+  document.body.classList.remove('card-dragging');
+  S.cardDragged = true; setTimeout(() => { S.cardDragged = false; }, 350);       // que el arrastre no cuente como toque
+  setCardMin(d.v > .4 ? true : d.v < -.4 ? false : (S.cardY || 0) > cardMax() / 2);
+}
+cardEl.addEventListener('pointerup', endDrag);
+cardEl.addEventListener('pointercancel', endDrag);
+cardEl.addEventListener('click', e => { if (S.cardDragged){ e.stopPropagation(); e.preventDefault(); } }, true);
+$('#grabZone').addEventListener('click', () => setCardMin(!S.cardMin));
+$('#grabZone').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); setCardMin(!S.cardMin); } });
 function switchEl(on, onToggle, label){ return h('button', { class:'sw', type:'button', role:'switch', 'aria-checked': on ? 'true' : 'false', 'aria-label': label, onclick: e => { e.stopPropagation(); onToggle(); } }); }
-function select(sel){ if (S.picking) return; S.selected = sel; markSelected(); setTempMarker(sel && sel.type === 'place' && sel.p.temp ? sel.p : null); renderCard(); }
+function select(sel){ if (S.picking) return; if (sel && S.cardMin) setCardMin(false); S.selected = sel; markSelected(); setTempMarker(sel && sel.type === 'place' && sel.p.temp ? sel.p : null); renderCard(); }
 function setTempMarker(p){ if (S.tempMarker){ S.tempMarker.remove(); S.tempMarker = null; } if (!p) return; S.tempMarker = makeMarker(p); S.tempMarker.getElement().classList.add('temp', 'sel'); }
 function reveal(lng, lat){ requestAnimationFrame(() => map.easeTo({ center:[lng, lat], padding:{ top:120, bottom: cardH() + 30, left:0, right:0 }, duration:450 })); }
 const mapsHref = p => 'https://www.google.com/maps/search/?api=1&query=' + (p.gid ? encodeURIComponent(p.name) + '&query_place_id=' + p.gid : p.lat + ',' + p.lng);

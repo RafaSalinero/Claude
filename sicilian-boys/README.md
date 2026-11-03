@@ -65,7 +65,7 @@ Importante en iPhone: la posición solo se envía mientras la página está abie
   - Sin configurar nada busca en OpenStreetMap, que tiene monumentos, calles y muchos bares, pero no todos los locales.
   - Para un sitio que no aparezca (por ejemplo, Afrobar): "Buscar en Google Maps", en Google Maps tocar Compartir > Copiar enlace y pegarlo en el buscador. Vale cualquier enlace de Google Maps o Apple Maps, y también coordenadas tipo `37.5027, 15.0873`.
   - Con una clave de TomTom, Foursquare o Google (ver abajo) busca locales dentro de la app, sin pegar enlaces.
-- **Ficha inferior**: el interruptor "Compartir mi ubicación" hace que los demás te vean. "Añadir" crea un sitio nuevo para los tres.
+- **Ficha inferior**: se arrastra hacia abajo para ver más mapa (queda solo "Buscar sitios") y hacia arriba para volver a abrirla; tocar la barrita de arriba también la pliega y despliega. El interruptor "Compartir mi ubicación" hace que los demás te vean. "Añadir" crea un sitio nuevo para los tres.
 - **Al tocar un sitio**, la ficha se convierte en su tarjeta: botón negro "Ir en coche" si está a más de 3 km o "Ir a pie" si está cerca, ambos con la ruta en Google Maps, y "Ver en Maps".
 - **Al tocar a un amigo**, en el mapa o en sus iniciales arriba a la derecha, ves hace cuánto se actualizó y un botón para ir hasta él.
 - **Botones redondos**: 3D inclina el mapa y levanta los edificios; el de personas encuadra a todos; la flecha te sigue.
