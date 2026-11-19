@@ -247,6 +247,19 @@ body.labels .mk .lbl,.mk.sel .lbl{display:block}
 .sq.green{background:#34c759}
 .sq.red{background:#ff3b30}
 .tiles3{touch-action:pan-x}
+.prow{gap:10px;padding-left:12px}
+.prow .tm{width:42px;flex:0 0 auto;text-align:right;font-variant-numeric:tabular-nums}
+.prow .tm b{display:block;font-size:15px;font-weight:600;line-height:19px}
+.prow .tm small{display:block;font-size:12px;color:var(--label2);line-height:15px}
+.prow button.body{text-align:left}
+.prow .s{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:14px;line-height:18px;margin-top:1px}
+.list .prow.done .ico{background:var(--green);color:#fff}
+.prow.done .t{text-decoration:line-through;color:var(--label2)}
+.prow.done .tm b{color:var(--label2)}
+.prow.now .tm b{color:var(--blue)}
+.now-tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:var(--blue);color:#fff;font-size:11px;font-weight:700;vertical-align:2px;text-decoration:none}
+.pnote{margin:0;padding:0 16px;font-size:16px;line-height:22px}
+.ctl{max-width:58%}
 body.sheet-open .toast{top:calc(6px + env(safe-area-inset-top,0px))}
 .fabs{transition:bottom .25s,opacity .2s}
 body.fabs-off .fabs{opacity:0;pointer-events:none}
@@ -363,7 +376,7 @@ const CRIT = [['musica','Música'],['ambiente','Ambiente'],['gente','Gente'],['p
 const CAT_LONG = { ver:'Qué ver', comer:'Dónde comer', noche:'Noche', ruta:'Excursión en coche', otro:'Sitio del grupo', extra:'Sitio del grupo', casa:'Nuestro alojamiento' };
 // Alojamiento del grupo. Coordenadas del centro de la plaza (OpenStreetMap); el portal 4 está en ella.
 const HOME = { id:'casa', cat:'casa', name:'Dimora Lucia Majorana', addr:'Piazza Angelo Majorana 4, Catania', lat:37.50528, lng:15.09368, note:'Piazza Angelo Majorana 4' };
-const DAYS = [['04', 'Jue 4'], ['05', 'Vie 5'], ['06', 'Sáb 6']];
+const DAYS = [['04', 'Vie 4'], ['05', 'Sáb 5'], ['06', 'Dom 6']];
 const LEVELS = { lio:['Lío', 1, '#ff9500'], manuela:['Manuela', 3, '#af52de'], sexo:['Sexo', 5, '#ff2d55'] };
 const ICON = {
   eye:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l9.5 5V10h-19V7.5zM4.5 11h2.6v6.5H4.5zm4.2 0h2.6v6.5H8.7zm4 0h2.6v6.5h-2.6zm4.2 0h2.6v6.5h-2.6zM3 18.5h18V21H3z"/></svg>',
@@ -384,6 +397,7 @@ const ICON = {
   heart:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.5s-8.5-5.2-8.5-11a4.8 4.8 0 0 1 8.5-3 4.8 4.8 0 0 1 8.5 3c0 5.8-8.5 11-8.5 11z"/></svg>',
   camera:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 4h6l1.5 2H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.5zm3 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>',
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  plane:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>',
   bell:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22zm7-6v-5a7 7 0 0 0-5.5-6.84V3.5a1.5 1.5 0 0 0-3 0v.66A7 7 0 0 0 5 11v5l-2 2v1h18v-1z"/></svg>',
   mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="8.5" y="2.5" width="7" height="12" rx="3.5" fill="currentColor" stroke="none"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>',
   sound:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor" stroke="none"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg>',
@@ -685,6 +699,7 @@ function renderCard(){
     h('button', { class:'search', type:'button', html: ICON.search + '<span>Buscar sitios</span>', onclick: openSearch }),
     S.filter !== 'all' ? filterList() : h('div', { class:'tiles3' },
       tile('casa', 'Casa', goHome, 'homeTileN', (S.atHome && S.atHome.length) ? S.atHome.length + ' en casa' : ''),
+      tile('plan', 'Plan', () => openPlan(), 'planTileN', planText()),
       tile('coche', 'Coche', carTile, 'carTileN', carText()),
       tile('noche', 'Noche', openNoche),
       tile('match', 'Match', openNight),
@@ -1171,6 +1186,105 @@ async function initPush(){
   refreshPushRow();
 }
 
+// ---------- plan del viaje: paradas por día, en orden cronológico ----------
+const PLAN_KINDS = [['ver', 'Visita', 'eye'], ['comer', 'Comida', 'food'], ['coche', 'Trayecto', 'car'], ['vuelo', 'Vuelo', 'plane'], ['noche', 'Noche', 'moon'], ['otro', 'Otro', 'star']];
+const kindIcon = k => ICON[(PLAN_KINDS.find(x => x[0] === k) || PLAN_KINDS[5])[2]];
+const DAY_LONG = { '04':'viernes 4', '05':'sábado 5', '06':'domingo 6' };
+const tripDay = () => { const t = localISO(); return TRIP_DATES.includes(t) ? t.slice(8) : null; };
+const nowHM = () => { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+const planOf = day => Object.values(S.plan || {}).filter(x => x.day === day).sort((a, b) => a.time.localeCompare(b.time) || (a.end || '').localeCompare(b.end || '') || a.id.localeCompare(b.id));
+const planPlace = id => id === 'casa' ? HOME : (id && S.places[id]) || null;
+// Parada en curso (o la siguiente) del día de hoy, solo durante el viaje.
+function planNow(day){
+  if (day !== tripDay()) return null;
+  const now = nowHM(), list = planOf(day);
+  return list.filter(x => x.time <= now && (x.end ? now < x.end : true)).pop() || list.find(x => x.time > now) || null;
+}
+function planText(){
+  const t = localISO();
+  if (t < TRIP_DATES[0]){ const n = Math.round((new Date(TRIP_DATES[0] + 'T12:00:00') - new Date(t + 'T12:00:00')) / 864e5); return n === 1 ? 'Mañana' : 'En ' + n + ' días'; }
+  const day = tripDay(); if (!day || !S.plan) return '';
+  const next = planOf(day).find(x => !x.done && x.time > nowHM());
+  return next ? next.time : '';
+}
+async function loadPlan(){ const res = await apiCached({ action:'plan' }); S.plan = res.plan || {}; updateTile('planTileN', planText()); return res; }
+async function openPlan(day){
+  if (!netlifyOn()) return webOnly();
+  S.planDay = day || S.planDay || tripDay() || '04';
+  const body = h('div', { style:'display:flex;flex-direction:column;gap:16px' }, h('p', { class:'foot' }, 'Cargando…'));
+  const seg = h('div', { class:'seg' }, ...DAYS.map(([d, l]) => h('button', { type:'button', 'aria-pressed': S.planDay === d ? 'true' : 'false',
+    onclick: e => { S.planDay = d; for (const b of seg.children) b.setAttribute('aria-pressed', b === e.currentTarget ? 'true' : 'false'); drawPlan(body); } }, l)));
+  openSheet(sheetNav('Plan', null, ['Cerrar', closeSheet]), seg, body);
+  if (S.plan) drawPlan(body);
+  try { const res = await loadPlan(); if (res.offline) toast('Sin conexión. Datos de la última vez.'); drawPlan(body); }
+  catch (e) { console.warn(e); if (!S.plan) fill(body, empty('No se pudo cargar', 'Revisa la conexión.', 'sin-conexion')); }
+}
+function drawPlan(body){
+  const list = planOf(S.planDay), cur = planNow(S.planDay), done = list.filter(x => x.done).length;
+  const add = h('button', { class:'btn-primary', type:'button', html: ICON.plus + '<span>Añadir parada</span>', onclick: () => openStopForm(null) });
+  if (!list.length) return fill(body, empty('No hay paradas', 'Añade la primera del ' + DAY_LONG[S.planDay] + '.'), add);
+  fill(body, h('div', { class:'list' }, ...list.map(x => planRow(x, x === cur))), add,
+    h('p', { class:'foot' }, done + ' de ' + list.length + ' hechas. Toca el icono de una parada para marcarla.'));
+  const el = body.querySelector('.prow.now'); if (el) el.scrollIntoView({ block:'center' });
+}
+function planRow(x, isNow){
+  const toggle = h('button', { class:'ico', type:'button', role:'checkbox', 'aria-checked': x.done ? 'true' : 'false', 'aria-label': (x.done ? 'Desmarcar ' : 'Marcar como hecha ') + x.title, html: x.done ? CHECK_SVG : kindIcon(x.kind), onclick: () => setStopDone(x, !x.done) });
+  return h('div', { class:'lrow prow' + (x.done ? ' done' : '') + (isNow ? ' now' : '') },
+    h('span', { class:'tm' }, h('b', {}, x.time), x.end ? h('small', {}, x.end) : null), toggle,
+    h('button', { class:'body', type:'button', onclick: () => openStop(x) }, h('span', { class:'grow' },
+      h('span', { class:'t', style:'display:block' }, x.title, isNow ? h('span', { class:'now-tag' }, x.time <= nowHM() ? 'Ahora' : 'Siguiente') : null),
+      x.note ? h('span', { class:'s' }, x.note) : null), h('span', { class:'chev', html: ICON.chev })));
+}
+async function setStopDone(x, on){
+  try {
+    const res = await api({ action:'donePlan', id: x.id, done: on, by: S.me.name });
+    S.plan[x.id] = res.item; updateTile('planTileN', planText());
+    const body = $('#sheet').lastElementChild; if (body && body.querySelector('.prow, .empty')) drawPlan(body);
+  } catch (e) { toast('No se pudo guardar. Inténtalo de nuevo.'); }
+}
+function openStop(x){
+  const p = planPlace(x.place), d = p && directions(p);
+  openSheet(sheetNav('Parada', ['Plan', () => openPlan()], ['Editar', () => openStopForm(x)]),
+    h('div', { class:'xdet' }, h('span', { class:'ico', style:'width:52px;height:52px', html: kindIcon(x.kind) }),
+      h('div', {}, h('h2', {}, x.title), h('div', { class:'s' }, dayLabel(x.day) + ' · ' + x.time + (x.end ? '–' + x.end : '') + (x.done ? ' · hecha' + (x.done.by ? ' por ' + x.done.by : '') : '')))),
+    x.note ? h('p', { class:'pnote' }, x.note) : null,
+    p ? h('div', { class:'list' }, h('button', { class:'lrow', type:'button', onclick: () => { closeSheet(); if (S.filter !== 'all' && p.cat !== S.filter && p.id !== 'casa') setFilter('all'); select({ type:'place', p }); map.flyTo({ center:[p.lng, p.lat], zoom: Math.max(map.getZoom(), kmFrom(origin(), p) > 20 ? 12 : 15.5), padding:{ bottom: 260 } }); } },
+      h('span', { class:'ico', html: PIN_ICON[p.cat] || ICON.star }), h('span', { class:'body' }, h('span', { class:'grow' }, h('span', { class:'t', style:'display:block' }, p.name), h('span', { class:'s', style:'display:block' }, 'Ver en el mapa · ' + fmtKm(kmFrom(origin(), p)))), h('span', { class:'chev', html: ICON.chev })))) : null,
+    p ? h('a', { class:'btn-primary', href: d.href, target:'_blank', rel:'noopener', html: (d.far ? ICON.car : ICON.walk) + '<span>Cómo llegar</span>' }) : null,
+    h('div', { class:'btn-row' },
+      h('button', { class:'btn-sec', type:'button', onclick: async () => { await setStopDone(x, !x.done); openPlan(); } }, x.done ? 'Desmarcar' : 'Marcar como hecha'),
+      h('button', { class:'btn-sec red', type:'button', html: ICON.trash + '<span>Eliminar</span>', onclick: () => actionSheet('Se eliminará «' + x.title + '» del plan para todo el grupo.', [{ label:'Eliminar', destructive: true, onclick: async () => {
+        try { await api({ action:'delPlan', id: x.id }); delete S.plan[x.id]; toast('Parada eliminada'); openPlan(); } catch (e) { toast('No se pudo eliminar'); } } }]) })));
+}
+function openStopForm(x){
+  const d = x ? { day: x.day, kind: x.kind, place: x.place || '' } : { day: S.planDay, kind:'ver', place:'' };
+  const title = h('input', { class:'in', placeholder:'Título', maxlength:'60', id:'pTitle', value: x ? x.title : '' });
+  const time = h('input', { class:'in', type:'time', id:'pTime', value: x ? x.time : '' }), end = h('input', { class:'in', type:'time', id:'pEnd', value: x ? x.end || '' : '' });
+  const note = h('textarea', { class:'in', placeholder:'Nota (opcional)', maxlength:'240', id:'pNote' }); note.value = x ? x.note || '' : '';
+  const days = h('div', { class:'seg' }, ...DAYS.map(([k, l]) => h('button', { type:'button', 'aria-pressed': k === d.day ? 'true' : 'false', onclick: e => { d.day = k; for (const b of days.children) b.setAttribute('aria-pressed', b === e.currentTarget ? 'true' : 'false'); } }, l)));
+  const kinds = h('div', { class:'xchips' }, ...PLAN_KINDS.map(([k, l]) => h('button', { class:'xchip', type:'button', 'aria-pressed': k === d.kind ? 'true' : 'false', onclick: e => { d.kind = k; for (const b of kinds.children) b.setAttribute('aria-pressed', b === e.currentTarget ? 'true' : 'false'); } }, l)));
+  const place = h('select', { class:'ctl', id:'pPlace' }, h('option', { value:'' }, 'Sin sitio'), h('option', { value:'casa', selected: d.place === 'casa' }, 'Casa'),
+    ...allPlaces().slice().sort((a, b) => a.name.localeCompare(b.name)).map(p => h('option', { value: p.id, selected: p.id === d.place }, p.name)));
+  const save = async e => {
+    const btn = e.currentTarget; if (btn.disabled) return;
+    if (!title.value.trim()) return toast('Añade un título');
+    if (!time.value) return toast('Añade la hora');
+    if (end.value && end.value <= time.value) return toast('La hora de fin debe ser posterior');
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      const res = await api({ action:'savePlan', item:{ id: x ? x.id : undefined, day: d.day, time: time.value, end: end.value, kind: d.kind, title: title.value.trim(), place: place.value, note: note.value.trim() } });
+      S.plan[res.id] = res.item; toast(x ? 'Cambios guardados' : 'Parada añadida'); openPlan(d.day);
+    } catch (err) { console.warn(err); toast('No se pudo guardar. Inténtalo de nuevo.'); btn.disabled = false; btn.textContent = 'Guardar'; }
+  };
+  openSheet(sheetNav(x ? 'Editar' : 'Nueva parada', ['Cancelar', () => x ? openStop(x) : openPlan()], ['Guardar', save]),
+    h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, title))),
+    h('p', { class:'sec-h' }, 'Día'), days,
+    h('div', { class:'list' }, h('label', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'t grow' }, 'Hora'), time)), h('label', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'t grow' }, 'Hasta (opcional)'), end)),
+      h('label', { class:'lrow' }, h('span', { class:'body' }, h('span', { class:'t grow' }, 'Sitio'), place))),
+    h('p', { class:'sec-h' }, 'Tipo'), kinds,
+    h('div', { class:'list' }, h('div', { class:'lrow' }, h('div', { class:'body' }, note))));
+}
+
 // ---------- traductor español-italiano: voz o texto, y frases hechas ----------
 // Reconocimiento y voz del propio móvil (Web Speech); traducción automática de MyMemory, gratis y sin clave
 // (unos 5.000 caracteres al día por móvil). Las frases hechas no necesitan conexión.
@@ -1577,8 +1691,8 @@ async function enter(name, kind){
   S.connecting = false;
   renderCard();
   if (kind === 'netlify'){
-    loadExpenses().catch(() => {}); refreshRatings(); initPush();
-    setInterval(() => { if (!document.hidden){ loadExpenses().catch(() => {}); refreshRatings(); } }, 60e3);
+    loadExpenses().catch(() => {}); refreshRatings(); initPush(); loadPlan().catch(() => {});
+    setInterval(() => { if (!document.hidden){ loadExpenses().catch(() => {}); refreshRatings(); if (tripDay()) loadPlan().catch(() => {}); else updateTile('planTileN', planText()); } }, 60e3);
   }
   if (store.get('cl-sharing') === '1') setSharing(true); else startLocating();
 }

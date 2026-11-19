@@ -1,6 +1,6 @@
 // Service worker de Sicilian Boys: abre la app y el mapa sin cobertura y muestra los avisos del grupo.
 const APP = 'sb-app-v1', MAP = 'sb-map-v1';
-const PUMAS = ['casa', 'coche', 'noche', 'match', 'gastos', 'tiempo', 'traducir', 'anadir', 'vacio-noche', 'vacio-match', 'vacio-buscar', 'vacio-gastos', 'sin-conexion'];
+const PUMAS = ['casa', 'plan', 'coche', 'noche', 'match', 'gastos', 'tiempo', 'traducir', 'anadir', 'vacio-noche', 'vacio-match', 'vacio-buscar', 'vacio-gastos', 'sin-conexion'];
 const SHELL = ['./', 'index.html', 'map-style.js', 'places.js', 'config.js', 'manifest.webmanifest', 'logo-96.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png',
   'fotos/salinero.jpg', 'fotos/braulio.jpg', 'fotos/pomares.jpg', ...PUMAS.map(n => 'pumas/' + n + '.webp'),
   'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js', 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css'];

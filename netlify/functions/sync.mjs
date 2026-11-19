@@ -3,6 +3,7 @@
 // cada pocos segundos: envía su posición (si comparte) y recibe la de los demás.
 import { getStore } from '@netlify/blobs';
 import SEED from '../lib/seed-places.mjs';
+import { PLAN, PLAN_PLACES } from '../lib/seed-plan.mjs';
 import { searchPlaces, resolveLink } from '../lib/maps.mjs';
 import { vapidKeys, saveSub, dropSub, notify, notifyOne } from '../lib/push.mjs';
 
@@ -20,6 +21,8 @@ const HOME = { lat: 37.50528, lng: 15.09368 };   // Dimora Lucia Majorana
 const metres = (a, b) => { const r = Math.PI / 180, x = (b.lng - a.lng) * r * Math.cos((a.lat + b.lat) / 2 * r), y = (b.lat - a.lat) * r; return 6371e3 * Math.hypot(x, y); };
 const nameOf = id => { const n = String(id || '').replace(/^u-/, ''); return n ? n[0].toUpperCase() + n.slice(1) : 'Alguien'; };
 const eur = c => (c / 100).toFixed(2).replace('.', ',') + ' €';
+const PLAN_KINDS = ['ver', 'comer', 'coche', 'vuelo', 'noche', 'otro'];
+const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 const EXP_CATS = ['comida', 'copas', 'coche', 'casa', 'entradas', 'compras', 'otros'];
 const newId = (p, now) => p + now.toString(36) + Math.random().toString(36).slice(2, 6);
 
@@ -33,6 +36,16 @@ async function placesVersion(store, g) {
   const old = await readPrefix(store, `${g}/pin/`, 0);
   await Promise.all(Object.entries(old).map(([id, p]) => store.setJSON(`${g}/pl/${id}`, { id, cat: 'otro', name: p.name, note: p.note || '', addr: '', lat: p.lat, lng: p.lng, by: p.by || '', t: p.t || 0 })));
   return bumpPlaces(store, g);
+}
+// Planning: una parada por clave en `${g}/pn/<id>`. La primera vez se copia el planning inicial y
+// se añaden al mapa los sitios que le faltaban (sin pisar ninguno que ya exista).
+async function planSeeded(store, g) {
+  if (await store.get(`${g}/pnv`, { type: 'json' })) return;
+  await placesVersion(store, g);
+  await Promise.all(PLAN_PLACES.map(async p => { if (!(await store.get(`${g}/pl/${p.id}`, { type: 'json' }))) await store.setJSON(`${g}/pl/${p.id}`, { ...p, by: '', t: 0 }); }));
+  await Promise.all(PLAN.map(x => store.setJSON(`${g}/pn/${x.id}`, { ...x, done: null, t: 0 })));
+  await bumpPlaces(store, g);
+  await store.setJSON(`${g}/pnv`, { v: 1 });
 }
 async function bumpPlaces(store, g) { const v = Date.now(); await store.setJSON(`${g}/plv`, { v }); return v; }
 
@@ -145,6 +158,33 @@ export async function handle(req, store, later = p => p.catch(e => console.warn(
       if (q.length < 2) return json({ error: 'q' }, 400);
       return json(await searchPlaces(q, lat, lng));
     } catch (e) { console.warn(e); return json({ error: 'search' }, 502); }
+  }
+  // Planning del viaje, editable por el grupo.
+  if (b.action === 'plan') { await planSeeded(store, g); return json({ now, plan: await readPrefix(store, `${g}/pn/`, 0) }); }
+  if (b.action === 'savePlan') {
+    const x = b.item || {};
+    const title = str(x.title, 60);
+    if (!title || !DAYS.includes(x.day) || !HHMM.test(x.time || '') || (x.end && !HHMM.test(x.end))) return json({ error: 'plan' }, 400);
+    if ((x.id && !ID.test(x.id)) || (x.place && !ID.test(x.place))) return json({ error: 'id' }, 400);
+    await planSeeded(store, g);
+    const id = x.id || newId('n', now);
+    const prev = x.id ? await store.get(`${g}/pn/${id}`, { type: 'json' }) : null;
+    const item = { id, day: x.day, time: x.time, end: x.end || '', kind: PLAN_KINDS.includes(x.kind) ? x.kind : 'otro', title, place: x.place || '', note: str(x.note, 240), done: prev ? prev.done || null : null, t: now };
+    await store.setJSON(`${g}/pn/${id}`, item);
+    return json({ ok: true, id, item });
+  }
+  if (b.action === 'donePlan') {
+    if (!ID.test(b.id || '')) return json({ error: 'id' }, 400);
+    const item = await store.get(`${g}/pn/${b.id}`, { type: 'json' });
+    if (!item) return json({ error: 'gone' }, 404);
+    item.done = b.done ? { by: str(b.by, 18), t: now } : null;
+    await store.setJSON(`${g}/pn/${b.id}`, item);
+    return json({ ok: true, item });
+  }
+  if (b.action === 'delPlan') {
+    if (!ID.test(b.id || '')) return json({ error: 'id' }, 400);
+    await store.delete(`${g}/pn/${b.id}`);
+    return json({ ok: true });
   }
   // Coche del grupo: dónde está aparcado.
   if (b.action === 'setCar') {
